@@ -1,0 +1,190 @@
+e what you extracted (measure, date, indicator, result) and how you distinguished source facts from interpretation.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Methodology M3</td>
+<td>NEW: scope / indicators. About 70 words.</td>
+<td>S1 graph labels; S5 survey limitation. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+<td>Define the historical scope and distinguish releases, confirmations, spawning locations and captures. Define what counts as partial success in this study.</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>RQ / hypothesis</td>
+<td>Small edit only. About 65 words.</td>
+<td>S1 pp.6,14 for habitat terminology. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Keep the three interventions and your tentative habitat explanation.</td>
+<td>3-5 min</td>
+</tr>
+<tr>
+<td>Introduction</td>
+<td>Small edit only. About 85 words.</td>
+<td>Your real experience; S7 first abstract sentence for endangered. <a href="https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en">https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en</a></td>
+<td>Connect your interest to the purpose of this specific investigation.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Implications - three existing paragraphs</td>
+<td>MOVE and lightly EDIT. About 150 words total.</td>
+<td>Own proposals; S1 p.19 if directly citing the museum's proposed habitat direction. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Keep restoration and monitoring proposals; distinguish recommendation from demonstrated result.</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>EDIT, not rewrite. About150 words.</td>
+<td>Use only evidence already presented in Findings.</td>
+<td>Answer the same RQ: partial improvement, continuing habitat concern, limited ability to establish sustained recovery or intervention-specific causation. No new evidence.</td>
+<td>10 min</td>
+</tr>
+</tbody>
+</table></div>
+<p>The earlier tag paragraph is deleted before this sequence. It has no replacement requirement. Parent can compare the resulting draft against F1-F16 while Shimpei works on the mathematics. These paragraph timings overlap with the Form 5 allowance in section 2.</p>
+<h2 id="10-parent-task-matrix">10. 保護者向け作業マトリクス</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>タイミング</th>
+<th>保護者がやること</th>
+<th>やらなくていいこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>今すぐ</td>
+<td>Form 4について、共有Doc以外に本当に最新版があるかだけ一度確認する。なければこのHTMLの現行版を基準に進める。</td>
+<td><strong>Reference探し、Evidence探し、論文検索。</strong> これはAI側の担当。</td>
+</tr>
+<tr>
+<td>心平が作業中</td>
+<td>必要なら進捗だけ確認する。心平が「Sourceが開けない／Evidenceが足りない」と言ったら、そのままChatGPTに投げる。</td>
+<td>自分でGoogle検索して代替Sourceを探すこと。心平に探させること。</td>
+</tr>
+<tr>
+<td>先生のレッスン前</td>
+<td>最新版がGoogle Docに反映されているかを見る。未解決点があれば最大3点に絞る。</td>
+<td>文章の中身を代筆すること、数学を解くこと。</td>
+</tr>
+<tr>
+<td>内容確定後</td>
+<td>A4/page limit、署名欄、必須項目、PDF表示崩れ、ファイル名を確認する。</td>
+<td>Reference内容の再調査。必要ならAIに最終照合させる。</td>
+</tr>
+<tr>
+<td>15–16 September</td>
+<td>OpenApplyの正しい項目へアップロードし、Payment・学校提出書類も別途完了確認する。</td>
+<td>心平に提出事務で時間を使わせること。</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>重要：</strong>Section 7のReference一覧はAI側で既に準備済みです。追加のSourceが必要になった場合も、保護者ではなくChatGPT側で探してURLと読む場所まで指定します。</p>
+<p>Suggested filenames following the official naming pattern (our chosen names, not separately prescribed literal filenames): <strong>Essay_Shimpei Ozeki.pdf</strong>, <strong>Mathematics report_Shimpei Ozeki.pdf</strong>, <strong>Subject report_Shimpei Ozeki.pdf</strong>. Keep both mathematics sections in the mathematics document. Follow any more specific current OpenApply field instruction.</p>
+<p>The final report must describe the research/work that actually occurred. No one else writes Shimpei's substantive reasoning or solves his task for submission.</p>
+<h2 id="11-questions-for-sakai-sensei">11. Questions for Sakai-sensei</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Question / action</th>
+<th>Why this needs the tutor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MUST ASK</td>
+<td>Please review the narrowed Form 4 S2 as a modelling investigation of profile/capacity rather than unproved optimisation. Is its working and reflection sufficient, or is one small depth comparison needed?</td>
+<td>Judgment of inquiry quality, not a request for the tutor to redo the whole topic.</td>
+</tr>
+<tr>
+<td>MUST ASK</td>
+<td>Please check the new Section1 worked problem and the corrected Form5 Findings/Evaluation. We removed the unsupported hatchery-tag inference and acknowledge the recovery visible in the graph.</td>
+<td>Checks the completed work and source corrections against the tutor's intended standard.</td>
+</tr>
+<tr>
+<td>ASK IF TIME</td>
+<td>Spot-check one mathematical step and one source-based interpretation aloud; identify only any remaining submission blocker.</td>
+<td>Targets understanding, not stylistic polishing.</td>
+</tr>
+<tr>
+<td>DO NOT ASK</td>
+<td>Whether a new Section1 task is allowed, what the deadline is, or where to search for sources already provided.</td>
+<td>The supplied requirements and sources answer these.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Do not wait for a reply before completing the uncontroversial work. The purpose of the lesson is to resolve the remaining judgment calls and verify the revised work, not start missing sections.</p>
+<h2 id="12-do-not-waste-time-list">12. Do-not-waste-time list</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Rebuilding Form5 around later 2024 data or starting a new conservation story. State the historical scope instead.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Finding every competing area or release total. Use the chosen source consistently; keep only the one discrepancy the tutor requested.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Restoring Botton &amp; Loveland or an inaccessible IUCN reference when the required fact is already supported.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Proving tide-pool thermal safety, crab escape angles, erosion control or biological optimality. Remove unsupported guarantees.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Learning calculus solely to retain an unnecessary edge-gradient subclaim.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Rewriting acceptable English, filling every blank template page, or padding paragraphs to hit an exact word count.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Re-doing corrected old checklist items or following the expired 2-7 September schedule.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="13-final-submission-checklist">13. Final submission checklist</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Ready only when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form 1</td>
+<td>Three answers remain within official word requirements; unsupported university route removed; student can explain the content; required signatures complete.</td>
+</tr>
+<tr>
+<td>Form4 S1</td>
+<td>Problem, independent working, answer, check and formula numbers are present; no answer copied from this pack or AI; student can explain every step.</td>
+</tr>
+<tr>
+<td>Form4 S2</td>
+<td>Question matches what was actually investigated; assumptions, diagram, algebra, area/volume, checks and reflection present; unsupported ecological guarantees removed; at least one booklet formula used; page allowance met.</td>
+</tr>
+<tr>
+<td>Form5</td>
+<td>Correct references; complete Findings before Analysis; real Evaluation plus Implications; honest scope and qualified conclusions; no tag-origin error, false survival measurement or false source attribution; approximately 2,300 substantive body words without padding; page allowance met.</td>
+</tr>
+<tr>
+<td>All documents</td>
+<td>Official forms used; no blanks in required applicant/header fields; no obsolete draft text or tutor comments in submission; all necessary attachments included correctly; final PDFs checked visually.</td>
+</tr>
+<tr>
+<td>Application</td>
+<td>Parent separately verifies completed upload items, school submissions and payment. A completed writing pack alone is not proof that the application has been submitted.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Stop rule:</strong> after the listed factual, requirement and completeness issues are fixed, stop rewriting. Reopen a finished section only for a demonstrable error or a tutor-identified submission blocker.</p>
+</main></body></html>
