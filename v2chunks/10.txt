@@ -1,0 +1,111 @@
+<p>Suggested filenames following the official naming pattern (our chosen names, not separately prescribed literal filenames): <strong>Essay_Shimpei Ozeki.pdf</strong>, <strong>Mathematics report_Shimpei Ozeki.pdf</strong>, <strong>Subject report_Shimpei Ozeki.pdf</strong>. Keep both mathematics sections in the mathematics document. Follow any more specific current OpenApply field instruction.</p>
+<p>The final report must describe the research/work that actually occurred. No one else writes Shimpei's substantive reasoning or solves his task for submission.</p>
+<h2 id="11-questions-for-sakai-sensei">11. Questions for Sakai-sensei</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Question / action</th>
+<th>Why this needs the tutor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MUST ASK</td>
+<td>Please review the narrowed Form 4 S2 as a modelling investigation of profile/capacity rather than unproved optimisation. Is its working and reflection sufficient, or is one small depth comparison needed?</td>
+<td>Judgment of inquiry quality, not a request for the tutor to redo the whole topic.</td>
+</tr>
+<tr>
+<td>MUST ASK</td>
+<td>Please check the new Section1 worked problem and the corrected Form5 Findings/Evaluation. We removed the unsupported hatchery-tag inference and acknowledge the recovery visible in the graph.</td>
+<td>Checks the completed work and source corrections against the tutor's intended standard.</td>
+</tr>
+<tr>
+<td>ASK IF TIME</td>
+<td>Spot-check one mathematical step and one source-based interpretation aloud; identify only any remaining submission blocker.</td>
+<td>Targets understanding, not stylistic polishing.</td>
+</tr>
+<tr>
+<td>DO NOT ASK</td>
+<td>Whether a new Section1 task is allowed, what the deadline is, or where to search for sources already provided.</td>
+<td>The supplied requirements and sources answer these.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Do not wait for a reply before completing the uncontroversial work. The purpose of the lesson is to resolve the remaining judgment calls and verify the revised work, not start missing sections.</p>
+<h2 id="12-do-not-waste-time-list">12. Do-not-waste-time list</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Avoid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Rebuilding Form5 around later 2024 data or starting a new conservation story. State the historical scope instead.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Finding every competing area or release total. Use the chosen source consistently; keep only the one discrepancy the tutor requested.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Restoring Botton &amp; Loveland or an inaccessible IUCN reference when the required fact is already supported.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Proving tide-pool thermal safety, crab escape angles, erosion control or biological optimality. Remove unsupported guarantees.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Learning calculus solely to retain an unnecessary edge-gradient subclaim.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Rewriting acceptable English, filling every blank template page, or padding paragraphs to hit an exact word count.</td>
+</tr>
+<tr>
+<td>DO NOT SPEND TIME ON THIS</td>
+<td>Re-doing corrected old checklist items or following the expired 2-7 September schedule.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="13-final-submission-checklist">13. Final submission checklist</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Ready only when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form 1</td>
+<td>Three answers remain within official word requirements; unsupported university route removed; student can explain the content; required signatures complete.</td>
+</tr>
+<tr>
+<td>Form4 S1</td>
+<td>Problem, independent working, answer, check and formula numbers are present; no answer copied from this pack or AI; student can explain every step.</td>
+</tr>
+<tr>
+<td>Form4 S2</td>
+<td>Question matches what was actually investigated; assumptions, diagram, algebra, area/volume, checks and reflection present; unsupported ecological guarantees removed; at least one booklet formula used; page allowance met.</td>
+</tr>
+<tr>
+<td>Form5</td>
+<td>Correct references; complete Findings before Analysis; real Evaluation plus Implications; honest scope and qualified conclusions; no tag-origin error, false survival measurement or false source attribution; approximately 2,300 substantive body words without padding; page allowance met.</td>
+</tr>
+<tr>
+<td>All documents</td>
+<td>Official forms used; no blanks in required applicant/header fields; no obsolete draft text or tutor comments in submission; all necessary attachments included correctly; final PDFs checked visually.</td>
+</tr>
+<tr>
+<td>Application</td>
+<td>Parent separately verifies completed upload items, school submissions and payment. A completed writing pack alone is not proof that the application has been submitted.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Stop rule:</strong> after the listed factual, requirement and completeness issues are fixed, stop rewriting. Reopen a finished section only for a demonstrable error or a tutor-identified submission blocker.</p>
+</main></body></html>
