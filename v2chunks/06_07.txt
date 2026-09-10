@@ -1,0 +1,175 @@
+<tr><td><strong>17</strong></td><td>Add water-quality evidence</td><td>Keep water-quality improvement in the RQ. Add the actual measures reported by MoE, including sewerage-related measures from 1993 and the 2002 three-month seawater-purification experiment. <strong>Do not claim this alone caused population recovery.</strong></td><td><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td><td>Water-quality / purification section only.</td></tr>
+<tr><td><strong>18</strong></td><td>Delete the 50/50 tag paragraph</td><td><strong>Delete the whole paragraph. Do not replace it.</strong> The 50/50 observation is real, but tags identify previously captured/marked animals, not hatchery-origin animals.</td><td><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td><td>Tagging section only.</td></tr>
+<tr><td><strong>19</strong></td><td>Fix citations in Analysis</td><td>Apply the tutor’s two-colour rule operationally: <strong>source fact = citation; Shimpei’s inference = clearly marked as his reasoning</strong>. If one sentence mixes both, split it.</td><td>Tutor Feedback 0909</td><td>No external research.</td></tr>
+<tr><td><strong>20</strong></td><td>Soften “releases failed to drive adult recovery”</td><td><strong>Do not change the story.</strong> Change only the certainty. Because the graph shows some later rebound, do not write “no recovery”. Use a qualified idea: adult captures showed partial recovery but the historical series does not by itself establish sustained population recovery or isolate the effect of releases; also remember the long maturation delay.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>pp.4 and 11.</td></tr>
+<tr><td><strong>21</strong></td><td>Fix “adult survival” wording</td><td>Change it to <strong>adult capture numbers</strong>. The data do not directly measure survival.</td><td><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td><td>Survey-limitation paragraph only.</td></tr>
+<tr><td><strong>22</strong></td><td>Fix the 25–57 wording</td><td>If 25–57 is retained, identify it specifically as the range reported for <strong>2015–2019</strong>, not the whole study period.</td><td><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td><td>Adult-capture paragraph only.</td></tr>
+<tr><td><strong>23</strong></td><td>Remove/soften the artificial-spawning-ground claim</td><td>Do not say artificial spawning grounds were built and “failed” unless the source says so. The verified source supports that creating/restoring suitable habitat within the designated area is difficult. Rewrite to that level or delete the sentence.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>p.19 only.</td></tr>
+<tr><td><strong>24</strong></td><td>Replace Evaluation</td><td>Rename the current Evaluation as <strong>Implications</strong>. Then add three short Evaluation paragraphs: <strong>(1) capture-count proxy limitation, (2) 1,811 vs 1,841 ha source discrepancy, (3) one-region/no-fieldwork scope and a realistic next step.</strong></td><td><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a><br><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>Survey limitation + reclamation history only; the scope paragraph is Shimpei’s own evaluation.</td></tr>
+<tr><td><strong>25</strong></td><td>Keep the Conclusion structure</td><td>Do not rewrite it. Only soften absolute wording such as <code>failed to drive actual population recovery</code>, <code>prevented extinction</code>, and <code>true restoration remains unachievable</code>. Preserve the partial-success / habitat-constraint story.</td><td>—</td><td>No new research needed.</td></tr>
+<tr><td><strong>26</strong></td><td>Final quick fixes</td><td><code>prersence → presence</code>; add <strong>Koh Tao</strong>; fix comma splice/repeated “made me”; <code>all five juvenile growth stages → juvenile growth stages</code>; make clear the <strong>series</strong> starts in 1996, not necessarily the programme.</td><td>—</td><td>No research needed.</td></tr>
+<tr><td><strong>27</strong></td><td>Final verification</td><td>Open every final Reference once. For every number, be able to show where it came from. If a link fails or a claim still lacks support, <strong>flag it for ChatGPT verification rather than searching broadly yourself.</strong></td><td>All sources in Section 7</td><td>Verification only.</td></tr></tbody></table></div>
+<p><strong>Do not add another whole section to explain the corrections.</strong> Make local edits, add the missing Findings/Evaluation, and keep the existing report structure. Do not invent a hatchery-origin percentage or a release-to-capture survival rate.</p>
+<h2 id="7-form-5-evidence-and-verified-reference-matrix">7. Form 5 evidence and verified reference matrix</h2>
+<div class="notice"><strong>Shimpei: DO NOT SEARCH FOR REFERENCES.</strong> The sources needed for the current repair are already listed below with full URLs and exact reading locations. Open only the relevant source and section. If a sentence still lacks evidence, mark it and ask ChatGPT to verify it; do not spend time doing a broad Google search yourself.</div>
+
+<p><strong>Access status:</strong> all HTML reading sources in this matrix were opened. All 19 pages of the supplied Material 2-5 were inspected, including its graphs. Its official index is accessible, but direct retrieval through this environment's web PDF tool failed; use the enclosed uploaded PDF, not a new download search. The official DOCX links were listed by HiGA, but the web parser did not open their binaries; the uploaded form/attachment text was used. No inaccessible IUCN or paywalled paper is required by this plan.</p>
+<p>PDF page numbers below count the cover as page 1. Japanese titles are retained; bracketed English titles are translations for identification. Add the date YOU actually read each source when finalising References.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Verified reference information</th>
+<th>Full public URL / local copy</th>
+<th>Read only this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Kasaoka Horseshoe Crab Museum. (2019, 25 September). <strong>カブトガニの生態・笠岡のカブトガニ繁殖地の歴史と現状・課題について</strong> [Horseshoe crab ecology and the history, current status and challenges of the Kasaoka breeding ground]. Material 2-5, 16th Seto Inland Sea Environmental Conservation Subcommittee; hosted by the Ministry of the Environment.</td>
+<td>
+Official index: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br>
+Direct PDF URL: <a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a><br>
+Offline copy in this pack: <a href="sources/MoE_Material_2-5_2019.pdf">sources/MoE_Material_2-5_2019.pdf</a>
+</td>
+<td>pp.4,6: life cycle; p.7: history; pp.11-13: four series; p.14: habitats; p.18: measures; p.19: outcomes and challenges.</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Ministry of the Environment, Japan. (2019). <strong>中央環境審議会水環境部会 瀬戸内海環境保全小委員会（第16回）議事録</strong> [Minutes of the 16th Seto Inland Sea Environmental Conservation Subcommittee, 25 September 2019].</td>
+<td><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+<td>Only Morinobu's museum presentation. For dates search &quot;2002&quot; and the adjacent sewerage paragraph containing Heisei 5 (1993). For history read the paragraph describing 1966 start and 1990 completion.</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Yoshida, M. (2020, 15 September). <strong>日本の沿岸を歩く～海幸と人と環境と第42回 干拓後に生き残ったカブトガニと漁業の今ー岡山・笠岡</strong> [Horseshoe crabs and fisheries surviving after reclamation: Kasaoka, Okayama]. Global Net, September 2020. Global Environmental Forum.</td>
+<td><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+<td>The paragraph starting with the July 2003 ordinance contains the 2015-2019 capture range. The net-capture paragraphs explain marking and recapture, not hatchery origin.</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Kasaoka City. (2003a, 1 July). <strong>笠岡市カブトガニ保護条例</strong> [Kasaoka City Horseshoe Crab Protection Ordinance], Ordinance No.22.</td>
+<td><a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html</a></td>
+<td>Heading; Article 2, paragraph 2 (rearing/release); Article 5 (disturbance inside designated ground). Article 6 only if discussing capture outside it.</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Kasaoka City. (2011, 1 March, page update). <strong>指定地の現状</strong> [Current status of the designated area].</td>
+<td><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+<td>Opening history paragraphs for 1,811 ha, 1975 centre and 1990 museum. For survey limitations search &quot;正確な数は不明&quot;. This is an older description, not a current population census.</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Biodiversity Center of Japan, Ministry of the Environment. (n.d.). <strong>干潟・藻場・サンゴ礁調査</strong> [Tidal-flat, seaweed-bed and coral-reef surveys].</td>
+<td><a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td>
+<td>Section 3, Results, subsection (1) Tidal flats: 51,443 ha and 3,857 ha. The fourth-survey period is in the table above.</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Watanabe, S., Yoshikawa, H., Azumakawa, K., Morinobu, S., &amp; Souji, N. (2020). <strong>Population structure and growth of juvenile tri-spine horseshoe crabs released on the Kohnoshima tidal flat, Kasaoka, eastern Seto Inland Sea, Japan.</strong> Japanese Journal of Conservation Ecology, 25(2), Article 2003. DOI:10.18960/hozen.2003.</td>
+<td><a href="https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en">https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en</a></td>
+<td>English Abstract, first sentence, for &quot;endangered&quot;. Do not add an IUCN category/code that this sentence does not give. No new paper analysis is required.</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>Kasaoka City. (2003b, 1 July). <strong>笠岡市カブトガニ保護条例施行規則</strong> [Enforcement Rules for the Kasaoka City Horseshoe Crab Protection Ordinance], Rule No.22.</td>
+<td><a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000789.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000789.html</a></td>
+<td>Article 2(1): named shellfish/mud-shrimp gathering activities. Use only if retaining those examples.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Reference cleanup:</strong> remove &quot;Conservation Strategy Papers&quot;, &quot;GEF Reports&quot;, the invented English city-page title and No.12. Use the original titles above, not plausible new titles. Keep S1 and S2 as separate entries if both are cited. A meeting-index page confirms S1's identity; it is not a substitute for citing the actual slide/page you used.</p>
+<p><strong>One date correction to avoid introducing:</strong> the 2020 GEF article says 26 captures &quot;last year&quot;, meaning 2019, not 2020. The current report does not need that extra point; keep the already used 2015-2019 range instead.</p>
+<h3>7A. Four graph series - values already extracted</h3>
+<p>All numerical readings below are <strong>approximate values read from graphs</strong>, not an independently obtained raw dataset. Use sensible rounding. The label required when using them is <strong>&quot;approximate value read from graph&quot;</strong>. Do not present these as your own field measurements.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Series / source</th>
+<th>Period</th>
+<th>Start</th>
+<th>Peak / important low</th>
+<th>End</th>
+<th>What it measures and the usable pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adult captures - S1 p.11</td>
+<td>1984-2018</td>
+<td>1984: about 50</td>
+<td>1989: about 75; mostly about 5-12 in 2003-2010. About 28 in 2012 and about 55-60 in 2017.</td>
+<td>2018: about 25</td>
+<td>Recorded captured individuals. High early values, low 2000s, partial rebound, continuing fluctuation. Not adult survival or a census.</td>
+</tr>
+<tr>
+<td>Confirmed larvae - S1 p.12 main graph</td>
+<td>1971-2018</td>
+<td>1971: about 80</td>
+<td>2003: about 450; 2016: about 540. Long near-zero period before the late-1990s/2000s increase.</td>
+<td>2018: about 370</td>
+<td>Observed/confirmed larvae, not total larval population and not automatically all hatchery-origin animals.</td>
+</tr>
+<tr>
+<td>Larval releases - S1 p.12 inset</td>
+<td>1996-2018</td>
+<td>1996: about 7,000</td>
+<td>2014: about 18,000; substantial year-to-year variation.</td>
+<td>2018: about 16,000</td>
+<td>Number released, a programme input. Some later years exceed 15,000; not every year. Do not splice another source's fiscal-year total into this series.</td>
+</tr>
+<tr>
+<td>Confirmed spawning locations - S1 p.13</td>
+<td>1978-2018</td>
+<td>1978: about 1,600</td>
+<td>1979: about 2,400; long low period; 2016: about 55.</td>
+<td>2018: about 15-20</td>
+<td>Reported egg-laying location counts, not adult pairs or total eggs. Large early values, collapse, then small recent recovery. 1978-1979 is not a pre-1966 baseline.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Enclosed graph images: <a href="sources/graph-page-11.jpg">page 11</a>, <a href="sources/graph-page-12.jpg">page 12</a>, <a href="sources/graph-page-13.jpg">page 13</a>. Public source index: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></p>
+<h3>7B. Evidence for the remaining writing</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Claim / use</th>
+<th>Verified evidence</th>
+<th>Source / exact reading location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Life cycle and habitat</td>
+<td>Sand is used for spawning; tidal flats support juveniles for about five years, to around the tenth instar. Movement to deeper water is followed by further growth before adulthood. The presentation gives roughly another five years.</td>
+<td>S1 pp.4,6,14; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Local history</td>
+<td>1928 designation; 1969 designated-ground drying; 1971 additional designation; 1994 former designation revoked. The slide gives 1,841 ha.</td>
+<td>S1 p.7; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Positive outcomes and remaining needs</td>
+<td>By the 2019 presentation: continued annual spawning, different-sized cast shells, captures no longer near zero, and more eelgrass with annual variation. Creating new spawning/nursery grounds inside the existing protected ground is described as difficult.</td>
+<td>S1 p.19; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Water measures and dates</td>
+<td>The presentation shows purification and sewerage. Its spoken explanation dates a three-month experiment to 2002 and sewerage-related work to 1993; this does not isolate their population effect.</td>
+<td>S1 p.18; S2 adjacent paragraphs containing 2002 and Heisei 5. <a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+</tr>
+<tr>
+<td>National context already in the draft</td>
+<td>The fourth-survey summary gives 51,443 ha present and 3,857 ha lost since 1978. Keep these figures with this source, not S1.</td>
+<td>S6, Results (1); <a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td>
+</tr>
+<tr>
+<td>Capture-range wording</td>
+<td>25-57 refers to 2015-2019 in the reporter's account. It is not the range for 1984-2018 as a whole.</td>
+<td>S3, ordinance/museum paragraph; <a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+</tr>
+<tr>
+<td>Source limitation</td>
+<td>The older city account explicitly cautions that net catches do not give an exact total. Treat this as a methodological limitation, not a statement that tagging was still absent in 2020.</td>
