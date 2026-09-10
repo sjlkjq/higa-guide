@@ -1,0 +1,119 @@
+<td>Use the verified reference records in section 7. Delete the invented series/publication names. Delete unused Botton &amp; Loveland. For the simple endangered statement use Watanabe et al. (2020), not an unverified IUCN entry.</td>
+<td>Section 7 supplies titles, authors, dates and full URLs. No search needed.</td>
+</tr>
+<tr>
+<td>F2 - Critical 2: attribution</td>
+<td>Unresolved</td>
+<td>Separate source facts from your habitat-limit interpretation. Remove citations that imply the source itself declared the programme a failure. Do this in Analysis and Implications.</td>
+<td>Tutor Critical 2: <a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.ykmutk7ejx67">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.ykmutk7ejx67</a></td>
+</tr>
+<tr>
+<td>F3 - Major 4: evidence first</td>
+<td>Unresolved</td>
+<td>Add four short Findings paragraphs and the reported-outcomes paragraph before using their evidence in Analysis. Use the extracted numbers below. Do not invent extra precision.</td>
+<td>S1 pp.11-13 and 19: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>F4 - Major 3: evaluate YOUR study</td>
+<td>Unresolved</td>
+<td>Move current Evaluation to Implications. Write three Evaluation paragraphs on measurement limits, the specified area discrepancy, and scope/next steps. Include the maturity delay briefly, without reanalysis.</td>
+<td>S1 pp.4,7; S5 survey paragraph; section 9 gives the writing plan.</td>
+</tr>
+<tr>
+<td>F5 - tag paragraph</td>
+<td>Incorrect source interpretation</td>
+<td>Delete the entire 50/50 hatchery-origin paragraph. Do not replace it. Tagging follows capture/measurement in the cited account; it does not establish hatchery origin.</td>
+<td>S3: two paragraphs beginning with the net-capture/tagging account. <a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+</tr>
+<tr>
+<td>F6 - capture trend and magnitude</td>
+<td>Needs correction</td>
+<td>Replace &quot;flat through 2012&quot; with an accurate description of the early-2010s rebound. Replace &quot;adult survival&quot; with &quot;adult captures&quot;. Releases exceed 15,000 in SOME years, not every year. Keep 25-57 only as the reported 2015-2019 range.</td>
+<td>S1 pp.11-12; S3 range paragraph. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+</tr>
+<tr>
+<td>F7 - strength of conclusion</td>
+<td>Too absolute</td>
+<td>Preserve partial success. Acknowledge recorded recovery, but do not claim the data establish sustained, self-supporting recovery or isolate each measure's effect. Remove definite &quot;failed&quot;, &quot;prevented extinction&quot;, &quot;cannot support them&quot;, and &quot;unachievable&quot; claims unless supported. Retain habitat constraints as your qualified inference.</td>
+<td>S1 p.19 and pp.4,11: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>F8 - life cycle / hypothesis</td>
+<td>Small factual correction</td>
+<td>Describe tidal flats as juvenile habitat, not the spawning beach itself. Movement to deeper water precedes full adulthood. Five years is a duration, not five growth stages.</td>
+<td>S1 pp.4,6,14: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>F9 - artificial spawning grounds</td>
+<td>Unsupported as written</td>
+<td>Delete the claim that constructed grounds failed. The source states that creating spawning/nursery habitat within the existing designated area is difficult.</td>
+<td>S1 p.19: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>F10 - dates and area</td>
+<td>Mixed source attribution</td>
+<td>Keep 1,841 ha tied to S1. Mention S5's 1,811 ha briefly in Evaluation because the tutor asked; do not investigate why. Distinguish 1966 project start, 1969 designated-ground drying and 1990 project completion; these are not competing start dates. Use Oehama / 生江浜, not 大浜.</td>
+<td>S1 p.7; S2 history; S5 opening. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+</tr>
+<tr>
+<td>F11 - 51,443 ha</td>
+<td>Number already correct</td>
+<td>KEEP 51,443 ha and 3,857 ha. Replace the Material 2-5 citation with S6. Describe these as historical fourth-survey figures, not present-day national totals.</td>
+<td>S6: results, tidal flats. <a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td>
+</tr>
+<tr>
+<td>F12 - ordinance</td>
+<td>Wrong reference/article</td>
+<td>No.12 becomes No.22. For protected-area disturbance use Article 5, not Article 1. For named clam/mud-shrimp activities use Enforcement Rule Article 2(1).</td>
+<td>S4 and S8. <a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html</a><br><a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000789.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000789.html</a></td>
+</tr>
+<tr>
+<td>F13 - water quality</td>
+<td>Evidence missing but supplied now</td>
+<td>Add sewerage-related measures from 1993 and the three-month 2002 purification experiment. Describe reported improvement, not a proven independent cause of population recovery.</td>
+<td>S1 p.18 shows measures; dates are in S2. <a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+</tr>
+<tr>
+<td>F14 - programme dates</td>
+<td>Over-specific</td>
+<td>Keep 1990 as the museum-opening year and 1996 as the plotted release-series start. Remove the claim that museum opening proves the release programme began that year. No more historical investigation needed.</td>
+<td>S5 history; S1 p.12 inset. <a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a><br><a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>F15 - methodology</td>
+<td>Incomplete / inaccurate justification</td>
+<td>Say this is a historical literature-based study using graphs through 2018 and the additional 2015-2019 range. Explain source selection and what was extracted. Remove &quot;fieldwork was impossible because June-August clashes with September&quot;; give only your actual reason, or simply state that no fieldwork was conducted.</td>
+<td>Your actual process. No external source can establish your personal reason.</td>
+</tr>
+<tr>
+<td>F16 - quick edits</td>
+<td>Partly done already</td>
+<td>Fix the opening comma splice and repeated &quot;made me&quot;; add Koh Tao; correct growth-stages wording. Keep existing headings and the three measures already present in the RQ. Do not redo old checklist items that are already fixed.</td>
+<td>Current Draft 0909: <a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.im7noxly9ldv">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.im7noxly9ldv</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Do not add another entire section to explain these corrections.</strong> Make local edits, add the missing Findings/Evaluation, and give the tutor a brief note on the tag deletion and the qualified recovery wording. The old request for a hatchery-origin ratio cannot be met from the cited evidence. Likewise, a release-to-capture percentage would not be a measured survival rate; do not invent one to satisfy the old magnitude prompt.</p>
+
+<div class="notice"><strong>MERGED PREVIEW — not yet published to GitHub.</strong> The Astra structure and analysis below are preserved. The Sol detail layer is added rather than replacing Astra. If the two layers differ, use the more specific verified correction in the Sol detail layer only for that individual item.</div>
+
+<h3 id="6b-sol-detailed-correction-matrix">6B. Sol detailed correction matrix — agreed detail layer</h3>
+<p><strong>This section does not replace the Astra matrix above.</strong> It expands the same repair plan into the detailed actions agreed in the Sol review.</p>
+<p><strong>Preserve the existing story and make minimum local corrections.</strong> This is the detailed action matrix agreed after reviewing Sakai-sensei's feedback. Do not compress these items into broad advice.</p>
+<div class="notice"><strong>Source-work rule:</strong> Shimpei does not search broadly for references. The verified sources and graph readings are already prepared in Section 7. He opens only the specified page/graph so he can understand and explain the evidence he uses.</div>
+<div class="table-wrap"><table><thead><tr><th>Priority</th><th>What Shimpei must do</th><th>Exact correction / output</th><th>Source URL</th><th>Read only this</th></tr></thead><tbody><tr><td><strong>1</strong></td><td>Fix the fake MoE reference</td><td>Delete <code>Document 2-5: Data series...</code> and <code>Ministry of the Environment Conservation Strategy Papers</code>. Use the real title: <strong>「カブトガニの生態・笠岡のカブトガニ繁殖地の歴史と現状・課題について」</strong>, Kasaoka Horseshoe Crab Museum, Material 2-5, 25 Sep 2019.</td><td><a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td><td>Go to 配付資料一覧 → 資料2-5. No other reading is needed for the reference name.</td></tr>
+<tr><td><strong>2</strong></td><td>Use Material 2-5 for the four graphs</td><td>Do <strong>not</strong> search Google for replacement numbers. The four graph series have already been inspected and extracted in Section 7A. Open the actual Material 2-5 only to check the graph you are using.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>pp.11–13 only. The approximate values are already listed in Section 7A.</td></tr>
+<tr><td><strong>3</strong></td><td>Use the MoE transcript to understand Material 2-5</td><td>Use this for life cycle, reclamation history, water-quality measures, explanation of graphs, reported outcomes and remaining challenges.</td><td><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td><td>Read only the Kasaoka Horseshoe Crab Museum presentation section; search the page for the relevant year/term.</td></tr>
+<tr><td><strong>4</strong></td><td>Fix the fake GEF reference</td><td>Delete <code>Conservation activities and population dynamics...</code> and <code>GEF Reports</code>. Replace with the real Yoshida Mitsuhiro 2020 article: <strong>「日本の沿岸を歩く～海幸と人と環境と第42回 干拓後に生き残ったカブトガニと漁業の今―岡山・笠岡」</strong>.</td><td><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td><td>Read only reclamation, adult-capture and tagging paragraphs.</td></tr>
+<tr><td><strong>5</strong></td><td>Fix the ordinance reference</td><td>Change <strong>Ordinance No.12 → Ordinance No.22</strong>. Do not cite Art.1 for prohibitions. Use Art.5 / Art.6 where relevant.</td><td><a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html</a></td><td>Heading; Art.2(2), Art.5 and Art.6 only.</td></tr>
+<tr><td><strong>6</strong></td><td>Replace the invented Kasaoka City source</td><td>Delete <code>Kasaoka City Board of Education Official Portal</code>. Use the actual Kasaoka City page <strong>「指定地の現状」</strong>.</td><td><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td><td>Historical timeline and the paragraph explaining limitations of adult-capture data.</td></tr>
+<tr><td><strong>7</strong></td><td>Delete Botton & Loveland</td><td>Delete the reference completely. It is not needed for the current report.</td><td>—</td><td>Nothing. DO NOT SPEND TIME ON THIS.</td></tr>
+<tr><td><strong>8</strong></td><td>Replace IUCN as the source for “endangered”</td><td>Use <strong>Watanabe et al. (2020)</strong>. The paper is directly about <em>T. tridentatus</em> in Kasaoka and the English abstract describes the species as endangered.</td><td><a href="https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en">https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en</a></td><td>English Abstract, first sentence.</td></tr>
+<tr><td><strong>9</strong></td><td>Keep the tidal-flat figure as 51,443 ha</td><td>Use <strong>51,443 ha existing tidal flats</strong> and <strong>3,857 ha lost</strong>. Treat this as a separate reference from Material 2-5.</td><td><a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td><td>Section 3 → Results → (1) Tidal flats.</td></tr>
+<tr><td><strong>10</strong></td><td>Do not merge 1,811 ha and 1,841 ha</td><td>In Background, state separately that Kasaoka City/GEF reports <strong>1,811 ha</strong> while Material 2-5 reports <strong>1,841 ha</strong>. Do not research the reason. Mention the discrepancy again briefly in Evaluation.</td><td><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a><br><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>Only the sentences/slide containing the reclamation area.</td></tr>
+<tr><td><strong>11</strong></td><td>Correct “tidal flats = spawning habitat”</td><td>Keep the hypothesis, but describe tidal flats as <strong>important juvenile-growth habitat</strong>, not the spawning habitat itself. Sandy beaches are used for spawning; juveniles use tidal flats.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>pp.4 and 6.</td></tr>
+<tr><td><strong>12</strong></td><td>Add Findings paragraph: larval releases</td><td>Write one short Findings paragraph: period covered, approximate start/peak/end, overall trend, and what was measured. Do not analyse here.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>p.12 release-series inset; use Section 7A values.</td></tr>
+<tr><td><strong>13</strong></td><td>Add Findings paragraph: confirmed larvae</td><td>Use the same four-point structure. Keep Findings descriptive.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>p.12 main graph + corresponding transcript explanation only.</td></tr>
+<tr><td><strong>14</strong></td><td>Add Findings paragraph: spawning sites</td><td>Use the same four-point structure.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>p.13 graph only.</td></tr>
+<tr><td><strong>15</strong></td><td>Add Findings paragraph: adult captures</td><td>Use the same four-point structure, but state that these are <strong>capture counts, not a population census</strong>.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td><td>p.11 adult-capture graph + Kasaoka City survey-limitation paragraph.</td></tr>
+<tr><td><strong>16</strong></td><td>Add the missing positive outcomes</td><td>Add one Findings paragraph covering: spawning observed every year, juvenile/moult evidence, adult captures no longer near zero / partial recovery, and increased eelgrass as reported by the museum. This supports <strong>partially succeeded</strong>.</td><td><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td><td>Museum presentation: current outcomes / remaining challenges only.</td></tr>
