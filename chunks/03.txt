@@ -1,0 +1,84 @@
+ntercept, and how you checked the result. If you cannot explain a step, revisit it rather than copying an answer. Tutor review should confirm suitability, not do the calculations for you.</p>
+<h2 id="5-form-4-section-2-correction-matrix">5. Form 4 Section 2 correction matrix</h2>
+<p><strong>Recommended route: keep the existing parabolic basin and narrow the question to its profile and water capacity. Keep the edge-gradient calculation only if Shimpei already understands it. Do not add a new optimisation project.</strong></p>
+<p>The existing equation and approximate area/volume results are mathematically compatible with the stated idealised geometry. What is missing is the derivation and the justification of the assumptions. That does not require a new topic.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Priority / location</th>
+<th>Minimum action</th>
+<th>Math or reading support</th>
+<th>Output / time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MUST FIX - motivation and research question</td>
+<td>Keep the marine-conservation motivation, but present the pool as a hypothetical geometry model. Remove claims that crab larvae require these pools and that this model has proven ecological benefits. Replace &quot;maximises&quot; and &quot;minimises erosion&quot; with the quantities actually investigated.</td>
+<td>Existing draft; S1 PDF pp.6 and 14 support habitat importance, not artificial-pool performance. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>A focused question and 40-60 words of context; 10-15 min</td>
+</tr>
+<tr>
+<td>MUST FIX - assumptions</td>
+<td>State width 2 m, depth 0.5 m, length 3 m, symmetry, a uniform cross-section, and a watertight basin filled to rim level. These are modelling choices, not measurements.</td>
+<td>No external evidence required for clearly declared assumptions.</td>
+<td>A labelled diagram plus 40-60 words; 10 min</td>
+</tr>
+<tr>
+<td>MUST FIX - curve working</td>
+<td>Use the current vertex and rim coordinates to determine the quadratic coefficient yourself. Expand to standard form, state domain and units, and show how the existing expression follows.</td>
+<td>Uploaded booklet: formula <strong>5</strong>. Use <strong>6</strong> if you also calculate/check the symmetry axis. <a href="https://higa-s.jp/wp-content/uploads/2026/02/Form4_attachments.docx">https://higa-s.jp/wp-content/uploads/2026/02/Form4_attachments.docx</a></td>
+<td>Visible algebra and labelled graph; 20-30 min</td>
+</tr>
+<tr>
+<td>MUST FIX - area and volume</td>
+<td>Show the substitutions for the parabolic-segment area, multiply by the declared basin length, then convert cubic metres to litres. Keep unrounded values until the final result. Do not treat the rounded-area result 2,001 L as an exact value equal to 2.0 cubic metres.</td>
+<td><strong>M1:</strong> Opening diagram and equations (5)-(6). Its a means half-width, not your quadratic coefficient. A = 4ah/3, equivalently 2(width)(depth)/3.<br><a href="https://mathworld.wolfram.com/ParabolicSegment.html">https://mathworld.wolfram.com/ParabolicSegment.html</a></td>
+<td>Working with units and a consistent final rounding; 20-25 min</td>
+</tr>
+<tr>
+<td>MUST FIX - slope if retained</td>
+<td>Show the derivative and evaluate both boundaries yourself. If your result is 45 degrees, the criterion is &quot;at most 45&quot;, not &quot;less than 45&quot;. Treat it as a geometric result only. If you do not understand derivatives, remove this subclaim throughout; do not start a calculus course now.</td>
+<td>Your existing derivative expression; no claim that this proves animal safety.</td>
+<td>Working and explanation, or delete the optional subclaim; 10-15 min</td>
+</tr>
+<tr>
+<td>MUST FIX - justification</td>
+<td>Check your curve against all three defining points. Check positive area/volume and sensible units. Say what the answer establishes within the model.</td>
+<td>Own calculations; no citation needed for your computations.</td>
+<td>Checks plus 40-60 words; 10-15 min</td>
+</tr>
+<tr>
+<td>MUST FIX - ecological guarantees</td>
+<td>Delete &quot;2,000 L keeps temperature stable for six hours&quot;, &quot;45 degrees ensures escape&quot;, and claims of proven structural safety, erosion control or ecological suitability. The supplied evidence does not establish them.</td>
+<td>No new reference hunt. The shortest valid fix is deletion.</td>
+<td>Remove unsupported assertions; 5 min</td>
+</tr>
+<tr>
+<td>MUST FIX - conclusion / evaluation</td>
+<td>Keep the numerical outcome you can reproduce. Discuss the limitations of an idealised, uniform, full basin; actual temperature, currents, sediment and animal behaviour were not modelled. Retain a short next-step idea as a proposal, not an achieved result.</td>
+<td>Own evaluation; S1 p.14 only if referring to real habitat needs. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>80-120 words, mostly revising existing text; 10-20 min</td>
+</tr>
+<tr>
+<td>MUST FIX - form header and references</td>
+<td>List only formula numbers actually used. At least one must come from the official booklet; additional formulas are not automatically forbidden. Cite the external area formula separately. Keep the supplied form structure.</td>
+<td>Booklet formulas 5/6 as used; MathWorld source above.</td>
+<td>Parent formats; Shimpei checks formula attribution.</td>
+</tr>
+<tr>
+<td>ONLY IF TUTOR REQUIRES IT</td>
+<td>Add one comparison with a shallower basin using the same width and length. Explain the capacity trade-off. Do not claim global optimality from two examples.</td>
+<td>No new sources or biological data.</td>
+<td>Optional 10-15 min, not in the compulsory plan.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Area-formula reference for Section 2: <strong>Weisstein, E. W. (n.d.). Parabolic Segment. MathWorld - A Wolfram Web Resource.</strong> <a href="https://mathworld.wolfram.com/ParabolicSegment.html">https://mathworld.wolfram.com/ParabolicSegment.html</a> Read the opening diagram and equations (5)-(6); add your actual access date.</p>
+<h2 id="6-form-5-correction-matrix">6. Form 5 correction matrix — detailed 27-point action list</h2>
+<p><strong>Preserve the existing story and make minimum local corrections.</strong> This is the detailed action matrix agreed after reviewing Sakai-sensei's feedback. Do not compress these items into broad advice.</p>
+<div class="notice"><strong>Source-work rule:</strong> Shimpei does not search broadly for references. The verified sources and graph readings are already prepared in Section 7. He opens only the specified page/graph so he can understand and explain the evidence he uses.</div>
+<div class="table-wrap"><table><thead><tr><th>Priority</th><th>What Shimpei must do</th><th>Exact correction / output</th><th>Source URL</th><th>Read only this</th></tr></thead><tbody><tr><td><strong>1</strong></td><td>Fix the fake MoE reference</td><td>Delete <code>Document 2-5: Data series...</code> and <code>Ministry of the Environment Conservation Strategy Papers</code>. Use the real title: <strong>「カブトガニの生態・笠岡のカブトガニ繁殖地の歴史と現状・課題について」</strong>, Kasaoka Horseshoe Crab Museum, Material 2-5, 25 Sep 2019.</td><td><a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td><td>Go to 配付資料一覧 → 資料2-5. No other reading is needed for the reference name.</td></tr>
+<tr><td><strong>2</strong></td><td>Use Material 2-5 for the four graphs</td><td>Do <strong>not</strong> search Google for replacement numbers. The four graph series have already been inspected and extracted in Section 7A. Open the actual Material 2-5 only to check the graph you are using.</td><td><a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a></td><td>pp.11–13 only. The approximate values are already listed in Section 7A.</td></tr>
+<tr><td><strong>3</strong></td><td>Use the MoE transcript to understand Material 2-5</td><td>Use this for life cycle, reclamation history, water-quality measures, explanation of graphs, reported outcomes and remaining challenges.</td><td><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td><td>Read only the Kasaoka Horseshoe Crab Museum presentation section; search the page for the relevant year/term.</td></tr>
+<tr><td><strong>4</strong></td><td>Fix the fake GEF reference</td><td>Delete <code>Conservation activities and population dynamics...</code> and <code>GEF Reports</code>. Replace with the real Yoshida Mitsuhiro 2020 article: <strong>「日本の沿岸を歩く～海幸と人と環境と第42回 干拓後に生き残ったカブトガニと漁業の今―岡山・笠岡」</strong>.</td><td><a href="https://www.gef.or.jp
