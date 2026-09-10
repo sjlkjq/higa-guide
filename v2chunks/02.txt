@@ -1,0 +1,140 @@
+<th>Parent time</th>
+<th>Working deadline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form 1</td>
+<td>NEARLY COMPLETE; about 90%</td>
+<td>Delete unsupported university-route sentence; fix opening; recount; explain aloud</td>
+<td>15-25 min</td>
+<td>10 min</td>
+<td>10 September</td>
+</tr>
+<tr>
+<td>Form 4 S1</td>
+<td>NOT STARTED as a worked answer; about 0-10%</td>
+<td>Solve one original problem; show checking; enter formula numbers</td>
+<td>20-30 min</td>
+<td>10 min</td>
+<td>10 September</td>
+</tr>
+<tr>
+<td>Form 4 S2</td>
+<td>PARTLY COMPLETE; roughly 40-60% of a checkable report</td>
+<td>Narrow claims; derive the existing curve; show area/volume working; justify and evaluate</td>
+<td>90-150 min</td>
+<td>15-25 min</td>
+<td>Before Friday lesson</td>
+</tr>
+<tr>
+<td>Form 5</td>
+<td>PARTLY COMPLETE; roughly 60-70%</td>
+<td>Fix provenance and factual errors; finish four series, outcomes and Evaluation; qualify conclusions</td>
+<td>3-5 hours</td>
+<td>60-90 min</td>
+<td>Before Friday lesson</td>
+</tr>
+<tr>
+<td>Final packaging</td>
+<td>NOT YET READY</td>
+<td>After corrections: oral spot-check, official forms, final PDF and upload checks</td>
+<td>20-30 min</td>
+<td>30-60 min</td>
+<td>Content lock by 13 September; final checks by 15; submit target 16</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Total planning allowance:</strong> approximately 6-9 student hours and 2-3 parent/admin hours. Tutor time is separate. A complete first-pass draft is the Friday target; unresolved points must be flagged, not hidden.</p>
+<p><strong>Official submission constraints:</strong> deadline 18 September 2026, 12:00 JST (11:00 MYT); English, A4 PDF, computer font at least 10 pt, one file per application document. Form 1 requires at least 100 words per answer and no more than 600 overall. The 5 September HiGA email additionally requires the official forms: do not submit this planning document, or a standalone custom-layout report, as an application form. Use the supplied forms directly to avoid ambiguity.</p>
+<p>Official guideline: <a href="https://higa-s.jp/wp-content/uploads/2026/06/Admission-Guideline-of-Hiroshima-Global-Academy-General-selection-for-foreign-and-Japanese-students-for-2027-Academic-Year.pdf">https://higa-s.jp/wp-content/uploads/2026/06/Admission-Guideline-of-Hiroshima-Global-Academy-General-selection-for-foreign-and-Japanese-students-for-2027-Academic-Year.pdf</a></p>
+<p>Official forms index: <a href="https://higa-s.jp/en/senior-high/index/application-process/">https://higa-s.jp/en/senior-high/index/application-process/</a></p>
+<p>The uploaded Form 4 instructions require both sections, with at least one Formula Booklet formula used in each. Section 2 is limited to five A4 pages; the form provides a reference page and up to four report pages. Form 5 is limited to eight A4 pages including its reference page. <strong>The approximately 2,300-word target is the tutor's target, not an official HiGA minimum.</strong></p>
+<h2 id="3-form-1-correction-matrix">3. Form 1 correction matrix</h2>
+<p>Current counted answers: <strong>Q1 171; Q2 117; Q3 147; total approximately 435 words.</strong> Counts can differ slightly between software. <strong>Do not shorten Q3 unnecessarily.</strong> Keep roughly the current volume by replacing the overstated university/marine-science sentence with the more cautious wording below.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Location / decision</th>
+<th>What Shimpei does</th>
+<th>Read only / source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 opening - MODIFY</td>
+<td>Split the comma splice after Thailand. Name Koh Tao, consistent with your own worksheet. Remove duplicate &quot;made me&quot; wording. Do not invent extra observations.</td>
+<td>Your own experience and existing draft; no external research.</td>
+</tr>
+<tr>
+<td>Q2 and Q3 coastal setting - KEEP / small MODIFY</td>
+<td>Keep your interest in local observation. Use &quot;near&quot; rather than asserting unrestricted access or guaranteed marine-research opportunities. Describe what you hope to do, not a promised school programme.</td>
+<td><strong>H3:</strong> The local island/nature learning description<br><a href="https://higa-s.jp/en/senior-high/index/experience/">https://higa-s.jp/en/senior-high/index/experience/</a></td>
+</tr>
+<tr>
+<td>Q3 sentence beginning &quot;Second, HiGA's proximity...&quot; - MODIFY, DO NOT DELETE</td>
+<td>Keep this reason, but reduce the certainty and remove the unsupported claim that HiGA has a specific marine-science pathway through regional research hubs/partner-university workshops. <strong>Replace the whole sentence with:</strong><br><br>&quot;Second, HiGA has opportunities for students to learn through activities involving universities and other organizations. I hope these experiences will help me broaden my perspective and explore my interest in marine science further.&quot;<br><br>This keeps the paragraph at a similar volume while clearly separating the verified general opportunity from your own future hope.</td>
+<td>Do not claim that the university activities are specifically marine-science collaborations unless an official HiGA source says so. The phrase &quot;I hope...&quot; is Shimpei's own goal, not a school guarantee.</td>
+</tr>
+<tr>
+<td>Q3 IB and boarding - KEEP</td>
+<td>Keep the IB and residential-life reasons. Present university preparation and independence as your goals, not guaranteed outcomes.</td>
+<td><strong>H4:</strong> IB programme description<br><a href="https://higa-s.jp/en/senior-high/index/public-ib-world-school/">https://higa-s.jp/en/senior-high/index/public-ib-world-school/</a><br><strong>H5:</strong> Dormitory life and student responsibility<br><a href="https://higa-s.jp/en/senior-high/index/holistic-approach/">https://higa-s.jp/en/senior-high/index/holistic-approach/</a></td>
+</tr>
+<tr>
+<td>Final check</td>
+<td>Read each answer aloud once. Simplify only words you cannot explain. Retain the three prompts and both signature fields. Recount after editing.</td>
+<td>Official Form 1; parent handles layout.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="4-form-4-section-1-rescue-plan">4. Form 4 Section 1 rescue plan</h2>
+<p><strong>Recommended: complete Option A.</strong> Do not search through old schoolwork again. If an already completed, suitable piece is literally available, use it; otherwise proceed now. These are proposed practice/problem statements, not completed student answers.</p>
+<p>The booklet identifies <strong>1: straight-line equation; 2: gradient between two points; 9: Pythagorean theorem</strong>. Use the actual numbered formula in the uploaded booklet. The official requirements allow new application work; they do not specify an advanced-difficulty threshold.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Unsolved original task</th>
+<th>Booklet / field</th>
+<th>Expected output</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A - recommended</td>
+<td>A straight line passes through A(2,3) and B(6,11). Find its gradient and equation. Find y when x=9. Decide whether C(10,19) lies on the line. Draw a labelled sketch and check your equation using A and B.</td>
+<td>Functions; formulas <strong>1 and 2</strong></td>
+<td>One clearly worked page, including substitutions, sketch and checks.</td>
+<td>20-30 min</td>
+</tr>
+<tr>
+<td>B - backup only</td>
+<td>A rectangular garden is 9 m by 12 m. Compare walking directly between opposite corners with walking along two adjacent sides. Calculate both distances and the distance saved. Draw the right triangle and check the diagonal against the shorter and longer routes.</td>
+<td>Geometry; formula <strong>9</strong></td>
+<td>One labelled diagram, working, units and a short interpretation.</td>
+<td>15-25 min</td>
+</tr>
+</tbody>
+</table></div>
+<p>Booklet: <a href="https://higa-s.jp/wp-content/uploads/2026/02/Form4_attachments.docx">https://higa-s.jp/wp-content/uploads/2026/02/Form4_attachments.docx</a></p>
+<p>Use the uploaded copy; attachment 2, formulas 1-2 for A or 9 for B. Website index: <a href="https://higa-s.jp/en/senior-high/index/application-process/">https://higa-s.jp/en/senior-high/index/application-process/</a></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Shimpei task - Option A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Write the problem and identify the given coordinates.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Copy the relevant booklet formula, define its symbols, then substitute the coordinates yourself.</td>
+</tr>
+<tr>
+<td>3</td>
