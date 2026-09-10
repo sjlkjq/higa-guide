@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive,nosnippet"><meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet"><title>HiGA Completion Pack - 10 September 2026</title><style>body{font-family:Arial,"Noto Sans",sans-serif;background:#f6f7f9;color:#17212b;margin:0;line-height:1.55} main{max-width:1180px;margin:0 auto;background:white;padding:36px 44px 60px}h1{font-size:30px;line-height:1.2;margin:0 0 18px}h2{font-size:24px;border-top:2px solid #243f56;padding-top:26px;margin-top:38px}h3{font-size:19px;margin-top:24px}p{max-width:1000px}a{color:#174d78;text-decoration:underline;overflow-wrap:anywhere}nav{border:1px solid #ccd5dd;background:#f3f6f8;padding:16px 20px;margin:24px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 24px}nav strong{grid-column:1/-1}nav a{font-size:14px}table{width:100%;border-collapse:collapse;margin:8px 0 20px;font-size:14px;table-layout:auto}th{text-align:left;background:#233c51;color:white;padding:11px 12px;vertical-align:middle}td{border-bottom:1px solid #d9e0e6;padding:12px;vertical-align:top;overflow-wrap:anywhere}tbody tr:nth-child(even){background:#f7f9fa}td:first-child{min-width:110px;font-weight:500}td a{font-size:12px}table p{margin:0}.table-wrap{overflow-x:auto}code{font-size:.95em;background:#edf1f4;padding:2px 4px}li{margin:5px 0}.notice{padding:12px 16px;border-left:4px solid #23445d;background:#eff4f7;font-size:14px}.parent-note{padding:16px 18px;border:1px solid #c7d4df;background:#f8fafb;margin:18px 0 26px}.parent-note h2{border-top:0;padding-top:0;margin-top:0} @media(max-width:750px){main{padding:24px 16px}nav{grid-template-columns:1fr}table{min-width:720px}h1{font-size:25px}}@media print{body{background:white}main{padding:0;max-width:none}nav{display:none}h2{page-break-after:avoid}thead{display:table-header-group}tr{break-inside:avoid}a{color:inherit}table{font-size:10px}.table-wrap{overflow:visible}@page{size:A4 landscape;margin:15mm}}</style></head><body><main><div class="notice">Parent and student working document. Not an application submission. Sources and reading locations are linked in full.</div><nav><strong>Contents</strong><a href="#0-parent-guide">0. 保護者向け：このHTMLの使い方</a><a href="#1-executive-status">1. Executive status</a><a href="#2-fastest-path-to-submission">2. Fastest path to submission</a><a href="#3-form-1-correction-matrix">3. Form 1 correction matrix</a><a href="#4-form-4-section-1-rescue-plan">4. Form 4 Section 1 rescue plan</a><a href="#5-form-4-section-2-correction-matrix">5. Form 4 Section 2 correction matrix</a><a href="#6-form-5-correction-matrix">6. Form 5 correction matrix</a><a href="#7-form-5-evidence-and-verified-reference-matrix">7. Form 5 evidence and verified reference matrix</a><a href="#8-form-5-approximately-2-300-word-completion-plan">8. Form 5 approximately 2,300-word completion plan</a><a href="#9-shimpei-writing-math-action-matrix">9. Shimpei writing / math action matrix</a><a href="#10-parent-task-matrix">10. Parent task matrix</a><a href="#11-questions-for-sakai-sensei">11. Questions for Sakai-sensei</a><a href="#12-do-not-waste-time-list">12. Do-not-waste-time list</a><a href="#13-final-submission-checklist">13. Final submission checklist</a></nav><h1>HiGA Application - Minimum-Change Completion Pack</h1>
+<p><strong>MERGED MASTER: Astra format + Sol detailed corrections.</strong></p>
+<p><strong>Shimpei Ozeki | Working plan dated 10 September 2026</strong></p>
+<p>Research support and task instructions, not application answers. Use the current drafts; do not restart them. All times below are working-time estimates, not promises. The Friday 11 September lesson is expected, not confirmed.</p>
+<div class="parent-note" id="0-parent-guide">
+<h2>0. 保護者向け：このHTMLの使い方</h2>
+<p><strong>結論：</strong>Reference探しは保護者の仕事ではありません。必要なSource、URL、読む場所はSection 7にAI側で整理済みです。心平にGoogle検索をさせる必要もありません。</p>
+<ul>
+<li><strong>お父さんがやること：</strong>このHTMLを心平に渡す／進捗を見る／最後のPDF・OpenApply等の事務確認をする。</li>
+<li><strong>AIがやること：</strong>Reference探索、URL確認、Evidence不足の調査、出典の真偽確認。追加Evidenceが必要になった場合も、心平や保護者ではなくChatGPT側で調べる。</li>
+<li><strong>心平がやること：</strong>英語の指示を読み、指定URLの指定箇所だけ確認し、自分で計算・判断・文章化する。</li>
+<li><strong>使う順番：</strong>Form 4 Section 1 → Form 4 Section 2 → Form 5 → Form 1。Section 9が心平の実行順、Section 7がReference一覧。</li>
+</ul>
+<p>このHTMLは<strong>作業指示書</strong>であり提出物ではありません。実際の修正は先生と共有しているGoogle Docs／HiGA公式Form上で行います。</p>
+</div>
+
+<h2 id="1-executive-status">1. Executive status</h2>
+<p><strong>Recommendation: finish the two small tasks first, then complete Form 5's missing evidence and evaluation while repairing Form 4 Section 2. Preserve both report topics.</strong></p>
+<ul>
+<li>Form 1 needs one small wording correction and clarity checks, not a rewrite.</li>
+<li>Form 4 Section 1 has formula notes but no worked answer in the shared version. Use the short original task below unless a finished suitable task is immediately available.</li>
+<li>Form 4 Section 2 can keep its parabolic basin. Remove unproved ecological guarantees and the unsupported claim of optimisation; supply the missing working.</li>
+<li>Form 5 has approximately <strong>1,419 body words</strong>, including in-text citations but excluding headings and References. The plan below reaches approximately <strong>2,300</strong>, chiefly by supplying the tutor's missing Findings and Evaluation.</li>
+<li>Keep <strong>partial conservation success plus remaining habitat constraints</strong>. Some adult-capture recovery is already visible in the supplied historical graph; do not replace 'failed' with the equally inaccurate assertion that no recovery was visible at all. The uncertainty concerns sustained recovery and the separate effects of each intervention.</li>
+<li>Verified source preparation is already handled in this pack. Shimpei only opens the specified links/extracts, then does his own mathematics, interpretation and writing. The parent does not search for references.</li>
+<li>This pack supersedes the expired 2-7 September task dates. Target corrected full drafts before Friday's lesson, then final checks for the family's 16 September submission target.</li>
+</ul>
+<p><strong>Version boundary:</strong> I reviewed Form 1 2nd draft, Form 4 1st draft, and Form 5 Draft 0909 in the shared document. The tutor's earlier '70%' for Form 4 cannot establish completion of material absent from this copy. Parent checks the actual current file once; work need not wait for that check.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Document reviewed</th>
+<th>Exact working link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Form 1 - 2nd draft</td>
+<td><a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.u0x8p4v4xdxa">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.u0x8p4v4xdxa</a></td>
+</tr>
+<tr>
+<td>Form 4 - visible draft</td>
+<td><a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.r2xf0bbq0xo8">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.r2xf0bbq0xo8</a></td>
+</tr>
+<tr>
+<td>Form 5 - Draft 0909</td>
+<td><a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.im7noxly9ldv">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.im7noxly9ldv</a></td>
+</tr>
+<tr>
+<td>Tutor Feedback 0909</td>
+<td><a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.ykmutk7ejx67">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.ykmutk7ejx67</a></td>
+</tr>
+<tr>
+<td>Tutor Structure Map and paragraph guide</td>
+<td><a href="https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.5vc0d7yy4njy">https://docs.google.com/document/d/1sLRPYno8ydEg-HWOMTihySamlqlPECXYoWDIf10BwQo/edit?tab=t.5vc0d7yy4njy</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="2-fastest-path-to-submission">2. Fastest path to submission</h2>
+<p>Readiness percentages are broad planning estimates for the visible drafts, not grades or admission probabilities. Task times below include the detailed steps later in this pack; do not add them twice.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Visible status</th>
+<th>Minimum remaining work</th>
+<th>Shimpei time</th>
