@@ -1,0 +1,185 @@
+h>End</th>
+<th>What it measures and the usable pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Adult captures - S1 p.11</td>
+<td>1984-2018</td>
+<td>1984: about 50</td>
+<td>1989: about 75; mostly about 5-12 in 2003-2010. About 28 in 2012 and about 55-60 in 2017.</td>
+<td>2018: about 25</td>
+<td>Recorded captured individuals. High early values, low 2000s, partial rebound, continuing fluctuation. Not adult survival or a census.</td>
+</tr>
+<tr>
+<td>Confirmed larvae - S1 p.12 main graph</td>
+<td>1971-2018</td>
+<td>1971: about 80</td>
+<td>2003: about 450; 2016: about 540. Long near-zero period before the late-1990s/2000s increase.</td>
+<td>2018: about 370</td>
+<td>Observed/confirmed larvae, not total larval population and not automatically all hatchery-origin animals.</td>
+</tr>
+<tr>
+<td>Larval releases - S1 p.12 inset</td>
+<td>1996-2018</td>
+<td>1996: about 7,000</td>
+<td>2014: about 18,000; substantial year-to-year variation.</td>
+<td>2018: about 16,000</td>
+<td>Number released, a programme input. Some later years exceed 15,000; not every year. Do not splice another source's fiscal-year total into this series.</td>
+</tr>
+<tr>
+<td>Confirmed spawning locations - S1 p.13</td>
+<td>1978-2018</td>
+<td>1978: about 1,600</td>
+<td>1979: about 2,400; long low period; 2016: about 55.</td>
+<td>2018: about 15-20</td>
+<td>Reported egg-laying location counts, not adult pairs or total eggs. Large early values, collapse, then small recent recovery. 1978-1979 is not a pre-1966 baseline.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Enclosed graph images: <a href="sources/graph-page-11.jpg">page 11</a>, <a href="sources/graph-page-12.jpg">page 12</a>, <a href="sources/graph-page-13.jpg">page 13</a>. Public source index: <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></p>
+<h3>7B. Evidence for the remaining writing</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Claim / use</th>
+<th>Verified evidence</th>
+<th>Source / exact reading location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Life cycle and habitat</td>
+<td>Sand is used for spawning; tidal flats support juveniles for about five years, to around the tenth instar. Movement to deeper water is followed by further growth before adulthood. The presentation gives roughly another five years.</td>
+<td>S1 pp.4,6,14; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Local history</td>
+<td>1928 designation; 1969 designated-ground drying; 1971 additional designation; 1994 former designation revoked. The slide gives 1,841 ha.</td>
+<td>S1 p.7; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Positive outcomes and remaining needs</td>
+<td>By the 2019 presentation: continued annual spawning, different-sized cast shells, captures no longer near zero, and more eelgrass with annual variation. Creating new spawning/nursery grounds inside the existing protected ground is described as difficult.</td>
+<td>S1 p.19; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+</tr>
+<tr>
+<td>Water measures and dates</td>
+<td>The presentation shows purification and sewerage. Its spoken explanation dates a three-month experiment to 2002 and sewerage-related work to 1993; this does not isolate their population effect.</td>
+<td>S1 p.18; S2 adjacent paragraphs containing 2002 and Heisei 5. <a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+</tr>
+<tr>
+<td>National context already in the draft</td>
+<td>The fourth-survey summary gives 51,443 ha present and 3,857 ha lost since 1978. Keep these figures with this source, not S1.</td>
+<td>S6, Results (1); <a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td>
+</tr>
+<tr>
+<td>Capture-range wording</td>
+<td>25-57 refers to 2015-2019 in the reporter's account. It is not the range for 1984-2018 as a whole.</td>
+<td>S3, ordinance/museum paragraph; <a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+</tr>
+<tr>
+<td>Source limitation</td>
+<td>The older city account explicitly cautions that net catches do not give an exact total. Treat this as a methodological limitation, not a statement that tagging was still absent in 2020.</td>
+<td>S5, paragraph containing &quot;exact number unknown&quot;; <a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+</tr>
+<tr>
+<td>Required discrepancy paragraph</td>
+<td>S1 reports 1,841 ha; S5 reports 1,811 ha. Report the difference briefly; no verified explanation of its cause has been established here.</td>
+<td>S1 p.7; S5 opening history; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>What the sources do NOT establish:</strong> a survival percentage obtained by dividing adult catches by releases; the fraction of adults of hatchery origin; the independent causal effect of each intervention; guaranteed extinction prevention; a measured carrying capacity of the remaining flats. Delete numerical/absolute claims of these kinds. A clearly labelled, modest habitat-constraint inference may remain.</p>
+<h2 id="8-form-5-approximately-2-300-word-completion-plan">8. Form 5 approximately 2,300-word completion plan</h2>
+<p>Counting basis: current prose including in-text citations, excluding headings and the References list; hyphenated words usually count as one. Software may vary slightly. The current body is approximately <strong>1,419 words</strong>, or about <strong>1,245 without in-text citations</strong>. The reference list is approximately 152 additional words. Do not try to reach the target by lengthening citations.</p>
+<p>Targets below are a proposed redistribution of the tutor's approximate total, not new per-section school requirements. The old Evaluation is counted under Implications after moving it.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Current words</th>
+<th>Target</th>
+<th>Net change</th>
+<th>Work needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Introduction</td>
+<td>69</td>
+<td>85</td>
+<td>+16</td>
+<td>Keep opening; clarify the specific study purpose.</td>
+</tr>
+<tr>
+<td>Background</td>
+<td>148</td>
+<td>230</td>
+<td>+82</td>
+<td>Move relevant historical context here; clarify life stages.</td>
+</tr>
+<tr>
+<td>RQ and hypothesis</td>
+<td>62</td>
+<td>65</td>
+<td>+3</td>
+<td>Keep the three measures; fix the habitat label.</td>
+</tr>
+<tr>
+<td>Methodology</td>
+<td>97</td>
+<td>180</td>
+<td>+83</td>
+<td>Add extraction method, date scope and indicator definitions.</td>
+</tr>
+<tr>
+<td>Findings</td>
+<td>285</td>
+<td>700</td>
+<td>+415</td>
+<td>Conservation timeline, four series, water measures and outcomes.</td>
+</tr>
+<tr>
+<td>Analysis</td>
+<td>479</td>
+<td>440</td>
+<td>-39</td>
+<td>Delete tag paragraph; locally revise remaining four paragraphs.</td>
+</tr>
+<tr>
+<td>Evaluation - new</td>
+<td>0</td>
+<td>300</td>
+<td>+300</td>
+<td>Three paragraphs evaluating evidence and method.</td>
+</tr>
+<tr>
+<td>Implications - moved text</td>
+<td>154</td>
+<td>150</td>
+<td>-4</td>
+<td>Keep recommendations; remove unsupported certainty.</td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>125</td>
+<td>150</td>
+<td>+25</td>
+<td>Same answer, bounded by what the evidence establishes.</td>
+</tr>
+<tr>
+<td>TOTAL</td>
+<td>1419</td>
+<td>2300</td>
+<td>+881</td>
+<td>Net increase after deletion and redistribution.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Do not force every paragraph to hit an exact number. If a section is already complete and clear, spend time on a missing section rather than padding. The page limit remains controlling. Approximate word budgets below sum to this plan.</p>
+<h2 id="9-shimpei-writing-math-action-matrix">9. Shimpei writing / math action matrix</h2>
+<h3>Work sequence</h3>
+<p>Complete Form 4 Section 1 and the small Form 1 fixes first. Then establish Form 5 Findings, complete the remaining mathematical working, and finish Form 5 Evaluation and local edits. Verified references are already prepared in Section 7; neither parent nor Shimpei searches for them. If blocked for 10-15 minutes, record the exact question and move to the next independent task; do not lose the entire evening.</p>
+<h3>Form 5 paragraph-by-paragraph blueprint</h3>
+<p>The entries below specify content 
