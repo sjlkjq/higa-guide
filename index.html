@@ -11,16 +11,79 @@
 <body>
 <p id="status">Loading HiGA guide...</p>
 <script>
+function taskHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
+function setupChecklist(){
+  const targetSections=new Set([
+    '2-fastest-path-to-submission',
+    '3-form-1-correction-matrix',
+    '4-form-4-section-1-rescue-plan',
+    '5-form-4-section-2-correction-matrix',
+    '6-form-5-correction-matrix',
+    '9-shimpei-writing-math-action-matrix',
+    '10-parent-task-matrix',
+    '11-questions-for-sakai-sensei',
+    '13-final-submission-checklist'
+  ]);
+  const boxes=[];
+  document.querySelectorAll('h2[id]').forEach(h2=>{
+    if(!targetSections.has(h2.id)) return;
+    let node=h2.nextElementSibling;
+    while(node && node.tagName!=='H2'){
+      node.querySelectorAll?.('tbody tr').forEach(row=>{
+        const first=row.querySelector('td:first-child');
+        if(!first || first.querySelector('.task-check')) return;
+        const marker=first.textContent.trim().toUpperCase();
+        if(marker.includes('DO NOT')) return;
+        const rowText=Array.from(row.querySelectorAll('td')).slice(0,2).map(td=>td.textContent.replace(/\s+/g,' ').trim()).join(' | ');
+        if(!rowText) return;
+        const key='higa-task-'+taskHash(rowText.toLowerCase());
+        const cb=document.createElement('input');
+        cb.type='checkbox';
+        cb.className='task-check';
+        cb.setAttribute('aria-label','Mark task complete');
+        cb.dataset.key=key;
+        if(marker.includes('ONLY IF') || marker.includes('ASK IF TIME')) cb.dataset.optional='1';
+        cb.checked=localStorage.getItem(key)==='1';
+        first.prepend(cb);
+        const sync=()=>{row.classList.toggle('task-done',cb.checked);updateProgress()};
+        cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');sync()});
+        sync();
+        boxes.push(cb);
+      });
+      node=node.nextElementSibling;
+    }
+  });
+  const main=document.querySelector('main');
+  if(main && !document.getElementById('task-progress')){
+    const box=document.createElement('div');
+    box.id='task-progress';
+    box.innerHTML='<strong>Checklist progress</strong> <span id="task-progress-count"></span><div class="task-progress-track"><div id="task-progress-fill"></div></div><small>Saved automatically on this browser. Optional tasks are excluded from the percentage.</small>';
+    const h1=main.querySelector('h1');
+    if(h1) h1.insertAdjacentElement('afterend',box); else main.prepend(box);
+  }
+  window._higaTaskBoxes=boxes;
+  updateProgress();
+}
+function updateProgress(){
+  const boxes=(window._higaTaskBoxes||[]).filter(cb=>cb.dataset.optional!=='1');
+  const done=boxes.filter(cb=>cb.checked).length;
+  const total=boxes.length;
+  const pct=total?Math.round(done*100/total):0;
+  const count=document.getElementById('task-progress-count');
+  const fill=document.getElementById('task-progress-fill');
+  if(count) count.textContent=`${done} / ${total} (${pct}%)`;
+  if(fill) fill.style.width=pct+'%';
+}
 (async()=>{
   try{
     const urls=[
-      'v2chunks/01.txt?v=20260910-4',
-      'v2chunks/02.txt?v=20260910-4',
-      'v2chunks/03.txt?v=20260910-4',
-      'v2chunks/04_05.txt?v=20260910-4',
-      'v2chunks/06_07.txt?v=20260910-4',
-      'v2chunks/08_09.txt?v=20260910-4',
-      'v2chunks/10.txt?v=20260910-4'
+      'v2chunks/01.txt?v=20260910-5',
+      'v2chunks/02.txt?v=20260910-5',
+      'v2chunks/03.txt?v=20260910-5',
+      'v2chunks/04_05.txt?v=20260910-5',
+      'v2chunks/06_07.txt?v=20260910-5',
+      'v2chunks/08_09.txt?v=20260910-5',
+      'v2chunks/10.txt?v=20260910-5'
     ];
     const parts=[];
     for(const u of urls){
@@ -32,9 +95,40 @@
     html=html.replace('MERGED PREVIEW — not yet published to GitHub.','MERGED MASTER — Astra structure and Sol detail layer are both retained.');
     html=html.replace('Delete unsupported university-route sentence; fix opening; recount; explain aloud','Modify unsupported university-route wording while keeping Q3 volume; fix opening; recount; explain aloud');
     html=html.replace('unsupported university route removed; student can explain the content','unsupported university-route wording softened; student can explain the content');
+    html=html.replace('4. Form 4 Section 1 rescue plan','4. Form 4 Section 1 final check');
+    html=html.replace('<li>Form 4 Section 1 has formula notes but no worked answer in the shared version. Use the short original task below unless a finished suitable task is immediately available.</li>','<li>Form 4 Section 1 now has suitable existing geometry work. The mathematics is coherent; only the official Formula Booklet compliance check and header correction remain.</li>');
+    html=html.replace(/<tr>\s*<td>Form 4 S1<\/td>[\s\S]*?<\/tr>/,`<tr>
+<td>Form 4 S1</td>
+<td>ALMOST COMPLETE; existing schoolwork reviewed</td>
+<td>Keep Perimeter_Cal; add one Formula 9 Pythagorean check; set header to Geometry / 9</td>
+<td>5-10 min</td>
+<td>5 min</td>
+<td>10 September</td>
+</tr>`);
+    const s1=`<h2 id="4-form-4-section-1-rescue-plan">4. Form 4 Section 1 — reviewed: one mandatory compliance fix</h2>
+<div class="notice"><strong>Decision: KEEP Perimeter_Cal.pdf. Do not create Option A or B.</strong> The submitted page is a coherent geometry solution and reaches the correct perimeter, 42.3 cm. The remaining work is only to satisfy the Form 4 Formula Booklet requirement and correct the Section 1 header.</div>
+<p><strong>Eligibility check:</strong> the PDF itself does not show its date. If this was an assignment/test submitted within the last year, it can be used as prior schoolwork under the official Section 1 instructions.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Task</th><th>What Shimpei does</th><th>Why</th><th>Time</th></tr></thead>
+<tbody>
+<tr><td>REQUIRED — Formula Booklet check</td><td>Keep the existing trigonometry and sine-rule solution. Add one short verification using <strong>Formula 9: Pythagorean Theorem</strong> on right triangle ABD. Use your own calculated AB and AD values and compare AB² + AD² with BD². Show the arithmetic yourself. A very small difference is expected from rounding.</td><td>The current page uses sine, cosine and the sine rule, but those are not among the 17 formulas in the supplied HiGA Formula Booklet. Section 1 must visibly use at least one listed formula.</td><td>2-5 min</td></tr>
+<tr><td>REQUIRED — Section 1 header</td><td>Circle <strong>geometry</strong>. Enter formula number <strong>9</strong>. Remove the quadratic-function formulas and the parabolic-segment area formula from the Section 1 header; those belong to the separate Section 2 work if actually used there.</td><td>The header must match the mathematics actually shown in Section 1.</td><td>1-2 min</td></tr>
+<tr><td>QUICK ORAL CHECK</td><td>Be able to explain why BD = 14 is used, how AB and AD were found, why angle C is 75°, how the sine rule gives BC and CD, why the four sides are added, and what the Pythagorean check confirms.</td><td>Enough for authenticity and understanding; no extra polishing is needed.</td><td>2 min</td></tr>
+</tbody></table></div>
+<p><strong>STOP RULE:</strong> once the two REQUIRED items are done, mark Form 4 Section 1 complete and move immediately to Section 2. Do not rewrite the page, improve presentation, or create another problem.</p>
+`;
+    html=html.replace(/<h2 id="4-form-4-section-1-rescue-plan">[\s\S]*?(?=<h2 id="5-form-4-section-2-correction-matrix">)/,s1);
+    html=html.replace('Complete Form 4 Section 1 and the small Form 1 fixes first.','Finish the 5-10 minute Form 4 Section 1 compliance fix and the small Form 1 fixes first.');
+    html=html.replace('Please check the new Section1 worked problem and the corrected Form5 Findings/Evaluation.','Please check the existing Section 1 schoolwork with the added Formula 9 verification and the corrected Form5 Findings/Evaluation.');
+    html=html.replace(/<tr>\s*<td>Form4 S1<\/td>\s*<td>Problem, independent working, answer, check and formula numbers are present; no answer copied from this pack or AI; student can explain every step.<\/td>\s*<\/tr>/,`<tr>
+<td>Form4 S1</td>
+<td>Existing perimeter work is attached or pasted; the Formula 9 Pythagorean verification is shown; the header says geometry and formula 9; student can explain every step.</td>
+</tr>`);
+    html=html.replace('</head>','<style>#task-progress{position:sticky;top:0;z-index:20;background:#fff;border:1px solid #c7d4df;padding:12px 14px;margin:12px 0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}#task-progress small{display:block;margin-top:5px;color:#4c5b66}.task-progress-track{height:8px;background:#e1e7eb;border-radius:6px;margin-top:7px;overflow:hidden}#task-progress-fill{height:100%;width:0;background:#233c51;transition:width .15s}.task-check{width:18px;height:18px;margin:1px 9px 0 0;vertical-align:top;cursor:pointer}.task-done td{opacity:.58}.task-done td:first-child{text-decoration:line-through}</style></head>');
     document.open();
     document.write(html);
     document.close();
+    setupChecklist();
   }catch(e){
     document.getElementById('status').textContent='Load failed: '+e.message;
   }
