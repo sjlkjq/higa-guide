@@ -13,15 +13,27 @@
 <script>
 (async()=>{
   try{
-    const urls=Array.from({length:8},(_,i)=>`chunks/${String(i+1).padStart(2,'0')}.txt?v=20260910-3`);
+    const urls=[
+      'v2chunks/01.txt?v=20260910-4',
+      'v2chunks/02.txt?v=20260910-4',
+      'v2chunks/03.txt?v=20260910-4',
+      'v2chunks/04_05.txt?v=20260910-4',
+      'v2chunks/06_07.txt?v=20260910-4',
+      'v2chunks/08_09.txt?v=20260910-4',
+      'v2chunks/10.txt?v=20260910-4'
+    ];
     const parts=[];
     for(const u of urls){
       const r=await fetch(u,{cache:'no-store'});
       if(!r.ok) throw new Error(`${u}: HTTP ${r.status}`);
       parts.push(await r.text());
     }
+    let html=parts.join('');
+    html=html.replace('MERGED PREVIEW — not yet published to GitHub.','MERGED MASTER — Astra structure and Sol detail layer are both retained.');
+    html=html.replace('Delete unsupported university-route sentence; fix opening; recount; explain aloud','Modify unsupported university-route wording while keeping Q3 volume; fix opening; recount; explain aloud');
+    html=html.replace('unsupported university route removed; student can explain the content','unsupported university-route wording softened; student can explain the content');
     document.open();
-    document.write(parts.join(''));
+    document.write(html);
     document.close();
   }catch(e){
     document.getElementById('status').textContent='Load failed: '+e.message;
