@@ -1,0 +1,322 @@
+<td>S5, paragraph containing &quot;exact number unknown&quot;; <a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+</tr>
+<tr>
+<td>Required discrepancy paragraph</td>
+<td>S1 reports 1,841 ha; S5 reports 1,811 ha. Report the difference briefly; no verified explanation of its cause has been established here.</td>
+<td>S1 p.7; S5 opening history; <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>What the sources do NOT establish:</strong> a survival percentage obtained by dividing adult catches by releases; the fraction of adults of hatchery origin; the independent causal effect of each intervention; guaranteed extinction prevention; a measured carrying capacity of the remaining flats. Delete numerical/absolute claims of these kinds. A clearly labelled, modest habitat-constraint inference may remain.</p>
+<h2 id="8-form-5-approximately-2-300-word-completion-plan">8. Form 5 approximately 2,300-word completion plan</h2>
+<p>Counting basis: current prose including in-text citations, excluding headings and the References list; hyphenated words usually count as one. Software may vary slightly. The current body is approximately <strong>1,419 words</strong>, or about <strong>1,245 without in-text citations</strong>. The reference list is approximately 152 additional words. Do not try to reach the target by lengthening citations.</p>
+<p>Targets below are a proposed redistribution of the tutor's approximate total, not new per-section school requirements. The old Evaluation is counted under Implications after moving it.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Current words</th>
+<th>Target</th>
+<th>Net change</th>
+<th>Work needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Introduction</td>
+<td>69</td>
+<td>85</td>
+<td>+16</td>
+<td>Keep opening; clarify the specific study purpose.</td>
+</tr>
+<tr>
+<td>Background</td>
+<td>148</td>
+<td>230</td>
+<td>+82</td>
+<td>Move relevant historical context here; clarify life stages.</td>
+</tr>
+<tr>
+<td>RQ and hypothesis</td>
+<td>62</td>
+<td>65</td>
+<td>+3</td>
+<td>Keep the three measures; fix the habitat label.</td>
+</tr>
+<tr>
+<td>Methodology</td>
+<td>97</td>
+<td>180</td>
+<td>+83</td>
+<td>Add extraction method, date scope and indicator definitions.</td>
+</tr>
+<tr>
+<td>Findings</td>
+<td>285</td>
+<td>700</td>
+<td>+415</td>
+<td>Conservation timeline, four series, water measures and outcomes.</td>
+</tr>
+<tr>
+<td>Analysis</td>
+<td>479</td>
+<td>440</td>
+<td>-39</td>
+<td>Delete tag paragraph; locally revise remaining four paragraphs.</td>
+</tr>
+<tr>
+<td>Evaluation - new</td>
+<td>0</td>
+<td>300</td>
+<td>+300</td>
+<td>Three paragraphs evaluating evidence and method.</td>
+</tr>
+<tr>
+<td>Implications - moved text</td>
+<td>154</td>
+<td>150</td>
+<td>-4</td>
+<td>Keep recommendations; remove unsupported certainty.</td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>125</td>
+<td>150</td>
+<td>+25</td>
+<td>Same answer, bounded by what the evidence establishes.</td>
+</tr>
+<tr>
+<td>TOTAL</td>
+<td>1419</td>
+<td>2300</td>
+<td>+881</td>
+<td>Net increase after deletion and redistribution.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Do not force every paragraph to hit an exact number. If a section is already complete and clear, spend time on a missing section rather than padding. The page limit remains controlling. Approximate word budgets below sum to this plan.</p>
+<h2 id="9-shimpei-writing-math-action-matrix">9. Shimpei writing / math action matrix</h2>
+<h3>Work sequence</h3>
+<p>Complete Form 4 Section 1 and the small Form 1 fixes first. Then establish Form 5 Findings, complete the remaining mathematical working, and finish Form 5 Evaluation and local edits. <strong>References and evidence are already prepared by AI; neither Shimpei nor the parent should spend time searching for them.</strong> Shimpei only opens the specified source section needed for the paragraph he is writing. If blocked for 10-15 minutes, record the exact question and move to the next independent task; do not lose the entire evening.</p>
+<h3>Form 5 paragraph-by-paragraph blueprint</h3>
+<p>The entries below specify content and questions, not completed paragraphs. Use the supplied evidence notes, open only the marked source portion, then write in your own words.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Paragraph</th>
+<th>Action / word budget</th>
+<th>Evidence and exact reading</th>
+<th>Your thinking task</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Background B1</td>
+<td>Keep and clarify life cycle. About 90 words.</td>
+<td>S1 pp.4,6: spawning, five-year tidal-flat phase and later maturity. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Explain the stages simply, without equating five years with five instars.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Background B2</td>
+<td>Keep the connected-habitat explanation. About 70 words.</td>
+<td>S1 p.14: beach, tidal flat, clean sea. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Explain why one species needs more than one habitat; do not assert measured survival losses.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Background B3</td>
+<td>Move concise local/national context from current Findings. About 70 words.</td>
+<td>S1 p.7 and S6 results. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.biodic.go.jp/kiso/34/34_higat.html">https://www.biodic.go.jp/kiso/34/34_higat.html</a></td>
+<td>Choose only context that helps the question. Avoid repeating the full chronology.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Findings F1</td>
+<td>Edit the conservation timeline. About 150 words; a compact table can replace some prose.</td>
+<td>S5: 1975 centre / 1990 museum; S4: 2003 ordinance; S1 p.12: release records start 1996. <a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a><br><a href="https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html">https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html</a><br><a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Report actions and dates neutrally. Do not infer programme start from museum opening.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F2</td>
+<td>NEW: releases. About 100 words.</td>
+<td>S1 p.12 inset: 1996 about 7,000; 2014 about18,000; 2018 about16,000. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Describe years, selected values, variability and what the count represents. No success/failure judgment.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F3</td>
+<td>NEW: spawning locations. About 100 words.</td>
+<td>S1 p.13: 1978 about1,600; 1979 about2,400; 2016 about55; 2018 about15-20. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Describe decline and modest later return. Do not call these separate beaches or adult pairs.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F4</td>
+<td>NEW: confirmed larvae. About 100 words.</td>
+<td>S1 p.12 main: 1971 about80; 2003 about450; 2016 about540; 2018 about370. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Separate confirmed larvae from released larvae; note long low period and later increase.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F5</td>
+<td>NEW: adult captures. About 100 words.</td>
+<td>S1 p.11: early high, 2003-10 low, 2012 rebound, 2018 about25. Use S3 only for the separate 2015-19 range. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.gef.or.jp/globalnet202009/globalnet202009-7/">https://www.gef.or.jp/globalnet202009/globalnet202009-7/</a></td>
+<td>Describe the actual fluctuating series, not a flat line. Explain the variable in one sentence.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F6</td>
+<td>NEW: reported outcomes. About 90 words.</td>
+<td>S1 p.19, blue Current Status box. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Report the four positive observations as the museum's 2019 account, not your own measurements.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Findings F7</td>
+<td>NEW: water measures. About 60 words.</td>
+<td>S2: 1993 sewerage / 2002 three-month experiment. <a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+<td>Separate the intervention dates from claims about biological effects.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Analysis A1 - current first paragraph</td>
+<td>EDIT: intervention sequence. About 110 words.</td>
+<td>Completed Findings; S1 pp.11-13 and S2 dates. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.env.go.jp/council/09water/16_2.html">https://www.env.go.jp/council/09water/16_2.html</a></td>
+<td>What changes followed the actions? What cannot be attributed to one action? Do not treat the 2003 observation as a proven immediate ordinance effect.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Analysis A2 - current second paragraph</td>
+<td>EDIT: programme input versus observed outcome. About 110 words.</td>
+<td>Completed Findings; S1 pp.4,11-12. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Explain why more releases do not directly tell you how many adults survive. Keep the habitat question; no invented survival rate or expected catch total.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Analysis A3 - current fourth paragraph</td>
+<td>EDIT: test the hypothesis cautiously. About 100 words.</td>
+<td>S1 pp.4,6,11-13. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>State a conditional expectation, compare it with the mixed pattern, and acknowledge maturity delay / observation limits as alternatives. No new modelling.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Analysis A4 - current fifth paragraph</td>
+<td>EDIT: habitat mechanism. About 120 words.</td>
+<td>S1 pp.6,14,19. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Connect the juvenile habitat requirement to the remaining habitat challenge. Explain your proposed limit without claiming a measured carrying capacity.</td>
+<td>10-15 min</td>
+</tr>
+<tr>
+<td>Evaluation E1</td>
+<td>NEW: measurement limitations. About 110 words.</td>
+<td>S5 survey limitation; S1 pp.4,11-13. <a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a><br><a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Explain the consequence for YOUR claims: catches are not a census; cohort delay prevents a simple same-year survival comparison. A reported count trend may also reflect observation effort.</td>
+<td>15-20 min</td>
+</tr>
+<tr>
+<td>Evaluation E2</td>
+<td>NEW: source precision/discrepancy. About 80 words.</td>
+<td>S1 p.7:1,841 ha; S5:1,811 ha. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+<td>State the discrepancy, distinguish the different historical milestones, and explain why exact habitat-loss quantification is limited. Do not invent the reason for the area difference.</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>Evaluation E3</td>
+<td>NEW: scope and next step. About 110 words.</td>
+<td>Your actual method; S1 pp.11-13 gives date coverage. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Explain one-region / historical / no-fieldwork limits and how one feasible follow-up would address a named limitation. Do not claim HiGA guarantees access to a particular research site.</td>
+<td>15-20 min</td>
+</tr>
+<tr>
+<td>Methodology M1</td>
+<td>EDIT: literature design and region. About 60 words.</td>
+<td>Your actual research process and existing reasons.</td>
+<td>Keep your three Kasaoka-selection reasons; do not make up a calendar excuse.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Methodology M2</td>
+<td>ADD to current text: selection and extraction. About 50 words.</td>
+<td>Sources S1-S8 that you actually use; full URLs in section 7.</td>
+<td>State what you extracted (measure, date, indicator, result) and how you distinguished source facts from interpretation.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Methodology M3</td>
+<td>NEW: scope / indicators. About 70 words.</td>
+<td>S1 graph labels; S5 survey limitation. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a><br><a href="https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html">https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html</a></td>
+<td>Define the historical scope and distinguish releases, confirmations, spawning locations and captures. Define what counts as partial success in this study.</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>RQ / hypothesis</td>
+<td>Small edit only. About 65 words.</td>
+<td>S1 pp.6,14 for habitat terminology. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Keep the three interventions and your tentative habitat explanation.</td>
+<td>3-5 min</td>
+</tr>
+<tr>
+<td>Introduction</td>
+<td>Small edit only. About 85 words.</td>
+<td>Your real experience; S7 first abstract sentence for endangered. <a href="https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en">https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en</a></td>
+<td>Connect your interest to the purpose of this specific investigation.</td>
+<td>5-10 min</td>
+</tr>
+<tr>
+<td>Implications - three existing paragraphs</td>
+<td>MOVE and lightly EDIT. About 150 words total.</td>
+<td>Own proposals; S1 p.19 if directly citing the museum's proposed habitat direction. <a href="https://www.env.go.jp/council/09water/16_1.html">https://www.env.go.jp/council/09water/16_1.html</a></td>
+<td>Keep restoration and monitoring proposals; distinguish recommendation from demonstrated result.</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>Conclusion</td>
+<td>EDIT, not rewrite. About150 words.</td>
+<td>Use only evidence already presented in Findings.</td>
+<td>Answer the same RQ: partial improvement, continuing habitat concern, limited ability to establish sustained recovery or intervention-specific causation. No new evidence.</td>
+<td>10 min</td>
+</tr>
+</tbody>
+</table></div>
+<p>The earlier tag paragraph is deleted before this sequence. It has no replacement requirement. Parent can compare the resulting draft against F1-F16 while Shimpei works on the mathematics. These paragraph timings overlap with the Form 5 allowance in section 2.</p>
+<h2 id="10-parent-task-matrix">10. 保護者向け作業マトリクス</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>タイミング</th>
+<th>保護者がやること</th>
+<th>やらなくていいこと</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>今すぐ</td>
+<td>Form 4について、共有Doc以外に本当に最新版があるかだけ一度確認する。なければこのHTMLの現行版を基準に進める。</td>
+<td><strong>Reference探し、Evidence探し、論文検索。</strong> これはAI側の担当。</td>
+</tr>
+<tr>
+<td>心平が作業中</td>
+<td>必要なら進捗だけ確認する。心平が「Sourceが開けない／Evidenceが足りない」と言ったら、そのままChatGPTに投げる。</td>
+<td>自分でGoogle検索して代替Sourceを探すこと。心平に探させること。</td>
+</tr>
+<tr>
+<td>先生のレッスン前</td>
+<td>最新版がGoogle Docに反映されているかを見る。未解決点があれば最大3点に絞る。</td>
+<td>文章の中身を代筆すること、数学を解くこと。</td>
+</tr>
+<tr>
+<td>内容確定後</td>
+<td>A4/page limit、署名欄、必須項目、PDF表示崩れ、ファイル名を確認する。</td>
+<td>Reference内容の再調査。必要ならAIに最終照合させる。</td>
+</tr>
+<tr>
+<td>15–16 September</td>
+<td>OpenApplyの正しい項目へアップロードし、Payment・学校提出書類も別途完了確認する。</td>
+<td>心平に提出事務で時間を使わせること。</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>重要：</strong>Section 7のReference一覧はAI側で既に準備済みです。追加のSourceが必要になった場合も、保護者ではなくChatGPT側で探してURLと読む場所まで指定します。</p>
