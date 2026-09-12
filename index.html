@@ -4,233 +4,85 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
-<meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet">
-<title>HiGA Application Guide</title>
-<style>body{font-family:Arial,sans-serif;padding:30px;color:#17212b}#status{font-size:18px}</style>
+<title>HiGA Application Guide — Current Progress</title>
+<style>
+body{margin:0;background:#f5f7fa;color:#17212b;font-family:Arial,sans-serif;line-height:1.45}main{max-width:1200px;margin:auto;padding:24px 16px 60px}h1{margin-bottom:6px}h2{margin-top:34px}.meta,.count,.small{color:#667085;font-size:14px}.notice{background:#fff3cd;border:1px solid #f0c36d;border-radius:8px;padding:12px;margin:16px 0}.progress,.self-progress{background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:15px;margin:16px 0}.track{height:12px;background:#e4e7ec;border-radius:999px;overflow:hidden;margin-top:8px}.fill,#self-fill{height:100%;background:#667085}.fill{width:51%}#self-fill{width:0}.wrap{overflow-x:auto;background:#fff;border:1px solid #d9dee7;border-radius:10px}table{border-collapse:collapse;width:100%;min-width:900px}th,td{padding:10px 12px;border-bottom:1px solid #e4e7ec;vertical-align:top;text-align:left}th{background:#f8fafc;font-size:13px}.badge{display:inline-block;padding:3px 8px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}.done{background:#f2f4f7;color:#7a7f87}.done td:nth-child(n+3){text-decoration:line-through}.badge.done{background:#e4e7ec;color:#475467}.badge.open{background:#fee4e2;color:#b42318}.new{background:#fff8eb}.badge.new{background:#ffead5;color:#b54708}.reopened{background:#fff1f8}.badge.reopened{background:#fce7f6;color:#9e165f}.pending{background:#f8fafc}.badge.pending{background:#e4e7ec;color:#475467}.check{width:56px;text-align:center}.check input{width:19px;height:19px;cursor:pointer}.check input:disabled{cursor:default}tr.self-checked{background:#f2f4f7!important;color:#7a7f87}tr.self-checked td:nth-child(n+3){text-decoration:line-through;text-decoration-thickness:1.5px}a{color:#175cd3;word-break:break-all}
+</style>
 </head>
-<body>
-<p id="status">Loading HiGA guide...</p>
+<body><main>
+<h1>HiGA Application Guide — Current Progress</h1>
+<p class="meta">Applicant: Shimpei Ozeki · Latest Google Doc revision reviewed: <b>2315</b> · Form 5 latest tab: <b>Tab 20</b> · Form 4 latest tab: <b>Form 4: Draft 0911</b></p>
+<div class="notice"><b>CURRENT GUIDE — published 12 Sep 2026.</b><br>Completed items remain visible in grey with strikethrough. New and reopened issues are separately marked.</div>
+<div class="progress"><b>Tracked correction progress: 21 / 41 completed (51%)</b><div class="track"><div class="fill"></div></div><p class="small">This percentage covers only the correction/check items listed on this page.</p></div>
+<div class="self-progress"><b>Shimpei self-check progress: <span id="self-count">0 / 0 completed</span></b><div class="track"><div id="self-fill"></div></div><p class="small">Checkboxes are saved automatically on this browser. They do not change the document-status labels.</p></div>
+<p class="small"><b>Tracking rule:</b> items are included only when they are an actual current-draft problem, a HiGA/tutor requirement, a clear factual/math/citation error, or an issue with submission impact.</p>
+<div id="app"></div>
+<section><h2>Verified source list</h2><div class="wrap"><table><thead><tr><th>ID</th><th>Source</th><th>Link</th></tr></thead><tbody id="sources"></tbody></table></div></section>
+<p class="small" style="margin-top:24px">Current progress guide for Shimpei Ozeki.</p>
+</main>
 <script>
-function taskHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)}
-function setupChecklist(){
-  const targetSections=new Set([
-    '2-fastest-path-to-submission',
-    '3-form-1-correction-matrix',
-    '4-form-4-section-1-rescue-plan',
-    '5-form-4-section-2-correction-matrix',
-    '6-form-5-correction-matrix',
-    '9-shimpei-writing-math-action-matrix',
-    '10-parent-task-matrix',
-    '11-questions-for-sakai-sensei',
-    '13-final-submission-checklist'
-  ]);
-  const boxes=[];
-  document.querySelectorAll('h2[id]').forEach(h2=>{
-    if(!targetSections.has(h2.id)) return;
-    let node=h2.nextElementSibling;
-    while(node && node.tagName!=='H2'){
-      node.querySelectorAll?.('tbody tr').forEach(row=>{
-        const first=row.querySelector('td:first-child');
-        if(!first || first.querySelector('.task-check')) return;
-        const marker=first.textContent.trim().toUpperCase();
-        if(marker.includes('DO NOT')) return;
-        const rowText=Array.from(row.querySelectorAll('td')).slice(0,2).map(td=>td.textContent.replace(/\s+/g,' ').trim()).join(' | ');
-        if(!rowText) return;
-        const key='higa-task-'+taskHash(rowText.toLowerCase());
-        const cb=document.createElement('input');
-        cb.type='checkbox';
-        cb.className='task-check';
-        cb.setAttribute('aria-label','Mark task complete');
-        cb.dataset.key=key;
-        if(marker.includes('OPTIONAL') || marker.includes('ONLY IF') || marker.includes('ASK IF TIME')) cb.dataset.optional='1';
-        cb.checked=localStorage.getItem(key)==='1';
-        first.prepend(cb);
-        const sync=()=>{row.classList.toggle('task-done',cb.checked);updateProgress()};
-        cb.addEventListener('change',()=>{localStorage.setItem(key,cb.checked?'1':'0');sync()});
-        sync();
-        boxes.push(cb);
-      });
-      node=node.nextElementSibling;
-    }
-  });
-  const main=document.querySelector('main');
-  if(main && !document.getElementById('task-progress')){
-    const box=document.createElement('div');
-    box.id='task-progress';
-    box.innerHTML='<strong>Checklist progress</strong> <span id="task-progress-count"></span><div class="task-progress-track"><div id="task-progress-fill"></div></div><small>Saved automatically on this browser. Optional tasks are excluded from the percentage.</small>';
-    const h1=main.querySelector('h1');
-    if(h1) h1.insertAdjacentElement('afterend',box); else main.prepend(box);
-  }
-  window._higaTaskBoxes=boxes;
-  updateProgress();
-}
-function updateProgress(){
-  const boxes=(window._higaTaskBoxes||[]).filter(cb=>cb.dataset.optional!=='1');
-  const done=boxes.filter(cb=>cb.checked).length;
-  const total=boxes.length;
-  const pct=total?Math.round(done*100/total):0;
-  const count=document.getElementById('task-progress-count');
-  const fill=document.getElementById('task-progress-fill');
-  if(count) count.textContent=`${done} / ${total} (${pct}%)`;
-  if(fill) fill.style.width=pct+'%';
-}
-(async()=>{
-  try{
-    const urls=[
-      'v2chunks/01.txt?v=20260911-1',
-      'v2chunks/02.txt?v=20260911-1',
-      'v2chunks/03.txt?v=20260911-1',
-      'v2chunks/04_05.txt?v=20260911-1',
-      'v2chunks/06_07.txt?v=20260911-1',
-      'v2chunks/08_09.txt?v=20260911-1',
-      'v2chunks/10.txt?v=20260911-1'
-    ];
-    const parts=[];
-    for(const u of urls){
-      const r=await fetch(u,{cache:'no-store'});
-      if(!r.ok) throw new Error(`${u}: HTTP ${r.status}`);
-      parts.push(await r.text());
-    }
-    let html=parts.join('');
-    html=html.replace('MERGED PREVIEW — not yet published to GitHub.','CURRENT GUIDE — verified sources retained; only necessary corrections are treated as required.');
-    html=html.replace('8. Form 5 approximately 2,300-word completion plan','8. Form 5 word-count note');
-    html=html.replace('4. Form 4 Section 1 rescue plan','4. Form 4 Section 1 final check');
-
-    const status=`<h2 id="1-executive-status">1. Executive status</h2>
-<ul>
-<li><strong>Form 1:</strong> nearly complete. No substantive rewrite currently required.</li>
-<li><strong>Form 4 Section 1:</strong> almost complete. Add one Formula 9 Pythagorean verification and finish the header.</li>
-<li><strong>Form 4 Section 2:</strong> almost complete. Formula No.5 is already correct; add the references actually used and perform the final format check.</li>
-<li><strong>Form 5:</strong> the report exists. Remaining work is source/reference repair, missing Findings evidence, the tag-source error, and a short real Evaluation.</li>
-</ul>
-<div class="notice"><strong>Review standard:</strong> do not polish Shimpei's reasoning to an AI-perfect standard. A simple or imperfect student inference can remain. Required corrections are limited to clear factual/source/requirement errors and material missing parts identified by the tutor.</div>
-`;
-    html=html.replace(/<h2 id="1-executive-status">[\s\S]*?(?=<h2 id="2-fastest-path-to-submission">)/,status);
-
-    const path=`<h2 id="2-fastest-path-to-submission">2. Current path to submission</h2>
-<div class="table-wrap"><table><thead><tr><th>Work</th><th>Current status</th><th>Required next step</th></tr></thead><tbody>
-<tr><td>Form 4 S1</td><td>ALMOST COMPLETE</td><td>Add the Formula 9 Pythagorean check; circle geometry; confirm the header.</td></tr>
-<tr><td>Form 4 S2</td><td>ALMOST COMPLETE</td><td>Add the references actually used; final page/header check.</td></tr>
-<tr><td>Form 5</td><td>MAIN REPAIRS REMAIN</td><td>Fix false/reference attribution, add missing Findings evidence, correct the tag error, and add a short Evaluation.</td></tr>
-<tr><td>Form 1</td><td>NEARLY COMPLETE</td><td>Final word-count, signature and layout check.</td></tr>
-<tr><td>Final packaging</td><td>AFTER CONTENT LOCK</td><td>A4/page limits, signatures, PDFs and OpenApply upload check.</td></tr>
-</tbody></table></div>
-`;
-    html=html.replace(/<h2 id="2-fastest-path-to-submission">[\s\S]*?(?=<h2 id="3-form-1-correction-matrix">)/,path);
-
-    const form1=`<h2 id="3-form-1-correction-matrix">3. Form 1 — final check</h2>
-<p>The current 2nd draft already names <strong>Koh Tao</strong>, fixes the opening sentence structure, and uses the revised university/organization wording. No substantive content rewrite is currently required.</p>
-<div class="table-wrap"><table><thead><tr><th>Task</th><th>Action</th></tr></thead><tbody>
-<tr><td>FINAL CHECK</td><td>Recount the three answers, confirm each is at least 100 words and the total is no more than 600, then check signatures and layout.</td></tr>
-</tbody></table></div>
-`;
-    html=html.replace(/<h2 id="3-form-1-correction-matrix">[\s\S]*?(?=<h2 id="4-form-4-section-1-rescue-plan">)/,form1);
-
-    const s1=`<h2 id="4-form-4-section-1-rescue-plan">4. Form 4 Section 1 — final check</h2>
-<p>The existing <strong>Perimeter_Cal.pdf</strong> work is usable and reaches a perimeter of about 42.3 cm.</p>
-<div class="table-wrap"><table><thead><tr><th>Task</th><th>What Shimpei does</th></tr></thead><tbody>
-<tr><td>REQUIRED</td><td>Add one short verification using <strong>Formula 9: Pythagorean Theorem</strong> on triangle ABD. Use the AB and AD values already calculated and compare AB² + AD² with BD² = 14².</td></tr>
-<tr><td>REQUIRED</td><td>Circle <strong>geometry</strong> and keep Formula No. <strong>9</strong> in the Section 1 header.</td></tr>
-</tbody></table></div>
-<p>Parent check: confirm this prior schoolwork was completed within the last year.</p>
-`;
-    html=html.replace(/<h2 id="4-form-4-section-1-rescue-plan">[\s\S]*?(?=<h2 id="5-form-4-section-2-correction-matrix">)/,s1);
-
-    const s2=`<h2 id="5-form-4-section-2-correction-matrix">5. Form 4 Section 2 — final check</h2>
-<p><strong>Current status: ALMOST COMPLETE.</strong> Formula No.5 is already correct. The current assumptions, quadratic model, calculations, checks and Strengths &amp; Weaknesses are already present.</p>
-<div class="table-wrap"><table><thead><tr><th>Task</th><th>Action</th></tr></thead><tbody>
-<tr><td>REQUIRED — references</td><td>Add the sources actually used in the report. For the parabolic-segment area formula use <strong>Weisstein, E. W., “Parabolic Segment,” MathWorld</strong>: <a href="https://mathworld.wolfram.com/ParabolicSegment.html">https://mathworld.wolfram.com/ParabolicSegment.html</a>. For the horseshoe-crab habitat background use the Kasaoka Horseshoe Crab Museum material: <a href="https://www.env.go.jp/content/900514253.pdf">https://www.env.go.jp/content/900514253.pdf</a>.</td></tr>
-<tr><td>FINAL CHECK</td><td>Confirm the report stays within the Form 4 Section 2 page limit and that the header/references remain visible in the final PDF.</td></tr>
-</tbody></table></div>
-<div class="notice">The report may keep Shimpei's own design expectations and interpretations. Do not remove or weaken them merely because a source does not state the same conclusion.</div>
-`;
-    html=html.replace(/<h2 id="5-form-4-section-2-correction-matrix">[\s\S]*?(?=<h2 id="6-form-5-correction-matrix">)/,s2);
-
-    const form5=`<h2 id="6-form-5-correction-matrix">6. Form 5 — required corrections only</h2>
-<div class="notice"><strong>Rule:</strong> keep Shimpei's own analysis unless it contains a clear factual error. When a sentence is Shimpei's inference, the usual fix is to correct the citation/attribution, not to delete the inference.</div>
-<div class="table-wrap"><table><thead><tr><th>Location</th><th>Exact required correction</th></tr></thead><tbody>
-<tr><td>References</td><td>Replace the invented/reconstructed entries <code>GEF Reports</code>, <code>Kasaoka City Board of Education Official Portal</code>, <code>Document 2-5: Data series...</code>, <code>Conservation Strategy Papers</code> and <code>Ordinance No.12</code> with the verified source records in Section 7. Delete unused Botton &amp; Loveland.</td></tr>
-<tr><td>Ordinance</td><td>Change <strong>Ordinance No.12 → No.22</strong>. Where the text cites Article 1 for prohibited disturbance, use the correct provision: Article 5. If named clam/mud-shrimp examples are retained, use the Enforcement Rule source in Section 7.</td></tr>
-<tr><td>Analysis — tag paragraph</td><td>Delete the paragraph beginning <code>“Observational data from local fishers shows that roughly half...”</code>. The tags do not identify hatchery origin.</td></tr>
-<tr><td>Analysis — measurement wording</td><td>Where the graph data are called <code>adult survival</code>, change this to <strong>adult capture numbers</strong>. The source measures captures, not survival.</td></tr>
-<tr><td>Analysis — graph description</td><td>Replace <code>“adult captures remained flat through 2012”</code> with wording that reflects the rise to about 28 in 2012. If <code>&gt;15,000/yr</code> is presented as occurring every year, change it to <strong>over 15,000 in some years</strong>.</td></tr>
-<tr><td>Analysis — source attribution</td><td>For sentences such as <code>“This shows that the releases... failed to drive adult recovery (MoE Doc 2-5)”</code>, keep Shimpei's interpretation if he wants it, but remove/reposition the citation so it does not say that MoE itself reached that conclusion. Apply the same rule to <code>“ecological failure”</code> and <code>“physical ceiling”</code> when they are Shimpei's own reasoning.</td></tr>
-<tr><td>Artificial spawning grounds</td><td>Current sentence: <code>“Even where artificial spawning grounds have been constructed, these localized patches fail...”</code> The cited source does not report that constructed grounds failed. Change only this factual part to match the source: creating suitable spawning/nursery habitat in the remaining designated area is difficult.</td></tr>
-<tr><td>Findings — missing evidence</td><td>Add short Findings paragraphs for the four series already extracted in Section 7A: larval releases, spawning-location data, confirmed larvae and adult captures. Also add the museum's reported positive outcomes from S1 p.19.</td></tr>
-<tr><td>Findings — water quality</td><td>Because water-quality improvement is in the RQ, add the verified measures: sewerage-related measures from 1993 and the three-month seawater-purification experiment in 2002.</td></tr>
-<tr><td>Findings — national tidal-flat figure</td><td>Keep <strong>51,443 ha</strong> and <strong>3,857 ha</strong>, but cite S6 rather than Material 2-5.</td></tr>
-<tr><td>Evaluation</td><td>Rename the current policy-recommendation section <strong>Implications</strong>. Add a short new Evaluation covering: (1) capture counts are not a census, (2) the sources report about 1,841 ha and 1,811 ha, without guessing why, and (3) the study is one-region/literature-based with no fieldwork.</td></tr>
-</tbody></table></div>
-<p><strong>No required rewrite:</strong> strong wording in Shimpei's own conclusion or habitat-limit reasoning is not automatically an error. Correct it only if it depends on a false fact or false source attribution.</p>
-`;
-    html=html.replace(/<h2 id="6-form-5-correction-matrix">[\s\S]*?(?=<h2 id="7-form-5-evidence-and-verified-reference-matrix">)/,form5);
-
-    const words=`<h2 id="8-form-5-approximately-2-300-word-completion-plan">8. Form 5 word-count note</h2>
-<p>The tutor's approximately <strong>2,300-word</strong> figure is a target, not a HiGA minimum. Do not expand already adequate sections just to reach it. The official <strong>8-page limit including references</strong> remains the controlling requirement.</p>
-`;
-    html=html.replace(/<h2 id="8-form-5-approximately-2-300-word-completion-plan">[\s\S]*?(?=<h2 id="9-shimpei-writing-math-action-matrix">)/,words);
-
-    const actions=`<h2 id="9-shimpei-writing-math-action-matrix">9. Shimpei — current action list</h2>
-<div class="table-wrap"><table><thead><tr><th>Order</th><th>Action</th></tr></thead><tbody>
-<tr><td>1</td><td>Finish Form 4 Section 1: Formula 9 Pythagorean check + geometry header.</td></tr>
-<tr><td>2</td><td>Finish Form 4 Section 2: add the two relevant references and perform the final page/header check.</td></tr>
-<tr><td>3</td><td>Form 5: fix the specific factual/reference errors in Section 6, then add the missing Findings evidence and short Evaluation.</td></tr>
-</tbody></table></div>
-<p>Use Section 7 for sources and exact reading locations. Reference searching is handled by AI; Shimpei writes his own final text.</p>
-`;
-    html=html.replace(/<h2 id="9-shimpei-writing-math-action-matrix">[\s\S]*?(?=<h2 id="10-parent-task-matrix">)/,actions);
-
-    const parent=`<h2 id="10-parent-task-matrix">10. 保護者向け作業</h2>
-<div class="table-wrap"><table><thead><tr><th>タイミング</th><th>保護者がやること</th></tr></thead><tbody>
-<tr><td>作業中</td><td>進捗確認のみ。Source不足やURL不備はChatGPTに確認させる。</td></tr>
-<tr><td>内容確定後</td><td>A4、page limit、署名、必須欄、PDF表示、ファイル名を確認する。</td></tr>
-<tr><td>提出時</td><td>OpenApplyの正しい項目、学校提出書類、Paymentを最終確認する。</td></tr>
-</tbody></table></div>
-<p>保護者・心平がReferenceを広く検索する必要はありません。</p>
-`;
-    html=html.replace(/<h2 id="10-parent-task-matrix">[\s\S]*?(?=<h2 id="11-questions-for-sakai-sensei">)/,parent);
-
-    const tutor=`<h2 id="11-questions-for-sakai-sensei">11. Sakai-sensei review</h2>
-<div class="table-wrap"><table><thead><tr><th>Action</th><th>Question</th></tr></thead><tbody>
-<tr><td>REVIEW</td><td>Please review the latest Form 4 and Form 5 and identify only any remaining submission blocker or clear factual/source error.</td></tr>
-</tbody></table></div>
-<p>No need to ask for extra depth comparisons, new topics, or additional polishing unless Sakai-sensei identifies a specific problem.</p>
-`;
-    html=html.replace(/<h2 id="11-questions-for-sakai-sensei">[\s\S]*?(?=<h2 id="12-do-not-waste-time-list">)/,tutor);
-
-    const waste=`<h2 id="12-do-not-waste-time-list">12. Do not waste time</h2>
-<ul>
-<li>Do not rewrite acceptable English or student reasoning just to make it more sophisticated.</li>
-<li>Do not pad Form 5 to reach approximately 2,300 words.</li>
-<li>Do not start a new Form 4 problem, optimisation project or conservation topic.</li>
-<li>Do not search broadly for references already verified in Section 7.</li>
-<li>Do not reopen completed corrections unless a clear error or tutor-identified blocker appears.</li>
-</ul>
-`;
-    html=html.replace(/<h2 id="12-do-not-waste-time-list">[\s\S]*?(?=<h2 id="13-final-submission-checklist">)/,waste);
-
-    const finalCheck=`<h2 id="13-final-submission-checklist">13. Final submission checklist</h2>
-<div class="table-wrap"><table><thead><tr><th>Task</th><th>Ready when</th></tr></thead><tbody>
-<tr><td>Form 1</td><td>Official word limits, signatures and layout are correct.</td></tr>
-<tr><td>Form 4 S1</td><td>Existing work + Formula 9 verification + geometry header are present.</td></tr>
-<tr><td>Form 4 S2</td><td>Current report and references are present, Formula No.5/header are correct, and the page limit is met.</td></tr>
-<tr><td>Form 5</td><td>References are real/correct; clear factual/source errors are fixed; missing Findings and a real Evaluation are present; the tag-origin error is removed; page limit is met.</td></tr>
-<tr><td>All documents</td><td>Official forms, required fields/signatures, attachments and final PDFs are checked visually.</td></tr>
-<tr><td>Application</td><td>Correct OpenApply fields, school submissions and payment are confirmed separately.</td></tr>
-</tbody></table></div>
-<p><strong>Stop rule:</strong> once the required factual, source, requirement and completeness issues are fixed, stop revising unless a demonstrable error or tutor-identified blocker appears.</p>
-`;
-    html=html.replace(/<h2 id="13-final-submission-checklist">[\s\S]*?(?=<\/main>)/,finalCheck);
-
-    html=html.replace('</head>','<style>#task-progress{position:sticky;top:0;z-index:20;background:#fff;border:1px solid #c7d4df;padding:12px 14px;margin:12px 0 22px;box-shadow:0 2px 7px rgba(0,0,0,.06)}#task-progress small{display:block;margin-top:5px;color:#4c5b66}.task-progress-track{height:8px;background:#e1e7eb;border-radius:6px;margin-top:7px;overflow:hidden}#task-progress-fill{height:100%;width:0;background:#233c51;transition:width .15s}.task-check{width:18px;height:18px;margin:1px 9px 0 0;vertical-align:top;cursor:pointer}.task-done td{opacity:.58}.task-done td:first-child{text-decoration:line-through}</style></head>');
-    document.open();
-    document.write(html);
-    document.close();
-    setupChecklist();
-  }catch(e){
-    document.getElementById('status').textContent='Load failed: '+e.message;
-  }
-})();
-</script>
-</body>
-</html>
+const done={
+'Form 1':[
+['Personal motivation added','Koh Tao experience is now included in the opening.'],
+['HiGA wording corrected','The revised wording about university/organization learning opportunities is in the draft.'],
+['Marine-science direction aligned','Form 1 and Form 5 now use the same marine-science motivation.']],
+'Form 4':[
+['Formula number in Section 2','Formula No. 5 is already entered.'],
+['Research Question units','The 0.5 m depth is now written with units.'],
+['Topic wording','The unsupported horseshoe-crab shallow-pool claim was removed.'],
+['Conclusion equation','The equation is now y = 0.5x² − x.'],
+['Conclusion punctuation','The stray quotation mark after h = b/4 has been removed.'],
+['Conclusion grammar','“for a 2m width, it is...” has been corrected.'],
+['45° model limitation','Evaluation now states that the slope is a design assumption and proposes a scale-model test.']],
+'Form 5':[
+['Long-term Findings data','Larval releases, spawning locations, confirmed larvae and adult captures are now included.'],
+['Positive outcome evidence','The museum’s positive signs are now included in Findings.'],
+['Water-quality measures','1993 sewerage-related measures and the 2002 purification experiment are included.'],
+['National tidal-flat data','51,443 ha remaining / 3,857 ha lost is cited to S6.'],
+['Ordinance details','Ordinance No. 22, Article 5 and Enforcement Rule Article 2(1) are now used.'],
+['Tag interpretation','The incorrect assumption that tags prove hatchery origin is no longer used.'],
+['S7 used in Analysis','S7 is now used for released-juvenile evidence.'],
+['Spawning-site collapse analysis','The 1,600 → 15–20 comparison has been added to Analysis.'],
+['Implications section','Implications has been added as a separate section.'],
+['Conclusion trend wording','The conclusion now says releases were large in some years and adult captures fluctuated without sustained recovery.'],
+['Adult-data limitation','Evaluation now explains that net catches are not a standardized census.']]};
+const open={
+'Form 1':[
+['OPEN','Opening sentence','Current: “That’s why in the future, I would like to pursue a career...”','Tutor instruction','Fix: “I therefore hope to build a career...”'],
+['OPEN','Dash spacing','Current: “marine life -such as the tri-spine horseshoe crab-”','Tutor instruction','Fix the spacing around the dash phrase.'],
+['PENDING','Final Form 1 check','Current draft is substantively complete.','HiGA requirement','Recount each answer (≥100 words), confirm total ≤600 words, then check signatures and final layout.']],
+'Form 4':[
+['OPEN','Mathematical Working','Current: “The pool with have a length of 3.0m”','Grammar error','Fix: “The pool will have a length of 3.0m”'],
+['OPEN','References','Current: the derivative/angle formula and the MathWorld reference are on the same line.','Formatting problem in the current draft','Put the MathWorld reference on a separate line below the formula.'],
+['OPEN','Evaluation','Current: “The 45 slope was just a design assumption...”','Degree symbol is missing','Fix: “The 45° slope was just a design assumption...”'],
+['PENDING','Section 1 header','Formula No. 9 is present in text extraction.','HiGA requirement','Final visual check: confirm geometry is circled in the submitted PDF.'],
+['PENDING','Section 2 header','Formula No. 5 is present in text extraction.','HiGA requirement','Final visual check: confirm functions is circled in the submitted PDF.']],
+'Form 5':[
+['OPEN','Introduction — pronoun / endangered citation','Current: “...horseshoe crabs have been alive for over 440 million years, it’s now endangered...”','Grammar error + tutor citation instruction','Change “it’s now endangered” to “they are now endangered (S7)”.'],
+['OPEN','Introduction — 440 million years','Current: “over 440 million years”','Tutor citation instruction','Add a reliable source for the age claim.'],
+['OPEN','Background — old citation format','Current: “(S1; Kasaoka City, n.d.)”','Tutor instruction / citation consistency','Change it to “(S1)”.'],
+['OPEN','Background — 1,841 ha citation','Current: the 1,841-hectare sentence ends with “(S1, S3)”.','S1 reports 1,841 ha; S3 reports 1,811 ha','Change “(S1, S3)” to “(S1)”.'],
+['OPEN','Findings — missing S1','Current: “Locally, Kasaoka Bay contained extensive historical tidal flats prior to reclamation starting in 1966.”','Factual statement currently has no source','Add “(S1)” at the end.'],
+['REOPENED','Findings — 1969 / 1,841 ha','Current: “In 1969, designated spawning grounds were established, which were later reduced to 1,841 ha (S1).”','Factually incorrect; this had been corrected in the previous version and reappeared in Tab 20','Replace with: “In 1969, approximately 1,841 ha of sea from the Oehama coast to Konoshima was converted to dry land due to the reclamation project (S1).”'],
+['OPEN','Findings — conservation timeline','The short conservation timeline is still missing.','Tutor instruction','Add the verified timeline: 1928 designation; 1966 reclamation began; 1969 ~1,841 ha converted; 1971 Konoshima Channel added; 1975 Protection Centre; 1990 reclamation completed / museum opened; 1993 sewerage measures; 1994 Oehama designation revoked; 2002 purification trial; 2003 ordinance.'],
+['OPEN','Analysis — maturity period','Current: “horseshoe crabs take 10 to 15 years to mature”','S7 supports more than 10 years; tutor specifically asked to use S7','Fix: “horseshoe crabs take more than 10 years to mature (S7)”'],
+['OPEN','Analysis — releases / adult captures citation','Current: “Although there were over 15,000 larval releases in some years, adult captures still stayed low in recent years (25-57).”','Numerical evidence needs its sources','Add “(S1; S3)” at the end.'],
+['NEW','Analysis — spawning locations citation','Current: “...confirmed spawning locations fell from about 1,600 in 1978 to only 15–20 in 2018.”','New Analysis sentence uses numerical evidence from S1','Add “(S1)” at the end.'],
+['OPEN','Evaluation — 1,841 / 1,811 ha','Current paragraph describes the two figures as the size of the designated protected area and guesses that the difference reflects administrative reporting.','The figures refer to reported reclamation-area sizes; the sources do not establish why they differ','Use: “Additionally, there is a minor discrepancy across sources regarding the size of the Kasaoka Bay reclamation area. S1 reports 1,841 hectares, while S5 reports 1,811 hectares. The available documents do not explain the reason for this 30-hectare difference.”'],
+['NEW','Evaluation — final sentence','Current sentence ends: “...comparing the population of horseshoe crabs in Kasaoka with other regions population as well as habitat”','Sentence is incomplete','Use: “To build a stronger conclusion, future research should include field-based environmental DNA (eDNA) monitoring or compare the horseshoe crab population and habitat conditions in Kasaoka with those in other regions.”']]};
+const sources=[
+['S1','Kasaoka Horseshoe Crab Museum / Ministry of the Environment','https://www.env.go.jp/content/900514253.pdf'],
+['S2','Ministry of the Environment — 16th Seto Inland Sea Subcommittee minutes','https://www.env.go.jp/council/09water/16_2.html'],
+['S3','Yoshida (2020), Global Environmental Forum','https://www.gef.or.jp/globalnet202009/globalnet202009-7/'],
+['S4','Kasaoka City Horseshoe Crab Protection Ordinance No.22','https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000787.html'],
+['S5','Kasaoka City — Current status of designated area','https://www.city.kasaoka.okayama.jp/site/kabutogani/3678.html'],
+['S6','Biodiversity Center of Japan — tidal-flat survey','https://www.biodic.go.jp/kiso/34/34_higat.html'],
+['S7','Watanabe et al. (2020), Japanese Journal of Conservation Ecology','https://www.jstage.jst.go.jp/article/hozen/25/2/25_2003/_article/-char/en'],
+['S8','Kasaoka City — Enforcement Rules','https://www.city.kasaoka.okayama.jp/reiki_int/reiki_honbun/m206RG00000789.html']];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(36)}
+function render(){let html='';for(const form of ['Form 1','Form 4','Form 5']){html+=`<section><h2>${form}</h2><p class="count">${done[form].length} completed · ${open[form].length} remaining/pending</p><div class="wrap"><table><thead><tr><th>Check</th><th>Status</th><th>Location / current state</th><th>Reason</th><th>Correction / next action</th></tr></thead><tbody>`;for(const x of done[form])html+=`<tr class="done"><td class="check"><input type="checkbox" checked disabled></td><td><span class="badge done">DONE</span></td><td><b>${esc(x[0])}</b><div>${esc(x[1])}</div></td><td>Completed in current draft</td><td>No further action</td></tr>`;for(const x of open[form]){const cls=x[0].toLowerCase();html+=`<tr class="${cls}" data-checkable="1"><td class="check"><input type="checkbox" class="self-check"></td><td><span class="badge ${cls}">${esc(x[0])}</span></td><td><b>${esc(x[1])}</b><div>${esc(x[2])}</div></td><td>${esc(x[3])}</td><td>${esc(x[4])}</td></tr>`}html+='</tbody></table></div></section>'}document.getElementById('app').innerHTML=html;document.getElementById('sources').innerHTML=sources.map(x=>`<tr><td><b>${x[0]}</b></td><td>${esc(x[1])}</td><td><a href="${x[2]}">${x[2]}</a></td></tr>`).join('');setupChecks()}
+function setupChecks(){document.querySelectorAll('tr[data-checkable="1"]').forEach(row=>{const cb=row.querySelector('.self-check');const text=[...row.querySelectorAll('td')].slice(2).map(td=>td.textContent.replace(/\s+/g,' ').trim()).join('|');const key='higa-self-'+hash(text.toLowerCase());cb.checked=localStorage.getItem(key)==='1';const sync=()=>{row.classList.toggle('self-checked',cb.checked);localStorage.setItem(key,cb.checked?'1':'0');updateProgress()};cb.addEventListener('change',sync);row.classList.toggle('self-checked',cb.checked)});updateProgress()}
+function updateProgress(){const boxes=[...document.querySelectorAll('.self-check')],n=boxes.filter(x=>x.checked).length,t=boxes.length,p=t?Math.round(n*100/t):0;document.getElementById('self-count').textContent=`${n} / ${t} completed (${p}%)`;document.getElementById('self-fill').style.width=p+'%'}
+render();
+</script></body></html>
