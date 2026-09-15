@@ -45,7 +45,7 @@
     nodes.forEach(n=>{const t=n.nodeValue.trim();if(exact[t]) n.nodeValue=n.nodeValue.replace(t,exact[t]);});
   }
 
-  function adminReady(){const a=$('actorLabel');return !!(a&&/·\s*Admin\s*$/.test(a.textContent));}
+  function adminReady(){const a=$('actorLabel');return !!(a&&/·\s*(?:Admin|保護者 \/ Admin)\s*$/.test(a.textContent));}
 
   function localizeOrientation(){
     const el=$('orientation'); if(!el||el.dataset.adminJa==='1')return;
