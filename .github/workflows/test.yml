@@ -6,6 +6,7 @@ on:
     paths:
       - 'Code.gs'
       - 'index.html'
+      - 'AdminJa.html'
       - 'app.html'
       - 'site/**'
       - 'tests/**'
