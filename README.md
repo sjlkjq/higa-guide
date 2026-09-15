@@ -8,17 +8,6 @@ Source repository for Shimpei's HiGA interview training system.
 - **Google Apps Script Web App:** live UI and controlled writes to the private sheet.
 - **This public GitHub repository:** application shell/source only. The private question bank and progress data are not committed here.
 
-## Deploy / update the live app
-
-1. Open the private spreadsheet **HiGA Interview Training DB - Shimpei**.
-2. Open **拡張機能 -> Apps Script**.
-3. Replace `Code.gs` with the contents of `Code.gs` in this repository.
-4. Replace the Apps Script HTML file named **index** (lowercase) with the contents of `index.html`.
-5. Click **デプロイ -> デプロイを管理 -> 編集（鉛筆） -> バージョン: 新バージョン -> デプロイ**.
-6. **次のユーザーとして実行:** 自分.
-7. **アクセスできるユーザー:** use the broadest option that lets the student and reviewer open the app. App-level tokens still control the role.
-8. The existing Web App URL normally stays the same when the existing deployment is updated.
-
 ## Roles
 
 - **Student:** home practice and progress view.
@@ -32,6 +21,37 @@ URL format:
 - Admin / parent: `<DEPLOYMENT_URL>?role=admin&token=<parent_token>`
 
 Tokens are stored only in the private spreadsheet's `Config` tab. Do not commit them to GitHub.
+
+## Automatic Apps Script deployment
+
+The repository contains:
+
+- `appsscript.json` — Apps Script manifest
+- `.claspignore` — limits what clasp pushes
+- `deploy-apps-script.yml.template` — GitHub Actions workflow template
+
+Once the one-time GitHub Actions setup is completed, updates to `Code.gs`, `index.html` or `appsscript.json` on `main` can be pushed automatically to the existing Apps Script web-app deployment. The existing web-app URL stays the same.
+
+Required GitHub Actions secrets:
+
+- `APPS_SCRIPT_ID` — Apps Script project Script ID
+- `CLASPRC_JSON` — OAuth credentials created by a one-time `clasp login`; treat this as a secret and never commit it
+
+The current production deployment ID is already referenced by the workflow template.
+
+### One-time setup
+
+1. In Apps Script, open **プロジェクトの設定** and copy **スクリプト ID**.
+2. Enable **Google Apps Script API** at the Apps Script user settings page.
+3. On the owner's Windows PC, install Node.js if needed, then run:
+   - `npm install -g @google/clasp`
+   - `clasp login`
+4. Copy the contents of `%USERPROFILE%\.clasprc.json` into the GitHub Actions secret `CLASPRC_JSON`.
+5. Add the copied Script ID as the GitHub Actions secret `APPS_SCRIPT_ID`.
+6. Move/copy `deploy-apps-script.yml.template` to `.github/workflows/deploy-apps-script.yml`.
+7. Run the workflow once with **Actions -> Deploy Apps Script -> Run workflow**.
+
+After that, code updates on `main` deploy automatically.
 
 ## Training flow
 
