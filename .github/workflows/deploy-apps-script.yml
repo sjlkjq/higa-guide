@@ -8,6 +8,9 @@ on:
       - 'index.html'
       - 'appsscript.json'
       - '.claspignore'
+      - 'tests/**'
+      - 'package.json'
+      - '.github/workflows/deploy-apps-script.yml'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +30,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
+
+      - name: Run unit and integration tests
+        run: npm test
 
       - name: Install clasp
         run: npm install -g @google/clasp@latest
