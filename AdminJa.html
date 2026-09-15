@@ -1,0 +1,86 @@
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const exact={
+    'Overview':'概要','Question Bank':'質問一覧','Practice':'練習','Strategy':'面接対策方針','Reviewer Dashboard':'レビュー・模擬面接',
+    'Connecting…':'接続中…','Synced':'同期済み','Preview only':'プレビュー',
+    'Shared progress, feedback and interview readiness.':'進捗・フィードバック・面接準備状況を確認します。',
+    'Choose one item and improve it over repeated attempts.':'質問を1つ選び、繰り返し練習して改善します。',
+    'One question at a time.':'1回につき1問ずつ練習します。',
+    'Why this training works this way.':'この練習方法の目的と考え方です。',
+    'Review home practice and record live interview performance.':'自主練習のレビューと模擬面接の記録を行います。',
+    'Questions':'質問数','Active items':'出題対象','Practised':'練習済み','At least one attempt':'1回以上練習','Awaiting review':'レビュー待ち','Needs reviewer':'レビューが必要','Ready':'準備良好','Reviewed readiness':'レビュー済み','Live delivery':'Live面接','Live sessions only':'模擬面接のみ',
+    'Reasoning readiness':'思考・回答の準備度','No reviewed attempts yet.':'レビュー済みの練習はまだありません。',
+    'Readiness by area':'分野別の準備度','Based on Content, Logic, Specificity and Ownership.':'Content / Logic / Specificity / Ownership の評価に基づきます。',
+    'Highest-risk items':'優先して改善する項目','Recent attempts':'最近の練習','What the system enforces':'このシステムで守る流れ',
+    'One item at a time':'1問ずつ進める','No batch-checking later from memory.':'後からまとめて完了扱いにはしません。',
+    'Thinking before notes':'先に考えてからメモ','Key-point entry stays locked until the timer finishes.':'考える時間が終わるまでKey Pointは入力できません。',
+    'Follow-up evidence':'Follow-upも記録','Each follow-up needs key points from what was actually said.':'Follow-upで実際に話した内容のKey Pointを残します。',
+    'Guided reflection':'振り返り','The system teaches what to notice instead of asking for vague self-analysis.':'曖昧な自己分析ではなく、選択式で具体的に振り返ります。',
+    'Choose one question. Practice is repeated until the answer improves; completion alone does not make it Ready.':'質問を1つ選びます。完了しただけではReadyにはならず、レビューと改善を重ねます。',
+    'Choose one question from the Question Bank.':'質問一覧から1問選んでください。',
+    'Attempt saved ✓':'練習を保存しました ✓','This attempt is waiting for reviewer feedback. It is not automatically marked Ready.':'この練習はレビュー待ちです。保存しただけではReadyにはなりません。',
+    'Back to Question Bank':'質問一覧に戻る','Practice this question again':'この質問をもう一度練習',
+    'Current question':'現在の質問','What counts':'有効な練習の流れ',
+    'Interview strategy':'面接対策方針',
+    'Attempts waiting for review':'レビュー待ちの練習','Home practice is scored on reasoning only. English is not a routine score.':'自主練習では思考内容を評価します。英語力そのものは通常の採点対象にしません。',
+    'Review selected home attempt':'選択した自主練習をレビュー','Choose an attempt to review.':'レビューする練習を選んでください。',
+    'Improvement target 1':'次回の改善点 1','Improvement target 2 (optional)':'次回の改善点 2（任意）','Reviewer note (optional)':'レビューメモ（任意）',
+    'One concrete change for the next attempt':'次回に直す具体的な点','Second target if needed':'必要であれば2つ目の改善点',
+    'Score all four areas and give at least one improvement target.':'4項目を採点し、改善点を最低1つ入力してください。','Save review':'レビューを保存',
+    'Record a live interview session':'模擬面接を記録','Use this during the 30-minute lesson or a parent mock interview. Delivery is scored here because the reviewer can actually observe it.':'先生との面接練習や家庭での模擬面接を記録できます。実際に観察できるため、ここではDeliveryも評価します。',
+    'Question':'質問','What did the student say? (optional key notes)':'本人が話した内容（任意のKey Point）','Delivery note (optional)':'Deliveryメモ（任意）',
+    'Pauses, eye contact, pace, confidence, follow-up handling…':'間、視線、話す速さ、声量、Follow-upへの対応など',
+    'Score Content, Logic, Specificity, Ownership and Delivery.':'Content / Logic / Specificity / Ownership / Delivery を採点してください。','Save live review':'模擬面接を保存',
+    'Nothing waiting for review.':'レビュー待ちはありません。','Main-answer key points':'Main AnswerのKey Point','Follow-up 1 key points':'Follow-up 1のKey Point','Follow-up 2 key points':'Follow-up 2のKey Point','Student reflection':'本人の振り返り','Hardest:':'難しかった点:','Next:':'次回試すこと:',
+    'Ready to save ✓':'保存できます ✓','Score all four areas and write at least one concrete improvement target.':'4項目を採点し、具体的な改善点を最低1つ入力してください。',
+    'Choose a question…':'質問を選択…','Ready to save live review ✓':'模擬面接を保存できます ✓','Choose a question, score all five areas, and write at least one improvement target.':'質問を選び、5項目を採点し、改善点を最低1つ入力してください。',
+    'Not started':'未着手','Not reviewed':'未レビュー','Developing':'改善中','Weak':'要改善','Unreviewed':'未レビュー','Live':'Live','Home':'自主練習',
+    '↑ Improving':'↑ 改善傾向','↓ Declining':'↓ 低下傾向','→ Flat':'→ 横ばい','REVIEW':'レビュー'
+  };
+
+  function replaceExact(root=document){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n=>{const t=n.nodeValue.trim();if(exact[t]) n.nodeValue=n.nodeValue.replace(t,exact[t]);});
+  }
+
+  function adminReady(){const a=$('actorLabel');return !!(a&&/·\s*Admin\s*$/.test(a.textContent));}
+
+  function localizeOrientation(){
+    const el=$('orientation'); if(!el||el.dataset.adminJa==='1')return;
+    el.dataset.adminJa='1';
+    el.innerHTML='<div class="overline">保護者向け</div><h3>この画面の目的</h3><p class="lead">心平の面接練習の進捗、レビュー、改善点を確認するための管理画面です。完成答案を作ることではなく、自分で考え、理由・具体例・根拠を説明し、Follow-upでも思考を続けられる状態を目指します。</p><div class="strategy-grid"><div class="strategy-box"><h4>自主練習</h4><p>心平は1問ずつ、Think → Key Points → Answer Aloud → Follow-up → Reflection の順で練習します。</p></div><div class="strategy-box"><h4>レビュー</h4><p>自主練習は Content / Logic / Specificity / Ownership を1〜5で評価します。英語力そのものは通常の採点対象にしません。</p></div><div class="strategy-box"><h4>改善点</h4><p>次回に直す点を1〜2項目設定します。前回の回答は本人に再表示せず、改善点だけを見せて考え直させます。</p></div><div class="strategy-box"><h4>模擬面接</h4><p>Liveでは上記4項目にDeliveryを加えます。質問を聞く、固まらず考える、話す速さや声量、Follow-upへの対応などを見ます。</p></div></div><div class="hard-rule"><b>保護者側の基本方針:</b> 回答案を作って渡すのではなく、本人が考えた回答に対して「なぜ？」「具体例は？」「他の可能性は？」と掘り下げるために使います。</div>';
+  }
+
+  function localizeStrategy(){
+    const el=$('strategyList'); if(!el||el.dataset.adminJa==='1')return;
+    el.dataset.adminJa='1';
+    el.innerHTML='<div style="padding:13px 0;border-bottom:1px solid #f0f2f5"><b style="font-size:13px">1. まず本人に考えさせる</b><div style="font-size:12px;color:#475467;line-height:1.6;margin-top:4px">AIや模範解答を見る前に、自分の考え・理由・具体例を言葉にすることを優先します。</div></div><div style="padding:13px 0;border-bottom:1px solid #f0f2f5"><b style="font-size:13px">2. Follow-upで思考を確認する</b><div style="font-size:12px;color:#475467;line-height:1.6;margin-top:4px">暗記した回答ではなく、Why / Evidence / Alternative / Personal example まで掘り下げられるかを見ます。</div></div><div style="padding:13px 0;border-bottom:1px solid #f0f2f5"><b style="font-size:13px">3. 分からなくても思考を止めない</b><div style="font-size:12px;color:#475467;line-height:1.6;margin-top:4px">分からないことを認めつつ、分かる範囲から推論する練習をします。</div></div><div style="padding:13px 0"><b style="font-size:13px">4. 完成度より改善傾向を見る</b><div style="font-size:12px;color:#475467;line-height:1.6;margin-top:4px">1回の出来より、同じ弱点が改善しているかを追います。</div></div>';
+  }
+
+  function localizeDynamic(){
+    const meta=$('overallMeta'); if(meta){meta.textContent=meta.textContent.replace(/^(\d+) reviewed question\(s\)$/,'$1問レビュー済み');}
+    document.querySelectorAll('.category-row .status').forEach(el=>{el.textContent=el.textContent.replace(/^(\d+) reviewed$/,'$1問レビュー済み').replace(/^No review$/,'未レビュー');});
+    document.querySelectorAll('.qmeta').forEach(el=>{el.textContent=el.textContent.replace('Main issue:','主な課題:').replace(/(\d+) attempt\(s\)/,'$1回');});
+    document.querySelectorAll('.qstatus,.trend,.badge,.attempt-row span').forEach(el=>{const t=el.textContent.trim();if(exact[t])el.textContent=exact[t];});
+    const cs=$('currentStatus'); if(cs){cs.innerHTML=cs.innerHTML.replace('Status:','状態:').replace('Trend:','傾向:').replace('Focus:','改善点:');}
+    const actor=$('actorLabel'); if(actor&&/·\s*Admin\s*$/.test(actor.textContent))actor.textContent=actor.textContent.replace(/·\s*Admin\s*$/,'· 保護者 / Admin');
+  }
+
+  function apply(){
+    if(!adminReady()) return;
+    document.documentElement.lang='ja';
+    localizeOrientation();
+    localizeStrategy();
+    replaceExact(document.body);
+    localizeDynamic();
+  }
+
+  let queued=false;
+  const observer=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;apply();});});
+  observer.observe(document.documentElement,{subtree:true,childList:true,characterData:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
+  setTimeout(apply,300);setTimeout(apply,1000);
+})();
+</script>
