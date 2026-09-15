@@ -11,13 +11,13 @@ Source repository for Shimpei's HiGA interview training system.
 ## Deploy the live app
 
 1. Open the private spreadsheet **HiGA Interview Training DB - Shimpei**.
-2. Open **Extensions -> Apps Script**.
+2. Open **拡張機能 -> Apps Script**.
 3. Replace `Code.gs` with the contents of `Code.gs` in this repository.
-4. Add an HTML file named **Index** and paste the contents of `index.html`.
-5. Deploy -> **New deployment** -> **Web app**.
-6. Execute as: **Me**.
-7. Who has access: choose the broadest option available that lets both parent and student open the app. Access is still protected by the app tokens stored in the private Config sheet.
-8. Copy the deployment URL.
+4. Add an HTML file named **index** (lowercase) and paste the contents of `index.html`.
+5. **デプロイ -> デプロイを管理 -> 編集 -> 新バージョン -> デプロイ**.
+6. Execute as: **自分**.
+7. Access: choose the broadest option available that lets both parent and student open the app. Access is still protected by the app tokens stored in the private Config sheet.
+8. Copy the Web App URL.
 9. Use:
    - Student: `<DEPLOYMENT_URL>?role=student&token=<student_token>`
    - Parent: `<DEPLOYMENT_URL>?role=parent&token=<parent_token>`
@@ -34,7 +34,7 @@ A valid attempt is created only after the system records:
 4. the required number of follow-up answers;
 5. a short reflection.
 
-The student cannot manually mark a question `Ready`. Parent/coach review determines readiness using Content, Logic, Specificity, English, Delivery and Ownership.
+The student cannot manually mark a question `Ready`. Parent/coach review determines readiness using Content, Logic, Specificity, English, Delivery and Ownership. A question is not `Ready` until it also meets the configured minimum number of reviewed attempts.
 
 ## Privacy
 
