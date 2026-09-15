@@ -151,9 +151,10 @@ function statusFromScores_(p,qid){
   const c=config_();
   const readyThreshold=Number(c.ready_threshold||4);
   const minReadyAttempts=Math.max(1,Number(c.min_ready_attempts||2));
-  const priorReviewed=rows_(SHEETS.ATTEMPTS).filter(r=>String(r.question_id)===String(qid) && Number(r.content||0)>0).length;
-  const reviewedCountAfterSave=priorReviewed+1;
-  if(avg>=readyThreshold && Number(p.ownership)>=readyThreshold && Number(p.logic)>=readyThreshold && reviewedCountAfterSave>=minReadyAttempts)return 'Ready';
+  // saveReview writes the current review scores before calling this function, so the
+  // reviewed count already includes the current attempt. Do not add one again.
+  const reviewedCount=rows_(SHEETS.ATTEMPTS).filter(r=>String(r.question_id)===String(qid) && Number(r.content||0)>0).length;
+  if(avg>=readyThreshold && Number(p.ownership)>=readyThreshold && Number(p.logic)>=readyThreshold && reviewedCount>=minReadyAttempts)return 'Ready';
   if(avg>=2.75)return 'Developing';
   return 'Weak';
 }
