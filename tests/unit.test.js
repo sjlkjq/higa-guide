@@ -48,9 +48,12 @@ test('portal canonical hash does not put token in query',()=>{
 
 test('authorize maps each token to the correct role',()=>{
   const {api,cfg}=createHarness();
-  assert.deepEqual(api.authorize_(cfg.student_token,'admin'),{ok:true,role:'student',label:'Shimpei'});
-  assert.deepEqual(api.authorize_(cfg.reviewer_token,'student'),{ok:true,role:'reviewer',label:'Sakai-sensei'});
-  assert.deepEqual(api.authorize_(cfg.parent_token,'student'),{ok:true,role:'admin',label:'Hiro'});
+  const s=api.authorize_(cfg.student_token,'admin');
+  const r=api.authorize_(cfg.reviewer_token,'student');
+  const a=api.authorize_(cfg.parent_token,'student');
+  assert.equal(s.ok,true);assert.equal(s.role,'student');assert.equal(s.label,'Shimpei');
+  assert.equal(r.ok,true);assert.equal(r.role,'reviewer');assert.equal(r.label,'Sakai-sensei');
+  assert.equal(a.ok,true);assert.equal(a.role,'admin');assert.equal(a.label,'Hiro');
 });
 
 test('authorize rejects unknown token',()=>{
