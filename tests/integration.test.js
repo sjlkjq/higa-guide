@@ -115,7 +115,7 @@ test('live review requires reviewer/admin role and all five scores',()=>{
   const denied=api.saveLiveReview(cfg.student_token,'student',{question_id:'ESS-01',content:4,logic:4,specificity:4,ownership:4,delivery:4,improvement_target_1:'Keep going.'});
   assert.equal(denied.ok,false);
   const incomplete=api.saveLiveReview(cfg.reviewer_token,'reviewer',{question_id:'ESS-01',content:4,logic:4,specificity:4,ownership:4,delivery:0,improvement_target_1:'Keep going.'});
-  assert.equal(incomplete.ok,false);assert.match(incomplete.error,/five/);
+  assert.equal(incomplete.ok,false);assert.match(incomplete.error,/live-interview areas/);
 });
 
 test('valid live review stores Delivery separately and reviewer identity',()=>{
