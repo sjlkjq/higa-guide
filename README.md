@@ -6,6 +6,7 @@ Source repository for Shimpei's HiGA interview training system.
 
 - **Google Sheet (private):** question bank, strategy, state, attempts, event log, acknowledgements.
 - **Google Apps Script Web App:** live UI and controlled writes to the private sheet.
+- **GitHub Pages portal:** clean public-facing wrapper that embeds the Apps Script app so users do not see the Apps Script warning banner.
 - **This public GitHub repository:** application shell/source only. The private question bank and progress data are not committed here.
 
 ## Roles
@@ -14,11 +15,15 @@ Source repository for Shimpei's HiGA interview training system.
 - **Reviewer:** teacher view. Can review home practice and record live interview sessions, but has no system configuration UI.
 - **Admin:** parent view. Same review functions plus administrative ownership of the system.
 
-URL format:
+Preferred clean portal URL format:
 
-- Student: `<DEPLOYMENT_URL>?role=student&token=<student_token>`
-- Reviewer / teacher: `<DEPLOYMENT_URL>?role=reviewer&token=<reviewer_token>`
-- Admin / parent: `<DEPLOYMENT_URL>?role=admin&token=<parent_token>`
+- Student: `https://sjlkjq.github.io/higa-guide/#role=student&token=<student_token>`
+- Reviewer / teacher: `https://sjlkjq.github.io/higa-guide/#role=reviewer&token=<reviewer_token>`
+- Admin / parent: `https://sjlkjq.github.io/higa-guide/#role=admin&token=<parent_token>`
+
+The role/token are placed in the URL fragment (`#...`) so they are not sent to GitHub Pages as part of the HTTP request. The portal reads them in the browser and forwards them only to the Apps Script iframe.
+
+The direct Apps Script `/exec` URLs remain valid as a fallback, but they show Google's standard Apps Script warning banner.
 
 Tokens are stored only in the private spreadsheet's `Config` tab. Do not commit them to GitHub.
 
@@ -28,30 +33,24 @@ The repository contains:
 
 - `appsscript.json` — Apps Script manifest
 - `.claspignore` — limits what clasp pushes
-- `deploy-apps-script.yml.template` — GitHub Actions workflow template
+- `.github/workflows/deploy-apps-script.yml` — active automatic deployment workflow
 
-Once the one-time GitHub Actions setup is completed, updates to `Code.gs`, `index.html` or `appsscript.json` on `main` can be pushed automatically to the existing Apps Script web-app deployment. The existing web-app URL stays the same.
+Updates to `Code.gs`, `index.html` or `appsscript.json` on `main` are pushed automatically to the existing Apps Script web-app deployment. The existing web-app URL stays the same.
 
 Required GitHub Actions secrets:
 
 - `APPS_SCRIPT_ID` — Apps Script project Script ID
 - `CLASPRC_JSON` — OAuth credentials created by a one-time `clasp login`; treat this as a secret and never commit it
 
-The current production deployment ID is already referenced by the workflow template.
+## GitHub Pages portal
 
-### One-time setup
+- Source: `site/index.html`
+- Deployment workflow: `.github/workflows/deploy-pages.yml`
+- Production URL: `https://sjlkjq.github.io/higa-guide/`
 
-1. In Apps Script, open **プロジェクトの設定** and copy **スクリプト ID**.
-2. Enable **Google Apps Script API** at the Apps Script user settings page.
-3. On the owner's Windows PC, install Node.js if needed, then run:
-   - `npm install -g @google/clasp`
-   - `clasp login`
-4. Copy the contents of `%USERPROFILE%\.clasprc.json` into the GitHub Actions secret `CLASPRC_JSON`.
-5. Add the copied Script ID as the GitHub Actions secret `APPS_SCRIPT_ID`.
-6. Move/copy `deploy-apps-script.yml.template` to `.github/workflows/deploy-apps-script.yml`.
-7. Run the workflow once with **Actions -> Deploy Apps Script -> Run workflow**.
+The portal is only a wrapper. The training UI and all Google Sheet access still run inside the existing Apps Script application, so there is no second copy of progress data or business logic.
 
-After that, code updates on `main` deploy automatically.
+The Apps Script `doGet` uses `HtmlService.XFrameOptionsMode.ALLOWALL` so the web app can be embedded. Role/token authorization remains enforced by the Apps Script backend.
 
 ## Training flow
 
