@@ -1,7 +1,28 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements'};
 
 function doGet(e){
-  return HtmlService.createHtmlOutputFromFile('Index')
+  // Apps Script serves HtmlService pages inside a googleusercontent frame. In that
+  // frame, window.location.search is not guaranteed to contain the original Web App
+  // query string. Inject the role/token server-side before the page script runs.
+  const source = HtmlService.createHtmlOutputFromFile('index').getContent();
+  const access = {
+    role: String((e && e.parameter && e.parameter.role) || ''),
+    token: String((e && e.parameter && e.parameter.token) || '')
+  };
+  const accessScript = '<script>' +
+    'window.__HIGA_ACCESS__=' + JSON.stringify(access) + ';' +
+    'try{' +
+      'if(window.__HIGA_ACCESS__.token){' +
+        'localStorage.setItem("higa_token",window.__HIGA_ACCESS__.token);' +
+        'localStorage.setItem("higa_role",window.__HIGA_ACCESS__.role||"student");' +
+      '}' +
+    '}catch(e){}' +
+    '</script>';
+  const html = source.includes('</head>')
+    ? source.replace('</head>', accessScript + '</head>')
+    : accessScript + source;
+
+  return HtmlService.createHtmlOutput(html)
     .setTitle('HiGA Interview Training')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -46,11 +67,13 @@ function completeAttempt(token, requestedRole, payload){
   if(!truthy_(payload.valid_attempt) || !truthy_(payload.answer_done)) return {ok:false,error:'Attempt does not meet completion rules.'};
   const q = findBy_(SHEETS.QUESTIONS,'id',payload.question_id);
   if(!q) return {ok:false,error:'Question not found.'};
-  const minFollow = Number(q.min_followups||2);
+  const minFollow = Math.min(Number(q.min_followups||2), 2);
   const followDone = (truthy_(payload.followup1_done)?1:0)+(truthy_(payload.followup2_done)?1:0);
-  if(followDone < Math.min(minFollow,2)) return {ok:false,error:'Required follow-ups were not completed.'};
-  if(String(payload.key_points||'').trim().split(/\n+/).filter(x=>x.trim().length>3).length < 2) return {ok:false,error:'At least two key points are required.'};
+  if(followDone < minFollow) return {ok:false,error:'Required follow-ups were not completed.'};
+  const minKeyPoints = Number(config_().min_key_points||2);
+  if(String(payload.key_points||'').trim().split(/\n+/).filter(x=>x.trim().length>3).length < minKeyPoints) return {ok:false,error:'At least '+minKeyPoints+' key points are required.'};
   if(Number(payload.think_elapsed_sec||0) < Math.max(5,Number(q.think_seconds||45)-2)) return {ok:false,error:'Required thinking time was not completed.'};
+  if(String(payload.student_reflection||'').trim().length < 15) return {ok:false,error:'A short reflection is required.'};
   appendObject_(SHEETS.ATTEMPTS, payload);
   updateStateAfterAttempt_(payload.question_id,payload);
   return {ok:true};
@@ -68,10 +91,10 @@ function saveReview(token, requestedRole, payload){
     const c=headers.indexOf(k); if(c>=0) sh.getRange(rowIndex+1,c+1).setValue(payload[k]??'');
   });
   const qid=headers.indexOf('question_id')>=0?vals[rowIndex][headers.indexOf('question_id')]:payload.question_id;
-  const status = statusFromScores_(payload);
+  const status = statusFromScores_(payload,qid);
   const cStatus=headers.indexOf('status_after'); if(cStatus>=0)sh.getRange(rowIndex+1,cStatus+1).setValue(status);
   updateStateAfterReview_(qid,payload,status);
-  appendObject_(SHEETS.EVENTS,{timestamp:payload.reviewed_at||new Date().toISOString(),session_id:'parent',device_id:'parent',question_id:qid,event_type:'parent_review_saved',event_value:status,elapsed_sec:'',page:'parent',attempt_id:payload.attempt_id,user_role:'parent',app_version:'1.0.0',note:payload.coach_note||''});
+  appendObject_(SHEETS.EVENTS,{timestamp:payload.reviewed_at||new Date().toISOString(),session_id:'parent',device_id:'parent',question_id:qid,event_type:'parent_review_saved',event_value:status,elapsed_sec:'',page:'parent',attempt_id:payload.attempt_id,user_role:'parent',app_version:'1.0.1',note:payload.coach_note||''});
   return {ok:true,status};
 }
 
@@ -121,4 +144,16 @@ function updateStateAfterReview_(qid,p,status){
   setByHeader_(sh,h,row,'updated_by','parent');
 }
 function setByHeader_(sh,h,row,key,val){ const c=h.indexOf(key); if(c>=0)sh.getRange(row,c+1).setValue(val); }
-function statusFromScores_(p){ const a=['content','logic','specificity','english','delivery','ownership'].map(k=>Number(p[k]||0)); const avg=a.reduce((x,y)=>x+y,0)/a.length; if(avg>=4 && Number(p.ownership)>=4 && Number(p.logic)>=4)return 'Ready'; if(avg>=2.75)return 'Developing'; return 'Weak'; }
+
+function statusFromScores_(p,qid){
+  const a=['content','logic','specificity','english','delivery','ownership'].map(k=>Number(p[k]||0));
+  const avg=a.reduce((x,y)=>x+y,0)/a.length;
+  const c=config_();
+  const readyThreshold=Number(c.ready_threshold||4);
+  const minReadyAttempts=Math.max(1,Number(c.min_ready_attempts||2));
+  const priorReviewed=rows_(SHEETS.ATTEMPTS).filter(r=>String(r.question_id)===String(qid) && Number(r.content||0)>0).length;
+  const reviewedCountAfterSave=priorReviewed+1;
+  if(avg>=readyThreshold && Number(p.ownership)>=readyThreshold && Number(p.logic)>=readyThreshold && reviewedCountAfterSave>=minReadyAttempts)return 'Ready';
+  if(avg>=2.75)return 'Developing';
+  return 'Weak';
+}
