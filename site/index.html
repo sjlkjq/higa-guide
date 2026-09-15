@@ -18,27 +18,44 @@
   <div id="loading"><div class="card"><strong>Loading HiGA Interview Training...</strong></div></div>
   <div id="error"><div class="card"><strong>Invalid access link.</strong><div class="muted" style="margin-top:10px">Open the Student, Reviewer, or Admin link that was shared with you.</div></div></div>
   <iframe id="app" title="HiGA Interview Training" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write"></iframe>
+  <script src="./router.js"></script>
   <script>
     (() => {
       const DEPLOYMENT_URL = 'https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec';
-      const hash = new URLSearchParams(location.hash.replace(/^#/,''));
-      const query = new URLSearchParams(location.search);
-      const role = String(hash.get('role') || query.get('role') || '').toLowerCase();
-      const token = String(hash.get('token') || query.get('token') || '');
-      const validRole = ['student','reviewer','admin'].includes(role);
-      if (!validRole || token.length < 12) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('error').style.display = 'flex';
-        return;
-      }
       const frame = document.getElementById('app');
-      frame.src = DEPLOYMENT_URL + '?role=' + encodeURIComponent(role) + '&token=' + encodeURIComponent(token);
-      frame.addEventListener('load', () => {
-        document.getElementById('loading').style.display = 'none';
-      });
-      if (location.search) {
-        history.replaceState(null,'',location.pathname + '#role=' + encodeURIComponent(role) + '&token=' + encodeURIComponent(token));
+      const loading = document.getElementById('loading');
+      const error = document.getElementById('error');
+      let currentTarget = '';
+
+      function applyRoute(){
+        const access = HigaPortal.parseAccess(location.href);
+        if(!access.valid){
+          currentTarget='';
+          frame.removeAttribute('src');
+          loading.style.display='none';
+          error.style.display='flex';
+          return;
+        }
+
+        error.style.display='none';
+        loading.style.display='flex';
+        const target=HigaPortal.buildAppUrl(DEPLOYMENT_URL,access);
+        if(target!==currentTarget){
+          currentTarget=target;
+          frame.src=target;
+        }else{
+          loading.style.display='none';
+        }
+
+        if(location.search){
+          history.replaceState(null,'',location.pathname+HigaPortal.canonicalHash(access));
+        }
       }
+
+      frame.addEventListener('load',()=>{loading.style.display='none';});
+      window.addEventListener('hashchange',applyRoute);
+      window.addEventListener('popstate',applyRoute);
+      applyRoute();
     })();
   </script>
 </body>
