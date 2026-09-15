@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <title>HiGA Interview Training</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f7f8fa;font-family:Arial,Helvetica,sans-serif}
+    #app{position:fixed;inset:0;width:100%;height:100%;border:0;background:#fff}
+    #loading,#error{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;background:#f7f8fa;color:#202124;z-index:2}
+    #error{display:none}.card{max-width:560px;background:#fff;border:1px solid #dadce0;border-radius:12px;padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.06)}.muted{color:#5f6368;font-size:14px;line-height:1.5;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div id="loading"><div class="card"><strong>Loading HiGA Interview Training...</strong></div></div>
+  <div id="error"><div class="card"><strong>Invalid access link.</strong><div class="muted">Use the Student, Reviewer, or Admin link that was shared with you.</div></div></div>
+  <iframe id="app" title="HiGA Interview Training" referrerpolicy="no-referrer" allow="clipboard-read; clipboard-write"></iframe>
+  <script>
+    (()=>{
+      const DEPLOYMENT_URL='https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec';
+      const VERSION='20260915-2';
+      const query=new URLSearchParams(location.search);
+      const hash=new URLSearchParams(location.hash.replace(/^#/,''));
+      const role=String(query.get('role')||'').toLowerCase();
+      const token=String(hash.get('token')||'');
+      const valid=['student','reviewer','admin'].includes(role)&&token.length>=12;
+      const loading=document.getElementById('loading');
+      const error=document.getElementById('error');
+      const frame=document.getElementById('app');
+      if(!valid){loading.style.display='none';error.style.display='flex';return;}
+      const target=DEPLOYMENT_URL+'?role='+encodeURIComponent(role)+'&token='+encodeURIComponent(token)+'&portal='+VERSION+'&_='+encodeURIComponent(role);
+      frame.addEventListener('load',()=>{loading.style.display='none';});
+      frame.src=target;
+    })();
+  </script>
+</body>
+</html>
