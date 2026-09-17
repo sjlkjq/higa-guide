@@ -29,3 +29,5 @@ jobs:
           node-version: '24'
       - name: Run unit and integration tests
         run: npm test
+
+# Student feedback UI change: keep this workflow in the verification path.
