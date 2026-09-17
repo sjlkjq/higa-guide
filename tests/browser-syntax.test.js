@@ -14,3 +14,5 @@ test('index inline JavaScript parses without syntax errors',()=>{
   const script=inlineScript(html);
   assert.doesNotThrow(()=>new vm.Script(script,{filename:'index-inline.js'}));
 });
+
+// This test guards the loading screen against future browser-side syntax regressions.
