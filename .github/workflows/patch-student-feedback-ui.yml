@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/patch-student-feedback-ui.yml'
+      - 'scripts/patch_student_feedback.py'
 
 permissions:
   contents: write
@@ -12,45 +13,14 @@ jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           ref: main
+
       - name: Patch index.html
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('index.html')
-          s = p.read_text()
+        run: python3 scripts/patch_student_feedback.py
 
-          old = ".previous li{font-size:11px;color:#6a4611;margin:4px 0}.reflection{"
-          new = ".previous li{font-size:11px;color:#6a4611;margin:4px 0}.feedback-card{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;background:#fff}.feedback-card h5{font-size:12px;margin:0 0 7px;line-height:1.45}.feedback-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}.feedback-note{font-size:12px;line-height:1.55;color:#344054}.feedback-target{background:#fff9ec;border:1px solid #f4d7a7;border-radius:9px;padding:9px 10px;margin:6px 0;font-size:11px;line-height:1.45;color:#6a4611}.reflection{"
-          assert old in s, 'CSS anchor not found'
-          s = s.replace(old, new, 1)
-
-          old = "      <div class=\"grid2\"><div class=\"panel\"><h4>Recent attempts</h4><div id=\"recentAttempts\"></div></div><div class=\"panel\"><h4>What the system enforces</h4>"
-          new = "      <div id=\"studentFeedbackPanel\" class=\"panel hidden\" style=\"margin-top:14px\"><h4>Reviewer feedback — what to fix next</h4><div class=\"panel-sub\">Do not chase the score. Read what worked, what needs fixing, then retry the same question.</div><div id=\"studentFeedback\"></div></div>\n      <div class=\"grid2\"><div class=\"panel\"><h4>Recent attempts</h4><div id=\"recentAttempts\"></div></div><div class=\"panel\"><h4>What the system enforces</h4>"
-          assert old in s, 'Overview anchor not found'
-          s = s.replace(old, new, 1)
-
-          old = "$('recentAttempts').innerHTML=ra.length?ra.map(a=>`<div class=\"attempt-row\"><span>${esc(shortDate(a.completed_at||a.started_at))}</span><span>${esc(a.question_id)}</span><span>${Number(a.content||0)>0?avgCore(a).toFixed(1)+'/5':'Unreviewed'}</span><span>${esc(a.review_type==='live'?'Live':a.status_after||'Home')}</span></div>`).join(''):'<div class=\"empty\">No attempts yet.</div>'}"
-          new = "$('recentAttempts').innerHTML=ra.length?ra.map(a=>`<div class=\"attempt-row\"><span>${esc(shortDate(a.completed_at||a.started_at))}</span><span>${esc(a.question_id)}</span><span>${Number(a.content||0)>0?(role==='student'?'Feedback ready':avgCore(a).toFixed(1)+'/5'):'Unreviewed'}</span><span>${esc(a.review_type==='live'?'Live':a.status_after||'Home')}</span></div>`).join(''):'<div class=\"empty\">No attempts yet.</div>';renderStudentFeedback()}"
-          assert old in s, 'Dashboard tail anchor not found'
-          s = s.replace(old, new, 1)
-
-          anchor = "function renderQuestions(){"
-          assert anchor in s, 'renderQuestions anchor not found'
-          fn = r'''function renderStudentFeedback(){const panel=$('studentFeedbackPanel'),box=$('studentFeedback');if(!panel||!box)return;if(role!=='student'){panel.classList.add('hidden');return}const qmap=Object.fromEntries((boot.questions||[]).map(q=>[q.id,q]));const arr=(boot.attempts||[]).filter(a=>Number(a.content||0)>0&&a.review_type!=='live').sort((a,b)=>String(b.reviewed_at||b.completed_at).localeCompare(String(a.reviewed_at||a.completed_at)));panel.classList.remove('hidden');if(!arr.length){box.innerHTML='<div class="empty">No reviewer feedback yet. Once an attempt is reviewed, the specific advice will appear here.</div>';return}box.innerHTML=arr.slice(0,5).map(a=>{const q=qmap[a.question_id],targets=[a.improvement_target_1,a.improvement_target_2].filter(Boolean);return `<div class="feedback-card"><h5>${esc(a.question_id)} — ${esc(q?q.main_question:'')}</h5><div class="feedback-label">Reviewer explanation</div><div class="feedback-note">${esc(a.reviewer_note||'The reviewer left improvement targets below.').replace(/\n/g,'<br>')}</div><div class="feedback-label">What to change next</div>${targets.length?targets.map((t,i)=>`<div class="feedback-target"><b>${i+1}.</b> ${esc(t)}</div>`).join(''):'<div class="helper">No specific improvement target was recorded.</div>'}<div class="btns"><button class="btn primary" data-feedback-q="${esc(a.question_id)}">Practice this question again</button></div></div>`}).join('');document.querySelectorAll('[data-feedback-q]').forEach(b=>b.onclick=()=>startQuestion(b.dataset.feedbackQ))}
-'''
-          s = s.replace(anchor, fn + anchor, 1)
-
-          old = "function renderPreviousFeedback(){const a=latestReviewed(currentQ.id);const box=$('previousFeedback');if(!a){box.classList.add('hidden');box.innerHTML='';return}let items=[a.improvement_target_1,a.improvement_target_2].filter(Boolean);box.classList.remove('hidden');box.innerHTML=`<h4>Your focus this time</h4><div class=\"helper\">Previous reasoning score: ${avgCore(a).toFixed(1)}/5 · ${esc(a.reviewed_by||'Reviewer')}</div>${items.length?`<ul>${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<div class=\"helper\">No specific target was recorded.</div>'}<div class=\"helper\">Your previous key points are intentionally hidden so you have to think again.</div>`}"
-          new = "function renderPreviousFeedback(){const a=latestReviewed(currentQ.id);const box=$('previousFeedback');if(!a){box.classList.add('hidden');box.innerHTML='';return}let items=[a.improvement_target_1,a.improvement_target_2].filter(Boolean);box.classList.remove('hidden');box.innerHTML=`<h4>Feedback from your last reviewed attempt</h4>${a.reviewer_note?`<div class=\"feedback-label\">What the reviewer noticed</div><div class=\"feedback-note\">${esc(a.reviewer_note).replace(/\\n/g,'<br>')}</div>`:''}<div class=\"feedback-label\">What you must change in this attempt</div>${items.length?items.map((x,i)=>`<div class=\"feedback-target\"><b>${i+1}.</b> ${esc(x)}</div>`).join(''):'<div class=\"helper\">No specific target was recorded.</div>'}<div class=\"helper\">Your previous answer is hidden on purpose. Use the advice above, then build a new answer yourself. Reviewer scores are used to track trend; the action points above are what you should work on.</div>`}"
-          assert old in s, 'Previous feedback function anchor not found'
-          s = s.replace(old, new, 1)
-
-          s = s.replace("const APP_VERSION='1.2.0';", "const APP_VERSION='1.3.0';", 1)
-          p.write_text(s)
-          PY
       - name: Commit patch
         run: |
           git config user.name "github-actions[bot]"
