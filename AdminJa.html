@@ -2,6 +2,7 @@
 (function(){
   const $=id=>document.getElementById(id);
   const exact={
+    'Feedback Review':'レビュー復習','Recent reviewer feedback':'最近のレビュー','A quick view of the latest feedback. Use Feedback Review for the full history.':'最新のレビューだけを表示します。過去分は「レビュー復習」で確認できます。','Review previous answers and turn feedback into the next attempt.':'過去の回答と指摘を確認し、次の練習に反映します。','Review the question, what Shimpei recorded after answering, the reviewer comment, and exactly what to change next.':'質問・心平が記録した回答・Reviewerの指摘・次回直す点をまとめて確認します。','Category':'カテゴリ','Search':'検索','Sort':'並び順','All categories':'全カテゴリ','Newest first':'新しい順','Oldest first':'古い順','Open Feedback Review':'レビュー復習を開く','Review':'確認',
     'Overview':'概要','Question Bank':'質問一覧','Practice':'練習','Strategy':'面接対策方針','Reviewer Dashboard':'レビュー・模擬面接',
     'Connecting…':'接続中…','Synced':'同期済み','Preview only':'プレビュー',
     'Shared progress, feedback and interview readiness.':'進捗・フィードバック・面接準備状況を確認します。',
@@ -50,7 +51,7 @@
   function localizeOrientation(){
     const el=$('orientation'); if(!el||el.dataset.adminJa==='1')return;
     el.dataset.adminJa='1';
-    el.innerHTML='<div class="overline">保護者向け</div><h3>この画面の目的</h3><p class="lead">心平の面接練習の進捗、レビュー、改善点を確認するための管理画面です。完成答案を作ることではなく、自分で考え、理由・具体例・根拠を説明し、Follow-upでも思考を続けられる状態を目指します。</p><div class="strategy-grid"><div class="strategy-box"><h4>自主練習</h4><p>心平は1問ずつ、Think → Key Points → Answer Aloud → Follow-up → Reflection の順で練習します。</p></div><div class="strategy-box"><h4>レビュー</h4><p>自主練習は Content / Logic / Specificity / Ownership を1〜5で評価します。英語力そのものは通常の採点対象にしません。</p></div><div class="strategy-box"><h4>改善点</h4><p>次回に直す点を1〜2項目設定します。前回の回答は本人に再表示せず、改善点だけを見せて考え直させます。</p></div><div class="strategy-box"><h4>模擬面接</h4><p>Liveでは上記4項目にDeliveryを加えます。質問を聞く、固まらず考える、話す速さや声量、Follow-upへの対応などを見ます。</p></div></div><div class="hard-rule"><b>保護者側の基本方針:</b> 回答案を作って渡すのではなく、本人が考えた回答に対して「なぜ？」「具体例は？」「他の可能性は？」と掘り下げるために使います。</div>';
+    el.innerHTML='<div class="overline">保護者向け</div><h3>この画面の目的</h3><p class="lead">心平の面接練習の進捗、レビュー、改善点を確認するための管理画面です。完成答案を作ることではなく、自分で考え、理由・具体例・根拠を説明し、Follow-upでも思考を続けられる状態を目指します。</p><div class="strategy-grid"><div class="strategy-box"><h4>自主練習</h4><p>心平は1問ずつ、Think → Key Points → Answer Aloud → Follow-up → Reflection の順で練習します。</p></div><div class="strategy-box"><h4>レビュー</h4><p>自主練習は Content / Logic / Specificity / Ownership を1〜5で評価します。英語力そのものは通常の採点対象にしません。</p></div><div class="strategy-box"><h4>改善点</h4><p>次回に直す点を1〜2項目設定します。過去の回答・指摘は「レビュー復習」でまとめて確認できます。</p></div><div class="strategy-box"><h4>模擬面接</h4><p>Liveでは上記4項目にDeliveryを加えます。質問を聞く、固まらず考える、話す速さや声量、Follow-upへの対応などを見ます。</p></div></div><div class="hard-rule"><b>保護者側の基本方針:</b> 回答案を作って渡すのではなく、本人が考えた回答に対して「なぜ？」「具体例は？」「他の可能性は？」と掘り下げるために使います。</div>';
   }
 
   function localizeStrategy(){
