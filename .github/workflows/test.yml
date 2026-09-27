@@ -3,9 +3,12 @@ name: Test HiGA Interview App
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
     paths:
       - 'Code.gs'
       - 'index.html'
+      - 'MockInterview.html'
       - 'AdminJa.html'
       - 'app.html'
       - 'site/**'
