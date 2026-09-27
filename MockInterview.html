@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Mock Interview</title>
+<style>
+:root{--bg:#0b1020;--panel:#151b2e;--panel2:#1d253b;--text:#f7f8fb;--muted:#aeb7ca;--line:#2e3956;--accent:#7ca7ff;--good:#5bd19a;--warn:#ffc56d;--bad:#ff8585}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}.wrap{max-width:760px;margin:0 auto;padding:24px 18px 42px}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-height:1.55;margin:0}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}.choice{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:18px;padding:22px;text-align:left;cursor:pointer}.choice:hover,.choice:focus{border-color:var(--accent);outline:none}.choice b{display:block;font-size:21px;margin-bottom:5px}.choice span{font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer}.btn.primary{background:var(--accent);border-color:var(--accent);color:#071226}.btn.warn{border-color:#66553b}.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.status{font-size:12px;color:var(--muted)}.status.good{color:var(--good)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:18px}.who{font-weight:800}.counter{font-size:12px;color:var(--muted)}
+.interview{min-height:78vh;display:flex;flex-direction:column}.stage{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:30px 2px}.phase{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}.prompt-state{font-size:16px;color:var(--muted);margin-bottom:14px}.mic{width:98px;height:98px;border-radius:50%;margin:0 auto 22px;background:#202a44;border:1px solid #39476d;display:grid;place-items:center;font-size:38px;position:relative}.mic.live:after{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(124,167,255,.5);animation:pulse 1.5s infinite}@keyframes pulse{0%{transform:scale(.92);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+.live-time{font-size:42px;font-variant-numeric:tabular-nums;font-weight:750;margin-bottom:8px}.transcript{margin:18px auto 0;max-width:600px;min-height:58px;color:#d5dbea;font-size:14px;line-height:1.55}.controls{border-top:1px solid var(--line);padding-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.complete{text-align:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px}.stat b{display:block;font-size:24px}.stat span{font-size:11px;color:var(--muted)}
+.log{margin-top:18px;text-align:left}.log-row{padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.log-row b{display:block;margin-bottom:3px}.log-row span{color:var(--muted)}
+.error{background:#351d28;border-color:#6d3245;color:#ffd9e2}
+@media(max-width:600px){.choice-grid,.stats{grid-template-columns:1fr}.wrap{padding:16px 12px 30px}.card{padding:18px}.live-time{font-size:36px}.stage{padding:22px 0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">Application Interview Training</div>
+
+  <section id="loading" class="card"><h1>Loading…</h1><p>Preparing the approved interview script.</p></section>
+
+  <section id="error" class="card error hidden"><h1>Cannot start</h1><p id="errorText"></p></section>
+
+  <section id="home" class="card hidden">
+    <h1>Mock Interview</h1>
+    <p>Select the applicant. The interview will ask only pre-approved questions stored in the interview database.</p>
+    <div class="choice-grid">
+      <button class="choice" data-profile="shimpei"><b>Shimpei</b><span>HiGA</span></button>
+      <button class="choice" data-profile="shiori"><b>Shiori</b><span>Kaichi Tokorozawa GSC</span></button>
+    </div>
+    <div class="status" id="speechStatus" style="margin-top:18px"></div>
+  </section>
+
+  <section id="ready" class="card hidden">
+    <div class="top"><div><div class="who" id="readyWho"></div><div class="status" id="readyMeta"></div></div><button class="btn" id="backHome">Back</button></div>
+    <h1>Ready?</h1>
+    <p>The interviewer will read one question at a time. Answer aloud as you would in the real interview. Feedback is not shown during the interview.</p>
+    <div class="row" style="margin-top:24px"><button class="btn primary" id="startBtn">Start Interview</button></div>
+  </section>
+
+  <section id="interview" class="card interview hidden">
+    <div class="top"><div class="who" id="interviewWho"></div><div class="counter" id="counter"></div></div>
+    <div class="stage">
+      <div class="phase" id="phase"></div>
+      <div class="prompt-state" id="promptState">Preparing question…</div>
+      <div class="mic" id="mic">🎙</div>
+      <div class="live-time" id="answerClock">00:00</div>
+      <div class="transcript" id="transcript"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="repeatBtn" disabled>I didn't hear it</button>
+      <button class="btn primary" id="doneBtn" disabled>Answer finished</button>
+      <button class="btn warn" id="endBtn">End interview</button>
+    </div>
+  </section>
+
+  <section id="complete" class="card complete hidden">
+    <h1>Interview Complete</h1>
+    <p id="completeWho"></p>
+    <div class="stats">
+      <div class="stat"><b id="statAnswers">0</b><span>answers saved</span></div>
+      <div class="stat"><b id="statLong">0</b><span>long response starts</span></div>
+      <div class="stat"><b id="statEmpty">0</b><span>no transcript</span></div>
+    </div>
+    <div class="log" id="sessionLog"></div>
+    <div class="row" style="justify-content:center;margin-top:22px"><button class="btn primary" id="againBtn">Back to Home</button></div>
+  </section>
+</div>
+<script>
+const ACCESS=window.__HIGA_ACCESS__||{};
+const els={};
+['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
+let boot=null,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='';
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+recognitionSupported=!!SpeechRecognition;
+deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);
+
+function show(id){['loading','error','home','ready','interview','complete'].forEach(x=>els[x].classList.toggle('hidden',x!==id));}
+function fail(msg){els.errorText.textContent=msg;show('error');}
+function gas(name,args=[]){return new Promise((resolve,reject)=>{if(!google||!google.script||!google.script.run)return reject(new Error('Apps Script bridge unavailable.'));let runner=google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error(e&&e.message||String(e))));runner[name](...args);});}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmt(ms){let s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function profileLabel(p){return p==='shimpei'?'Shimpei · HiGA':'Shiori · Kaichi Tokorozawa GSC';}
+function phaseLabel(q){
+  if(q.profile==='shimpei') return q.phase==='math_oral'?'Mathematics oral examination':'Interview';
+  if(q.phase==='gsc_english_oral_interview')return 'English oral interview';
+  if(q.phase==='oral_exam_sample')return 'Oral examination';
+  return 'Japanese oral interview';
+}
+async function init(){
+  try{
+    const r=await gas('mockBootstrap',[ACCESS.token,ACCESS.role||'student']);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Unable to load interview.');
+    boot=r;
+    els.speechStatus.textContent=recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.';
+    els.speechStatus.className='status '+(recognitionSupported?'good':'warn');
+    document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));
+    show('home');
+  }catch(e){fail(e.message);}
+}
+function chooseProfile(p){
+  profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
+  if(!queue.length)return fail('No approved questions are configured for this applicant.');
+  els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=queue.length+' approved prompts';show('ready');
+}
+els.backHome.onclick=()=>show('home');
+els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
+
+async function ensureMic(){
+  if(micStream)return true;
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=1024;src.connect(analyser);
+    return true;
+  }catch(e){return false;}
+}
+function startMeter(){
+  stopMeter();if(!analyser)return;
+  const data=new Uint8Array(analyser.fftSize);
+  meterTimer=setInterval(()=>{
+    analyser.getByteTimeDomainData(data);let sum=0;
+    for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
+    const rms=Math.sqrt(sum/data.length);const now=performance.now();const speaking=rms>0.028;
+    if(speaking){
+      if(!firstSpeechAt)firstSpeechAt=now;
+      lastVoiceAt=now;
+      if(silenceStart){longestSilence=Math.max(longestSilence,now-silenceStart);silenceStart=0;}
+    }else if(firstSpeechAt && !silenceStart && lastVoiceAt && now-lastVoiceAt>650){silenceStart=lastVoiceAt;}
+  },100);
+}
+function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
+function cleanupAudio(){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;
+  try{speechSynthesis.cancel();}catch(e){}
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
+}
+async function startInterview(){
+  els.startBtn.disabled=true;
+  const micOk=await ensureMic();
+  try{
+    sessionId='mock_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);sessionStarted=Date.now();index=0;sessionRows=[];
+    const r=await gas('mockStartSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,profile,started_at:new Date().toISOString(),recognition_supported:recognitionSupported,device_id:deviceId,user_agent:navigator.userAgent}]);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Could not start session.');
+    sessionId=r.session_id||sessionId;els.interviewWho.textContent=profileLabel(profile);show('interview');
+    if(!micOk){els.promptState.textContent='Microphone permission was not granted. You can still listen to the script.';}
+    await nextQuestion();
+  }catch(e){fail(e.message);}finally{els.startBtn.disabled=false;}
+}
+els.startBtn.onclick=startInterview;
+
+async function nextQuestion(){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;
+  if(index>=queue.length)return finishInterview(false);
+  current=queue[index];repeatCount=0;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;answerStartedAt=0;
+  els.counter.textContent=(index+1)+' / '+queue.length;els.phase.textContent=phaseLabel(current);els.transcript.textContent='';els.answerClock.textContent='00:00';els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  await speakCurrent(false);
+}
+function selectVoice(lang){
+  const voices=speechSynthesis.getVoices();const exact=voices.find(v=>v.lang&&v.lang.toLowerCase()===lang.toLowerCase());
+  return exact||voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang.split('-')[0].toLowerCase()))||null;
+}
+function speak(text,lang){
+  return new Promise(resolve=>{
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'en-US';const v=selectVoice(u.lang);if(v)u.voice=v;u.rate=0.95;u.onend=resolve;u.onerror=resolve;speechSynthesis.speak(u);}
+    catch(e){resolve();}
+  });
+}
+async function speakCurrent(isRepeat){
+  stopRecognition();stopMeter();els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  await speak(current.question_text,current.language);
+  if(isRepeat)repeatCount++;
+  questionSpokenAt=performance.now();answerStartedAt=Date.now();els.promptState.textContent='Your answer';els.mic.classList.add('live');els.doneBtn.disabled=false;els.repeatBtn.disabled=false;
+  startClock();startMeter();startRecognition(current.language);
+}
+function startClock(){clearInterval(clockTimer);clockTimer=setInterval(()=>{els.answerClock.textContent=fmt(Date.now()-answerStartedAt);},250);}
+function startRecognition(lang){
+  stopRecognition();if(!recognitionSupported)return;
+  recognitionWanted=true;
+  try{
+    recognizer=new SpeechRecognition();recognizer.lang=lang||'en-US';recognizer.continuous=true;recognizer.interimResults=true;
+    recognizer.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)transcriptFinal+=(transcriptFinal?' ':'')+t.trim();else interim+=t;}transcriptInterim=interim;els.transcript.textContent=(transcriptFinal+' '+transcriptInterim).trim();};
+    recognizer.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')els.transcript.dataset.error=e.error;};
+    recognizer.onend=()=>{if(recognitionWanted&&els.interview&&!els.interview.classList.contains('hidden')){try{recognizer.start();}catch(e){}}};
+    recognizer.start();
+  }catch(e){els.transcript.dataset.error=String(e.message||e);}
+}
+function stopRecognition(){recognitionWanted=false;if(recognizer){try{recognizer.onend=null;recognizer.stop();}catch(e){}recognizer=null;}}
+els.repeatBtn.onclick=()=>speakCurrent(true);
+
+async function saveAndAdvance(){
+  els.doneBtn.disabled=true;els.repeatBtn.disabled=true;stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;els.mic.classList.remove('live');els.promptState.textContent='Saving…';
+  const end=Date.now();const text=(transcriptFinal+' '+transcriptInterim).trim();const latency=firstSpeechAt?Math.round(firstSpeechAt-questionSpokenAt):'';
+  const payload={session_id:sessionId,profile,question_id:current.id,started_at:new Date(answerStartedAt).toISOString(),completed_at:new Date(end).toISOString(),transcript:text,response_latency_ms:latency,answer_duration_ms:end-answerStartedAt,longest_internal_silence_ms:Math.round(longestSilence),speech_detected:!!firstSpeechAt,recognition_supported:recognitionSupported,recognition_error:els.transcript.dataset.error||'',repeat_count:repeatCount,device_id:deviceId,user_agent:navigator.userAgent};
+  try{
+    const r=await gas('mockSaveAnswer',[ACCESS.token,ACCESS.role||'student',payload]);if(!r||!r.ok)throw new Error(r&&r.error||'Save failed');
+    sessionRows.push({q:current,text,latency,duration:end-answerStartedAt,longest:Math.round(longestSilence),speech:!!firstSpeechAt});
+    index++;await nextQuestion();
+  }catch(e){els.promptState.textContent='Could not save: '+e.message;els.promptState.className='prompt-state status bad';els.doneBtn.disabled=false;els.repeatBtn.disabled=false;}
+}
+els.doneBtn.onclick=saveAndAdvance;
+els.endBtn.onclick=()=>{if(confirm('End this mock interview now?'))finishInterview(true);};
+
+async function finishInterview(endedEarly){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;try{speechSynthesis.cancel();}catch(e){}
+  try{await gas('mockFinishSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,completed_at:new Date().toISOString(),elapsed_ms:Date.now()-sessionStarted,notes:endedEarly?'Ended early by applicant':''}]);}catch(e){}
+  renderComplete(endedEarly);show('complete');
+}
+function renderComplete(endedEarly){
+  const longRows=sessionRows.filter(r=>Number(r.latency)>=7000);const empty=sessionRows.filter(r=>!r.text);
+  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'');
+  els.statAnswers.textContent=sessionRows.length;els.statLong.textContent=longRows.length;els.statEmpty.textContent=empty.length;
+  els.sessionLog.innerHTML=sessionRows.map((r,i)=>'<div class="log-row"><b>'+(i+1)+'. '+esc(phaseLabel(r.q))+'</b><span>Response start: '+(r.latency===''?'not detected':(r.latency/1000).toFixed(1)+' s')+' · Answer: '+fmt(r.duration)+' · Longest pause: '+(r.longest/1000).toFixed(1)+' s'+(!r.text?' · No transcript captured':'')+'</span></div>').join('')||'<div class="status">No answers were saved.</div>';
+}
+window.addEventListener('beforeunload',cleanupAudio);
+init();
+</script>
+</body>
+</html>
