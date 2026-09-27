@@ -1,3 +1,4 @@
+const fs=require('node:fs');
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const {createHarness}=require('./helpers');
@@ -89,4 +90,12 @@ test('doGet uses dedicated mock UI only when mode=mock',()=>{
   const mock=api.doGet({parameter:{role:'student',token:'student-token-123456',mode:'mock'}});
   assert.match(normal.html,/__HIGA_ACCESS__/);
   assert.match(mock.html,/__HIGA_ACCESS__/);
+});
+
+
+test('mock runtime does not contain LLM endpoints and live transcript is hidden',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.doesNotMatch(html,/api\.openai\.com|anthropic|gemini|chat\/completions|responses\/v1/i);
+  assert.match(html,/\.transcript\{display:none\}/);
+  assert.match(html,/speak\(current\.question_text,current\.language\)/);
 });
