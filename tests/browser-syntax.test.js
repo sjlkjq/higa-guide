@@ -16,3 +16,10 @@ test('index inline JavaScript parses without syntax errors',()=>{
 });
 
 // This test guards the loading screen against future browser-side syntax regressions.
+
+
+test('MockInterview inline JavaScript parses without syntax errors',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  const script=inlineScript(html);
+  assert.doesNotThrow(()=>new vm.Script(script,{filename:'mock-interview-inline.js'}));
+});
