@@ -1,21 +1,24 @@
-const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements'};
-const APP_VERSION = '1.2.0';
+const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions'};
+const APP_VERSION = '1.3.0';
 
 function doGet(e){
-  const source = HtmlService.createHtmlOutputFromFile('index').getContent();
+  const params=(e && e.parameter)||{};
+  const mode=String(params.mode||'').toLowerCase();
+  const fileName=mode==='mock'?'MockInterview':'index';
+  const source = HtmlService.createHtmlOutputFromFile(fileName).getContent();
   const access = {
-    role: String((e && e.parameter && e.parameter.role) || ''),
-    token: String((e && e.parameter && e.parameter.token) || '')
+    role: String(params.role || ''),
+    token: String(params.token || '')
   };
   const accessScript = '<script>window.__HIGA_ACCESS__=' + JSON.stringify(access) + ';' +
     'try{if(window.__HIGA_ACCESS__.token){localStorage.setItem("higa_token",window.__HIGA_ACCESS__.token);localStorage.setItem("higa_role",window.__HIGA_ACCESS__.role||"student");}}catch(e){}</script>';
   let html = source.includes('</head>') ? source.replace('</head>', accessScript + '</head>') : accessScript + source;
-  if(access.role === 'admin' && html.includes('</body>')){
+  if(mode!=='mock' && access.role === 'admin' && html.includes('</body>')){
     const adminJa = HtmlService.createHtmlOutputFromFile('AdminJa').getContent();
     html = html.replace('</body>', adminJa + '</body>');
   }
   return HtmlService.createHtmlOutput(html)
-    .setTitle('HiGA Interview Training')
+    .setTitle(mode==='mock'?'Mock Interview':'HiGA Interview Training')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -131,6 +134,86 @@ function saveLiveReview(token, requestedRole, payload){
   appendObject_(SHEETS.EVENTS,{timestamp:now,session_id:'live',device_id:'reviewer',question_id:payload.question_id,event_type:'live_review_saved',event_value:status,elapsed_sec:'',page:'reviewer',attempt_id:attemptId,user_role:auth.role,app_version:APP_VERSION,note:payload.improvement_target_1||''});
   return {ok:true,status,attempt_id:attemptId};
 }
+
+
+function mockBootstrap(token, requestedRole){
+  try{
+    const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+    const questions=rows_(SHEETS.MOCKQ)
+      .filter(r=>truthy_(r.active))
+      .map(r=>({
+        id:String(r.id||''), profile:String(r.profile||''), phase:String(r.phase||''),
+        language:String(r.language||'en-US'), kind:String(r.kind||'main'),
+        parent_id:String(r.parent_id||''), order:Number(r.order||0),
+        source_type:String(r.source_type||''), source_ref:String(r.source_ref||''),
+        question_text:String(r.question_text||''), concept:String(r.concept||''),
+        ask_rule:String(r.ask_rule||'always'), notes:String(r.notes||'')
+      }))
+      .sort((a,b)=>a.profile.localeCompare(b.profile)||a.order-b.order);
+    const recent=rows_(SHEETS.MOCKS)
+      .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))
+      .slice(0,20)
+      .map(r=>({session_id:r.session_id,profile:r.profile,started_at:r.started_at,completed_at:r.completed_at,questions_asked:r.questions_asked,followups_asked:r.followups_asked,answers_saved:r.answers_saved}));
+    return {ok:true,role:auth.role,actor_label:auth.label,questions,recent_sessions:recent,app_version:APP_VERSION};
+  }catch(err){return {ok:false,error:String(err.message||err)};}
+}
+
+function mockStartSession(token, requestedRole, payload){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  const profile=String(payload&&payload.profile||'').toLowerCase();
+  if(!['shimpei','shiori'].includes(profile))return {ok:false,error:'Invalid profile.'};
+  const sessionId=String(payload.session_id||('mock_'+new Date().getTime()+'_'+Math.random().toString(36).slice(2,8)));
+  appendObject_(SHEETS.MOCKS,{
+    session_id:sessionId,profile,started_at:payload.started_at||new Date().toISOString(),completed_at:'',
+    elapsed_ms:'',questions_asked:0,followups_asked:0,answers_saved:0,
+    recognition_supported:payload.recognition_supported,device_id:payload.device_id||'',
+    user_agent:payload.user_agent||'',notes:''
+  });
+  return {ok:true,session_id:sessionId};
+}
+
+function mockSaveAnswer(token, requestedRole, payload){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  const session=findBy_(SHEETS.MOCKS,'session_id',payload.session_id);
+  if(!session)return {ok:false,error:'Mock session not found.'};
+  const q=findBy_(SHEETS.MOCKQ,'id',payload.question_id);
+  if(!q || !truthy_(q.active))return {ok:false,error:'Mock question not found.'};
+  if(String(q.profile)!==String(payload.profile))return {ok:false,error:'Question/profile mismatch.'};
+  appendObject_(SHEETS.MOCKA,{
+    session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
+    question_kind:q.kind||'main',language:q.language||'',started_at:payload.started_at||'',
+    completed_at:payload.completed_at||new Date().toISOString(),transcript:payload.transcript||'',
+    response_latency_ms:numberOrBlank_(payload.response_latency_ms),answer_duration_ms:numberOrBlank_(payload.answer_duration_ms),
+    longest_internal_silence_ms:numberOrBlank_(payload.longest_internal_silence_ms),speech_detected:truthy_(payload.speech_detected),
+    recognition_supported:truthy_(payload.recognition_supported),recognition_error:payload.recognition_error||'',
+    repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||''
+  });
+  incrementMockSessionCounters_(payload.session_id,String(q.kind)==='followup');
+  return {ok:true};
+}
+
+function mockFinishSession(token, requestedRole, payload){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  const sh=sheet_(SHEETS.MOCKS),vals=sh.getDataRange().getValues(); if(vals.length<2)return {ok:false,error:'Mock session not found.'};
+  const h=vals[0].map(String),idc=h.indexOf('session_id');
+  const ri=vals.findIndex((r,i)=>i>0&&String(r[idc])===String(payload.session_id));
+  if(ri<1)return {ok:false,error:'Mock session not found.'};
+  const row=ri+1;
+  setByHeader_(sh,h,row,'completed_at',payload.completed_at||new Date().toISOString());
+  setByHeader_(sh,h,row,'elapsed_ms',numberOrBlank_(payload.elapsed_ms));
+  setByHeader_(sh,h,row,'notes',payload.notes||'');
+  return {ok:true};
+}
+
+function incrementMockSessionCounters_(sessionId,isFollowup){
+  const sh=sheet_(SHEETS.MOCKS),vals=sh.getDataRange().getValues(); if(vals.length<2)return;
+  const h=vals[0].map(String),idc=h.indexOf('session_id');
+  const ri=vals.findIndex((r,i)=>i>0&&String(r[idc])===String(sessionId)); if(ri<1)return;
+  const row=ri+1;
+  const bump=(key)=>{const c=h.indexOf(key);if(c>=0)sh.getRange(row,c+1).setValue(Number(vals[ri][c]||0)+1);};
+  bump('answers_saved'); bump(isFollowup?'followups_asked':'questions_asked');
+}
+function numberOrBlank_(v){const n=Number(v);return Number.isFinite(n)?Math.round(n):'';}
 
 function authorize_(token, requestedRole){
   const c=config_();

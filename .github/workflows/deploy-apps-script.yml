@@ -6,6 +6,7 @@ on:
     paths:
       - 'Code.gs'
       - 'index.html'
+      - 'MockInterview.html'
       - 'AdminJa.html'
       - 'appsscript.json'
       - '.claspignore'
