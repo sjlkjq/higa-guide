@@ -54,26 +54,27 @@ test('portal changes iframe role when only the URL hash changes in the same tab'
 });
 
 
-test('root mock page exists and redirects valid access to mock mode',()=>{
+test('root mock page is a top-level GitHub media page and requires an opener',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/mode=mock/);
-  assert.match(html,/role=/);
-  assert.match(html,/token=/);
-  assert.match(html,/Invalid access link/);
+  assert.match(html,/github-pages-top-level-media/);
+  assert.match(html,/window\.opener/);
+  assert.match(html,/Open Mock Interview from the Student or Parent\/Admin screen/);
+  assert.doesNotMatch(html,/location\.replace\(target\)/);
 });
 
-test('main app exposes Mock Interview to student and admin roles',()=>{
+test('main app exposes external Mock Interview to student and admin roles',()=>{
   const html=fs.readFileSync('index.html','utf8');
   assert.match(html,/id="mockNav"/);
   assert.match(html,/\['student','admin'\]\.includes\(role\)/);
-  assert.match(html,/mode=mock/);
+  assert.match(html,/sjlkjq\.github\.io\/higa-guide\/mock\.html/);
 });
 
 
-test('Mock Interview launcher does not derive its URL from the Apps Script iframe origin',()=>{
+test('Mock Interview launcher opens GitHub Pages without leaking the token and keeps opener RPC',()=>{
   const html=fs.readFileSync('index.html','utf8');
   const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
-  assert.match(line,/https:\/\/script\.google\.com\/macros\/s\//);
-  assert.doesNotMatch(line,/location\.origin|location\.pathname/);
-  assert.match(line,/mode=mock/);
+  assert.match(line,/https:\/\/sjlkjq\.github\.io\/higa-guide\/mock\.html/);
+  assert.doesNotMatch(line,/token=/);
+  assert.doesNotMatch(line,/noopener/);
+  assert.match(html,/MOCK_ALLOWED_RPC/);
 });
