@@ -333,7 +333,8 @@ test('QA-36 root GitHub mock URL is the top-level media runtime, not an Apps Scr
 test('QA-37 parent/student main UI launches top-level GitHub mock and relays backend RPC securely',()=>{
   const html=fs.readFileSync('index.html','utf8');
   const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
-  assert.match(line,/sjlkjq\.github\.io\/higa-guide\/mock\.html/);
+  assert.match(html,/const MOCK_ORIGIN='https:\/\/sjlkjq\.github\.io'/);
+  assert.match(line,/\/higa-guide\/mock\.html/);
   assert.doesNotMatch(line,/token=/);
   assert.doesNotMatch(line,/noopener/);
   assert.match(html,/e\.origin!==MOCK_ORIGIN/);
