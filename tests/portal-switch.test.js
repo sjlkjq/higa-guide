@@ -68,3 +68,12 @@ test('main app exposes Mock Interview to student and admin roles',()=>{
   assert.match(html,/\['student','admin'\]\.includes\(role\)/);
   assert.match(html,/mode=mock/);
 });
+
+
+test('Mock Interview launcher does not derive its URL from the Apps Script iframe origin',()=>{
+  const html=fs.readFileSync('index.html','utf8');
+  const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
+  assert.match(line,/https:\/\/script\.google\.com\/macros\/s\//);
+  assert.doesNotMatch(line,/location\.origin|location\.pathname/);
+  assert.match(line,/mode=mock/);
+});
