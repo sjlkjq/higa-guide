@@ -160,10 +160,12 @@ function mockBootstrap(token, requestedRole){
 
 function mockStartSession(token, requestedRole, payload){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
-  const profile=String(payload&&payload.profile||'').toLowerCase();
+  if(!payload || typeof payload!=='object')return {ok:false,error:'Invalid mock session payload.'};
+  const profile=String(payload.profile||'').toLowerCase();
   if(!['shimpei','shiori'].includes(profile))return {ok:false,error:'Invalid profile.'};
   const sessionId=String(payload.session_id||('mock_'+new Date().getTime()+'_'+Math.random().toString(36).slice(2,8)));
   if(auth.role!=='student')return {ok:true,session_id:sessionId,test_mode:true,persisted:false};
+  if(findBy_(SHEETS.MOCKS,'session_id',sessionId))return {ok:false,error:'Mock session already exists.'};
   appendObject_(SHEETS.MOCKS,{
     session_id:sessionId,profile,started_at:payload.started_at||new Date().toISOString(),completed_at:'',
     elapsed_ms:'',questions_asked:0,followups_asked:0,answers_saved:0,
@@ -175,12 +177,17 @@ function mockStartSession(token, requestedRole, payload){
 
 function mockSaveAnswer(token, requestedRole, payload){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(!payload || typeof payload!=='object')return {ok:false,error:'Invalid mock answer payload.'};
   const q=findBy_(SHEETS.MOCKQ,'id',payload.question_id);
   if(!q || !truthy_(q.active))return {ok:false,error:'Mock question not found.'};
   if(String(q.profile)!==String(payload.profile))return {ok:false,error:'Question/profile mismatch.'};
   if(auth.role!=='student')return {ok:true,test_mode:true,persisted:false};
   const session=findBy_(SHEETS.MOCKS,'session_id',payload.session_id);
   if(!session)return {ok:false,error:'Mock session not found.'};
+  if(String(session.profile)!==String(payload.profile))return {ok:false,error:'Session/profile mismatch.'};
+  if(String(session.completed_at||'').trim())return {ok:false,error:'Mock session is already completed.'};
+  const duplicate=rows_(SHEETS.MOCKA).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
+  if(duplicate)return {ok:true,persisted:true,duplicate:true};
   appendObject_(SHEETS.MOCKA,{
     session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
     question_kind:q.kind||'main',language:q.language||'',started_at:payload.started_at||'',
@@ -196,12 +203,15 @@ function mockSaveAnswer(token, requestedRole, payload){
 
 function mockFinishSession(token, requestedRole, payload){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(!payload || typeof payload!=='object')return {ok:false,error:'Invalid mock finish payload.'};
   if(auth.role!=='student')return {ok:true,test_mode:true,persisted:false};
   const sh=sheet_(SHEETS.MOCKS),vals=sh.getDataRange().getValues(); if(vals.length<2)return {ok:false,error:'Mock session not found.'};
   const h=vals[0].map(String),idc=h.indexOf('session_id');
   const ri=vals.findIndex((r,i)=>i>0&&String(r[idc])===String(payload.session_id));
   if(ri<1)return {ok:false,error:'Mock session not found.'};
   const row=ri+1;
+  const completedCol=h.indexOf('completed_at');
+  if(completedCol>=0 && String(vals[ri][completedCol]||'').trim())return {ok:true,persisted:true,duplicate:true};
   setByHeader_(sh,h,row,'completed_at',payload.completed_at||new Date().toISOString());
   setByHeader_(sh,h,row,'elapsed_ms',numberOrBlank_(payload.elapsed_ms));
   setByHeader_(sh,h,row,'notes',payload.notes||'');
@@ -216,7 +226,7 @@ function incrementMockSessionCounters_(sessionId,isFollowup){
   const bump=(key)=>{const c=h.indexOf(key);if(c>=0)sh.getRange(row,c+1).setValue(Number(vals[ri][c]||0)+1);};
   bump('answers_saved'); bump(isFollowup?'followups_asked':'questions_asked');
 }
-function numberOrBlank_(v){const n=Number(v);return Number.isFinite(n)?Math.round(n):'';}
+function numberOrBlank_(v){if(v===null||v===undefined||String(v).trim()==='')return '';const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n)):'';}
 
 function authorize_(token, requestedRole){
   const c=config_();
