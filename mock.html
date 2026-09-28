@@ -58,6 +58,17 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
       </div>
       <audio id="micTestPlayback" class="mic-playback" controls></audio>
       <div class="mic-detail" id="micTestResult">Speak normally during the test. Start Interview unlocks after input is detected.</div>
+      <div style="margin-top:18px;padding-top:15px;border-top:1px solid var(--line)">
+        <label for="sttTestLang">Speech recognition diagnostic</label>
+        <select id="sttTestLang" class="mic-select">
+          <option value="en-US">English (US)</option>
+          <option value="en-GB">English (UK)</option>
+          <option value="ja-JP">日本語</option>
+        </select>
+        <div class="mic-detail" id="sttTarget"></div>
+        <div class="mic-test-actions"><button class="btn" id="sttTestBtn">Test speech recognition (8 sec)</button></div>
+        <div class="mic-detail" id="sttTestResult">This checks the browser speech recognizer separately from the microphone recording.</div>
+      </div>
     </div>
     <div class="row" style="margin-top:20px"><button class="btn primary" id="startBtn" disabled>Start Interview</button></div>
   </section>
@@ -93,7 +104,7 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 <script>
 const _hash=new URLSearchParams(String(location.hash||'').replace(/^#/,''));const ACCESS={role:String(_hash.get('role')||'student').toLowerCase(),token:''};
 const els={};
-['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
+['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','sttTestLang','sttTarget','sttTestBtn','sttTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
 let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null;
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 recognitionSupported=!!SpeechRecognition;
@@ -228,6 +239,65 @@ els.micSelect.onchange=async()=>{
 };
 els.micTestBtn.onclick=runMicTest;
 els.refreshMicsBtn.onclick=()=>refreshMicDevices(true);
+
+const STT_TARGETS={
+  'en-US':'I am interested in marine biology and mathematics.',
+  'en-GB':'I am interested in marine biology and mathematics.',
+  'ja-JP':'私は海洋生物学と数学に興味があります。'
+};
+function updateSttTarget(){
+  const lang=els.sttTestLang.value||'en-US';
+  els.sttTarget.textContent='Read this exactly: '+STT_TARGETS[lang];
+}
+function normalizeForMatch(text,lang){
+  const t=String(text||'').toLowerCase().normalize('NFKC').replace(/[\s\p{P}\p{S}]+/gu,'');
+  return t;
+}
+function levenshtein(a,b){
+  a=[...a];b=[...b];const prev=Array(b.length+1).fill(0).map((_,i)=>i),cur=Array(b.length+1);
+  for(let i=1;i<=a.length;i++){cur[0]=i;for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=b.length;j++)prev[j]=cur[j];}
+  return prev[b.length];
+}
+function textMatchPercent(expected,actual,lang){
+  const a=normalizeForMatch(expected,lang),b=normalizeForMatch(actual,lang);if(!a&&!b)return 100;if(!a||!b)return 0;
+  return Math.max(0,Math.round((1-levenshtein(a,b)/Math.max(a.length,b.length))*100));
+}
+function applyRecognitionHints(rec){
+  try{
+    const Phrase=window.SpeechRecognitionPhrase;
+    if(!Phrase||!('phrases' in rec))return;
+    const hints=profile==='shimpei'
+      ? ['HiGA','Hiroshima Global Academy','Seto Inland Sea','marine biology','horseshoe crab','Koh Tao','coral reef','mathematics','quadratic function','parabola','inquiry report','ecology','conservation']
+      : ['Kaichi Tokorozawa','GSC','international school'];
+    rec.phrases=hints.map(x=>new Phrase(x,4.0));
+  }catch(e){}
+}
+function startRecognitionOnSelectedTrack(rec){
+  const track=micStream&&micStream.getAudioTracks&&micStream.getAudioTracks()[0];
+  if(track&&track.readyState==='live'){
+    try{rec.start(track);return 'selected-track';}catch(e){}
+  }
+  rec.start();return 'browser-default';
+}
+async function runSttDiagnostic(){
+  if(!recognitionSupported){els.sttTestResult.textContent='SpeechRecognition is not supported in this browser.';els.sttTestResult.className='mic-detail bad';return;}
+  const ok=await ensureMic(false);if(!ok){els.sttTestResult.textContent='Microphone is not ready. Run the microphone test first.';els.sttTestResult.className='mic-detail bad';return;}
+  els.sttTestBtn.disabled=true;const lang=els.sttTestLang.value||'en-US',target=STT_TARGETS[lang];let final='',interim='',ended=false,source='unknown';
+  els.sttTestResult.textContent='Listening for 8 seconds…';els.sttTestResult.className='mic-detail warn';
+  const rec=new SpeechRecognition();rec.lang=lang;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=3;applyRecognitionHints(rec);
+  rec.onresult=e=>{interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)final+=(final?' ':'')+t.trim();else interim+=t;}els.sttTestResult.textContent='Heard: '+(final+' '+interim).trim();};
+  rec.onerror=e=>{els.sttTestResult.textContent='Recognition error: '+e.error;els.sttTestResult.className='mic-detail bad';};
+  rec.onend=()=>{ended=true;};
+  try{source=startRecognitionOnSelectedTrack(rec);}catch(e){els.sttTestResult.textContent='Could not start recognition: '+String(e.message||e);els.sttTestResult.className='mic-detail bad';els.sttTestBtn.disabled=false;return;}
+  await new Promise(r=>setTimeout(r,8000));try{if(!ended)rec.stop();}catch(e){}await new Promise(r=>setTimeout(r,500));
+  const heard=(final+' '+interim).trim(),score=textMatchPercent(target,heard,lang);
+  els.sttTestResult.textContent='Result: '+(heard||'(nothing recognized)')+' · Text match: '+score+'% · Input: '+source;
+  els.sttTestResult.className='mic-detail '+(score>=80?'good':score>=50?'warn':'bad');els.sttTestBtn.disabled=false;
+}
+els.sttTestLang.onchange=updateSttTarget;
+els.sttTestBtn.onclick=runSttDiagnostic;
+updateSttTarget();
+
 function startMeter(){
   stopMeter();if(!analyser)return;
   const data=new Uint8Array(analyser.fftSize);
@@ -307,11 +377,11 @@ function startRecognition(lang){
   stopRecognition();if(!recognitionSupported)return;
   recognitionWanted=true;
   try{
-    recognizer=new SpeechRecognition();recognizer.lang=lang||'en-US';recognizer.continuous=true;recognizer.interimResults=true;
+    recognizer=new SpeechRecognition();recognizer.lang=lang||'en-US';recognizer.continuous=true;recognizer.interimResults=true;recognizer.maxAlternatives=3;applyRecognitionHints(recognizer);
     recognizer.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)transcriptFinal+=(transcriptFinal?' ':'')+t.trim();else interim+=t;}transcriptInterim=interim;els.transcript.textContent=(transcriptFinal+' '+transcriptInterim).trim();};
     recognizer.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')els.transcript.dataset.error=e.error;};
     recognizer.onend=()=>{if(recognitionWanted&&els.interview&&!els.interview.classList.contains('hidden')){try{recognizer.start();}catch(e){}}};
-    recognizer.start();
+    startRecognitionOnSelectedTrack(recognizer);
   }catch(e){els.transcript.dataset.error=String(e.message||e);}
 }
 function stopRecognition(){recognitionWanted=false;if(recognizer){try{recognizer.onend=null;recognizer.stop();}catch(e){}recognizer=null;}}
