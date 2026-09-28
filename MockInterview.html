@@ -80,7 +80,7 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 const ACCESS=window.__HIGA_ACCESS__||{};
 const els={};
 ['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
-let boot=null,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='';
+let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='';
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 recognitionSupported=!!SpeechRecognition;
 deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);
@@ -101,9 +101,9 @@ async function init(){
   try{
     const r=await gas('mockBootstrap',[ACCESS.token,ACCESS.role||'student']);
     if(!r||!r.ok)throw new Error(r&&r.error||'Unable to load interview.');
-    boot=r;
-    els.speechStatus.textContent=recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.';
-    els.speechStatus.className='status '+(recognitionSupported?'good':'warn');
+    boot=r;testMode=!!r.test_mode;
+    els.speechStatus.textContent=testMode?'Parent/Admin test mode: this session will not be saved as applicant data.':(recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.');
+    els.speechStatus.className='status '+(testMode?'warn':(recognitionSupported?'good':'warn'));
     document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));
     show('home');
   }catch(e){fail(e.message);}
@@ -111,7 +111,7 @@ async function init(){
 function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
-  els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=queue.length+' approved prompts';show('ready');
+  els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=testMode?'Parent/Admin test · not saved':queue.length+' approved prompts';show('ready');
 }
 els.backHome.onclick=()=>show('home');
 els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
@@ -219,7 +219,7 @@ async function finishInterview(endedEarly){
 }
 function renderComplete(endedEarly){
   const longRows=sessionRows.filter(r=>Number(r.latency)>=7000);const empty=sessionRows.filter(r=>!r.text);
-  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'');
+  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'')+(testMode?' · TEST — not saved':'');
   els.statAnswers.textContent=sessionRows.length;els.statLong.textContent=longRows.length;els.statEmpty.textContent=empty.length;
   els.sessionLog.innerHTML=sessionRows.map((r,i)=>'<div class="log-row"><b>'+(i+1)+'. '+esc(phaseLabel(r.q))+'</b><span>Response start: '+(r.latency===''?'not detected':(r.latency/1000).toFixed(1)+' s')+' · Answer: '+fmt(r.duration)+' · Longest pause: '+(r.longest/1000).toFixed(1)+' s'+(!r.text?' · No transcript captured':'')+'</span></div>').join('')||'<div class="status">No answers were saved.</div>';
 }
