@@ -30,3 +30,10 @@ test('MockReview inline JavaScript parses without syntax errors',()=>{
   const script=inlineScript(html);
   assert.doesNotThrow(()=>new vm.Script(script,{filename:'mock-review-inline.js'}));
 });
+
+
+test('root mock.html inline JavaScript parses without syntax errors',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  const script=inlineScript(html);
+  assert.doesNotThrow(()=>new vm.Script(script,{filename:'root-mock-inline.js'}));
+});
