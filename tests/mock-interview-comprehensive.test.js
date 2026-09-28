@@ -583,3 +583,138 @@ test('QA-65 static mock never sends the private token to GitHub Pages',()=>{
   assert.doesNotMatch(line,/token=/);
   assert.match(line,/mock\.html#role=/);
 });
+
+
+test('QA-66 Deepgram is optional and browser transcript remains the fallback when no API key is configured',()=>{
+  const {api,sheets,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('audio').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'browser text',audio_base64:audio,audio_mime_type:'audio/webm'}));
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,0);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'browser text');
+  assert.equal(a.browser_transcript,'browser text');
+  assert.equal(a.stt_provider,'browser-fallback');
+  assert.equal(a.stt_status,'deepgram_not_configured');
+  assert.equal(a.stt_language_mode,'en');
+});
+
+test('QA-67 Shimpei uses Nova-3 English transcription regardless of question language metadata',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockSessions:[shimpeiSession()]
+  });
+  const audio=Buffer.from('audio').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'browser text',audio_base64:audio,audio_mime_type:'audio/webm'}));
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,1);
+  assert.match(fetchCalls[0].url,/model=nova-3/);
+  assert.match(fetchCalls[0].url,/language=en(?:&|$)/);
+  assert.match(fetchCalls[0].url,/keyterm=HiGA/);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'Deepgram transcript');
+  assert.equal(a.browser_transcript,'browser text');
+  assert.equal(a.stt_provider,'deepgram');
+  assert.equal(a.stt_model,'nova-3');
+  assert.equal(a.stt_language_mode,'en');
+  assert.equal(Number(a.stt_confidence),0.93);
+  assert.equal(a.stt_status,'ok');
+});
+
+test('QA-68 Shiori uses Nova-3 language=multi so one answer may mix Japanese and English',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockSessions:[{...shimpeiSession(),session_id:'sh1',profile:'shiori'}],
+    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'その子の attitude が良くて evidence もあります',confidence:0.96}]}]}}
+  });
+  const audio=Buffer.from('audio').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',{
+    ...shimpeiAnswer(),session_id:'sh1',profile:'shiori',question_id:'KAI-1',transcript:'browser wrong',
+    audio_base64:audio,audio_mime_type:'audio/webm'
+  });
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,1);
+  assert.match(fetchCalls[0].url,/model=nova-3/);
+  assert.match(fetchCalls[0].url,/language=multi(?:&|$)/);
+  assert.match(fetchCalls[0].url,/keyterm=GSC/);
+  assert.match(fetchCalls[0].url,/keyterm=Cambridge/);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'その子の attitude が良くて evidence もあります');
+  assert.equal(a.stt_language_mode,'multi');
+  assert.equal(a.stt_provider,'deepgram');
+  assert.equal(Number(a.stt_confidence),0.96);
+});
+
+test('QA-69 Deepgram API errors never lose the browser fallback transcript or audio save',()=>{
+  const {api,sheets,driveFiles}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockSessions:[shimpeiSession()],
+    deepgramStatus:500,
+    deepgramResponse:'server error'
+  });
+  const audio=Buffer.from('audio').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'fallback words',audio_base64:audio,audio_mime_type:'audio/webm'}));
+  assert.equal(r.ok,true);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'fallback words');
+  assert.equal(a.browser_transcript,'fallback words');
+  assert.equal(a.stt_provider,'browser-fallback');
+  assert.equal(a.stt_status,'deepgram_http_500');
+  assert.match(a.stt_error,/server error/);
+  assert.match(String(a.audio_file_id),/^drive_/);
+  assert.equal(driveFiles.has(String(a.audio_file_id)),true);
+});
+
+test('QA-70 Deepgram API key is stored only in Script Properties and is never returned by config',()=>{
+  const {api,scriptProps}=createHarness();
+  const key='dg_secret_key_12345678901234567890';
+  const save=api.mockSetDeepgramApiKey('admin-token-123456','admin',key);
+  assert.equal(save.ok,true);
+  assert.equal(save.configured,true);
+  assert.equal(scriptProps.get('DEEPGRAM_API_KEY'),key);
+  const cfg=api.mockSttConfig('admin-token-123456','admin');
+  assert.equal(cfg.ok,true);
+  assert.equal(cfg.configured,true);
+  assert.equal(JSON.stringify(cfg).includes(key),false);
+});
+
+test('QA-71 non-admin users cannot change the Deepgram API key',()=>{
+  const {api,scriptProps}=createHarness();
+  const r=api.mockSetDeepgramApiKey('reviewer-token-123456','reviewer','dg_secret_key_12345678901234567890');
+  assert.equal(r.ok,false);
+  assert.match(r.error,/Admin access required/i);
+  assert.equal(scriptProps.has('DEEPGRAM_API_KEY'),false);
+});
+
+test('QA-72 clearing the Deepgram API key restores browser fallback mode',()=>{
+  const {api,scriptProps}=createHarness({scriptProperties:{DEEPGRAM_API_KEY:'dg_secret_key_12345678901234567890'}});
+  const r=api.mockSetDeepgramApiKey('admin-token-123456','admin','');
+  assert.equal(r.ok,true);
+  assert.equal(r.configured,false);
+  assert.equal(scriptProps.has('DEEPGRAM_API_KEY'),false);
+});
+
+test('QA-73 Mock Review exposes Deepgram status, API-key setup, and STT diagnostics',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/Deepgram API Key/);
+  assert.match(html,/mockSetDeepgramApiKey/);
+  assert.match(html,/multilingual code-switching/);
+  assert.match(html,/Browser STT \(diagnostic\)/);
+  assert.match(html,/stt_language_mode/);
+  assert.match(html,/stt_confidence/);
+});
+
+test('QA-74 Shiori multilingual STT choice depends on applicant profile, not the question language',()=>{
+  const {api,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockQuestions:[{id:'KAI-EN',profile:'shiori',phase:'gsc_english_oral_interview',language:'en-US',kind:'main',parent_id:'',order:1,active:true,source_type:'application_based',source_ref:'x',question_text:'Please introduce yourself.',concept:'x'}],
+    mockSessions:[{...shimpeiSession(),session_id:'sh2',profile:'shiori'}]
+  });
+  const audio=Buffer.from('audio').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',{
+    ...shimpeiAnswer(),session_id:'sh2',profile:'shiori',question_id:'KAI-EN',audio_base64:audio,audio_mime_type:'audio/webm'
+  });
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,1);
+  assert.match(fetchCalls[0].url,/language=multi(?:&|$)/);
+});
