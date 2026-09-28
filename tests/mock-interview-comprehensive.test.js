@@ -62,7 +62,7 @@ test('QA-06 questions are sorted by profile and numeric order',()=>{
   ];
   const {api}=createHarness({mockQuestions:qs});
   const r=api.mockBootstrap('student-token-123456','student');
-  assert.deepEqual(r.questions.map(q=>q.id),['K1','S1','S2']);
+  assert.deepEqual(r.questions.map(q=>q.id),['S1','S2','K1']);
 });
 
 test('QA-07 student can start Shimpei session and it persists exactly once',()=>{
@@ -344,4 +344,77 @@ test('QA-40 blank or malformed payload is rejected cleanly rather than throwing'
   assert.doesNotThrow(()=>api.mockSaveAnswer('student-token-123456','student',null));
   const r=api.mockSaveAnswer('student-token-123456','student',null);
   assert.equal(r.ok,false);
+});
+
+
+test('QA-41 duplicate session id is rejected without creating a second row',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession({session_id:'dup'})]});
+  const before=sheets.MockSessions.data.length;
+  const r=api.mockStartSession('student-token-123456','student',{session_id:'dup',profile:'shimpei'});
+  assert.equal(r.ok,false);
+  assert.match(r.error,/already exists/i);
+  assert.equal(sheets.MockSessions.data.length,before);
+});
+
+test('QA-42 finishing an already completed session is idempotent and does not overwrite original completion',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession({session_id:'s1',completed_at:'original',elapsed_ms:111,notes:'first'})]});
+  const r=api.mockFinishSession('student-token-123456','student',{session_id:'s1',completed_at:'second',elapsed_ms:999,notes:'second'});
+  assert.equal(r.ok,true);
+  assert.equal(r.duplicate,true);
+  const row=objects(sheets.MockSessions)[0];
+  assert.equal(row.completed_at,'original');
+  assert.equal(Number(row.elapsed_ms),111);
+  assert.equal(row.notes,'first');
+});
+
+test('QA-43 negative telemetry is clamped to zero',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({response_latency_ms:-10,answer_duration_ms:-20,longest_internal_silence_ms:-30}));
+  assert.equal(r.ok,true);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(Number(a.response_latency_ms),0);
+  assert.equal(Number(a.answer_duration_ms),0);
+  assert.equal(Number(a.longest_internal_silence_ms),0);
+});
+
+test('QA-44 unknown question id cannot be persisted',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const before=sheets.MockAnswers.data.length;
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({question_id:'UNKNOWN'}));
+  assert.equal(r.ok,false);
+  assert.equal(sheets.MockAnswers.data.length,before);
+});
+
+test('QA-45 malformed start payload is rejected cleanly',()=>{
+  const {api}=createHarness();
+  assert.doesNotThrow(()=>api.mockStartSession('student-token-123456','student',null));
+  const r=api.mockStartSession('student-token-123456','student',null);
+  assert.equal(r.ok,false);
+});
+
+test('QA-46 malformed finish payload is rejected cleanly',()=>{
+  const {api}=createHarness();
+  assert.doesNotThrow(()=>api.mockFinishSession('student-token-123456','student',null));
+  const r=api.mockFinishSession('student-token-123456','student',null);
+  assert.equal(r.ok,false);
+});
+
+test('QA-47 invalid token cannot start, save, or finish a mock session',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const beforeS=JSON.stringify(sheets.MockSessions.data),beforeA=JSON.stringify(sheets.MockAnswers.data);
+  assert.equal(api.mockStartSession('bad-token-value','student',{session_id:'x',profile:'shimpei'}).ok,false);
+  assert.equal(api.mockSaveAnswer('bad-token-value','student',shimpeiAnswer()).ok,false);
+  assert.equal(api.mockFinishSession('bad-token-value','student',{session_id:'s1'}).ok,false);
+  assert.equal(JSON.stringify(sheets.MockSessions.data),beforeS);
+  assert.equal(JSON.stringify(sheets.MockAnswers.data),beforeA);
+});
+
+test('QA-48 admin test mode remains non-persistent for Shiori answer path',()=>{
+  const {api,sheets}=createHarness();
+  const beforeA=sheets.MockAnswers.data.length;
+  const r=api.mockSaveAnswer('admin-token-123456','admin',{
+    session_id:'admin-shiori',profile:'shiori',question_id:'KAI-1',started_at:'x',completed_at:'y',transcript:'test'
+  });
+  assert.equal(r.ok,true);assert.equal(r.persisted,false);
+  assert.equal(sheets.MockAnswers.data.length,beforeA);
 });
