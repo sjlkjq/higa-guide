@@ -47,9 +47,20 @@ function renderDetail(){
     return '<div class="q"><div class="qtitle">'+(i+1)+'. '+esc(q.question_text||a.question_id)+'</div>'+
       '<div class="meta">Response start: '+fmtMs(a.response_latency_ms)+' · Answer: '+fmtMs(a.answer_duration_ms)+' · Longest internal pause: '+fmtMs(a.longest_internal_silence_ms)+' · Speech: '+(speech?'detected':'not detected')+'</div>'+
       '<div class="transcript">'+(a.transcript?esc(a.transcript):'<span class="bad">Transcriptなし</span>')+'</div>'+
+      (a.audio_file_id?'<div style="margin-top:8px"><button class="btn playAudio" data-file="'+esc(a.audio_file_id)+'">▶ 回答音声を再生</button></div>':'<div class="meta warn">録音なし</div>')+
       (a.recognition_error?'<div class="meta bad">Speech recognition error: '+esc(a.recognition_error)+'</div>':'')+'</div>';
   }).join(''):'<div class="empty">回答データはありません。</div>';
   $('detail').innerHTML=html;
+  document.querySelectorAll('.playAudio').forEach(btn=>btn.onclick=async()=>{
+    const original=btn.textContent;btn.disabled=true;btn.textContent='Loading…';
+    try{
+      const r=await gas('mockGetAudio',[ACCESS.token,ACCESS.role||'admin',btn.dataset.file]);
+      if(!r||!r.ok)throw new Error(r&&r.error||'Audio load failed');
+      const bytes=Uint8Array.from(atob(r.base64),c=>c.charCodeAt(0));
+      const url=URL.createObjectURL(new Blob([bytes],{type:r.mime_type||'audio/webm'}));
+      const audio=new Audio(url);audio.onended=()=>{URL.revokeObjectURL(url);btn.disabled=false;btn.textContent=original;};audio.onerror=()=>{URL.revokeObjectURL(url);btn.disabled=false;btn.textContent=original;};await audio.play();
+    }catch(e){btn.disabled=false;btn.textContent='再生失敗';setTimeout(()=>btn.textContent=original,1500);}
+  });
 }
 async function load(){
   $('sessions').innerHTML='<div class="empty">Loading…</div>';
