@@ -9,6 +9,8 @@ on:
       - 'Code.gs'
       - 'index.html'
       - 'MockInterview.html'
+      - 'mock.html'
+      - 'MockReview.html'
       - 'AdminJa.html'
       - 'app.html'
       - 'site/**'
