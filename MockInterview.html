@@ -164,7 +164,7 @@ async function nextQuestion(){
   stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;
   if(index>=queue.length)return finishInterview(false);
   current=queue[index];repeatCount=0;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;answerStartedAt=0;
-  els.counter.textContent=(index+1)+' / '+queue.length;els.phase.textContent=phaseLabel(current);els.transcript.textContent='';els.answerClock.textContent='00:00';els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  els.counter.textContent=(index+1)+' / '+queue.length;els.phase.textContent=phaseLabel(current);els.transcript.textContent='';delete els.transcript.dataset.error;els.answerClock.textContent='00:00';els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
   await speakCurrent(false);
 }
 function selectVoice(lang){
@@ -179,8 +179,8 @@ function speak(text,lang){
 }
 async function speakCurrent(isRepeat){
   stopRecognition();stopMeter();els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  if(isRepeat){repeatCount++;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;els.transcript.textContent='';delete els.transcript.dataset.error;}
   await speak(current.question_text,current.language);
-  if(isRepeat)repeatCount++;
   questionSpokenAt=performance.now();answerStartedAt=Date.now();els.promptState.textContent='Your answer';els.mic.classList.add('live');els.doneBtn.disabled=false;els.repeatBtn.disabled=false;
   startClock();startMeter();startRecognition(current.language);
 }
