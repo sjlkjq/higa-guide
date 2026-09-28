@@ -158,22 +158,40 @@ async function ensureMic(force=false){
     els.micDeviceDetail.textContent='Active input: '+(track.label||'Microphone')+(settings.sampleRate?' · '+settings.sampleRate+' Hz':'');
     return true;
   }catch(e){
-    els.micDeviceDetail.textContent='Microphone error: '+String(e&&e.message||e);
+    const state=await getMicPermissionState();
+    const msg=String(e&&e.message||e);
+    if(state==='denied'){
+      els.micDeviceDetail.textContent='Microphone permission is blocked for https://sjlkjq.github.io. In Chrome, open Site settings for this page, set Microphone to Allow, then reload.';
+    }else{
+      els.micDeviceDetail.textContent='Microphone error: '+msg+'. Check Chrome site permission and Windows microphone privacy settings.';
+    }
     els.micDeviceDetail.className='mic-detail bad';
     return false;
   }
 }
+async function getMicPermissionState(){
+  try{if(navigator.permissions&&navigator.permissions.query){const p=await navigator.permissions.query({name:'microphone'});return p.state||'unknown';}}catch(e){}
+  return 'unknown';
+}
 async function refreshMicDevices(requestPermission=true){
   if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices){
-    els.micDeviceDetail.textContent='This browser cannot list microphone devices.';return;
+    els.micDeviceDetail.textContent='This browser cannot list microphone devices.';els.micDeviceDetail.className='mic-detail bad';return;
   }
-  if(requestPermission&&!micStream)await ensureMic(false);
+  const state=await getMicPermissionState();
+  if(!micStream&&state!=='granted'){
+    els.micSelect.innerHTML='<option value="">System / browser default</option>';
+    els.micSelect.value='';
+    els.micDeviceDetail.textContent=state==='denied'?'Microphone permission is blocked for this site. Allow microphone access in the browser site settings, then reload.':'Microphone names will appear after permission is granted. Click Test microphone to request access.';
+    els.micDeviceDetail.className='mic-detail '+(state==='denied'?'bad':'');
+    return;
+  }
+  if(requestPermission&&!micStream){const ok=await ensureMic(false);if(!ok)return;}
   try{
-    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput');
+    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'&&d.label);
     const current=selectedMicId;
-    els.micSelect.innerHTML='<option value="">System / browser default</option>'+devices.map((d,i)=>'<option value="'+esc(d.deviceId)+'">'+esc(d.label||('Microphone '+(i+1)))+'</option>').join('');
+    els.micSelect.innerHTML='<option value="">System / browser default</option>'+devices.map(d=>'<option value="'+esc(d.deviceId)+'">'+esc(d.label)+'</option>').join('');
     if(current&&devices.some(d=>d.deviceId===current))els.micSelect.value=current;else els.micSelect.value='';
-  }catch(e){els.micDeviceDetail.textContent='Could not list microphones: '+String(e&&e.message||e);}
+  }catch(e){els.micDeviceDetail.textContent='Could not list microphones: '+String(e&&e.message||e);els.micDeviceDetail.className='mic-detail bad';}
 }
 function currentRms(){
   if(!analyser)return 0;
@@ -183,8 +201,9 @@ function currentRms(){
 }
 async function runMicTest(){
   els.micTestBtn.disabled=true;els.startBtn.disabled=true;micVerified=false;
-  els.micTestResult.textContent='Testing… speak normally now.';els.micTestResult.className='mic-detail warn';
-  const ok=await ensureMic(true);if(!ok){els.micTestBtn.disabled=false;return;}
+  els.micTestResult.textContent='Requesting microphone access…';els.micTestResult.className='mic-detail warn';
+  const ok=await ensureMic(true);if(!ok){els.micTestResult.textContent='FAIL — microphone access was not granted. Fix the browser/site permission shown above, then try again.';els.micTestResult.className='mic-detail bad';els.micTestBtn.disabled=false;return;}
+  els.micTestResult.textContent='Testing… speak normally now.';
   await refreshMicDevices(false);
   let peak=0;const chunks=[];let recorder=null;
   try{
