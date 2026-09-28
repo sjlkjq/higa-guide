@@ -20,6 +20,7 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 .complete{text-align:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px}.stat b{display:block;font-size:24px}.stat span{font-size:11px;color:var(--muted)}
 .log{margin-top:18px;text-align:left}.log-row{padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.log-row b{display:block;margin-bottom:3px}.log-row span{color:var(--muted)}
 .error{background:#351d28;border-color:#6d3245;color:#ffd9e2}
+.mic-setup{margin-top:20px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);text-align:left}.mic-setup label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.mic-select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit}.level-wrap{margin-top:12px;height:12px;border-radius:999px;background:#0f1526;overflow:hidden;border:1px solid var(--line)}.level-bar{height:100%;width:0%;background:var(--accent);transition:width .08s linear}.mic-detail{margin-top:9px;font-size:12px;color:var(--muted);line-height:1.5}.mic-detail.good{color:var(--good)}.mic-detail.bad{color:var(--bad)}.mic-test-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.mic-playback{width:100%;margin-top:10px;display:none}
 @media(max-width:600px){.choice-grid,.stats{grid-template-columns:1fr}.wrap{padding:16px 12px 30px}.card{padding:18px}.live-time{font-size:36px}.stage{padding:22px 0}}
 </style>
 </head>
@@ -45,7 +46,19 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
     <div class="top"><div><div class="who" id="readyWho"></div><div class="status" id="readyMeta"></div></div><button class="btn" id="backHome">Back</button></div>
     <h1>Ready?</h1>
     <p>The interviewer will read one question at a time. Answer aloud as you would in the real interview. Feedback is not shown during the interview.</p>
-    <div class="row" style="margin-top:24px"><button class="btn primary" id="startBtn">Start Interview</button></div>
+    <div class="mic-setup">
+      <label for="micSelect">Microphone input</label>
+      <select id="micSelect" class="mic-select"><option value="">System / browser default</option></select>
+      <div class="mic-detail" id="micDeviceDetail">Run the microphone test before starting.</div>
+      <div class="level-wrap"><div id="micLevelBar" class="level-bar"></div></div>
+      <div class="mic-test-actions">
+        <button class="btn" id="micTestBtn">Test microphone (5 sec)</button>
+        <button class="btn" id="refreshMicsBtn">Refresh devices</button>
+      </div>
+      <audio id="micTestPlayback" class="mic-playback" controls></audio>
+      <div class="mic-detail" id="micTestResult">Speak normally during the test. Start Interview unlocks after input is detected.</div>
+    </div>
+    <div class="row" style="margin-top:20px"><button class="btn primary" id="startBtn" disabled>Start Interview</button></div>
   </section>
 
   <section id="interview" class="card interview hidden">
@@ -79,11 +92,11 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 <script>
 const ACCESS=window.__HIGA_ACCESS__||{};
 const els={};
-['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
-let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[];
+['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
+let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null;
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 recognitionSupported=!!SpeechRecognition;
-deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);
+deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);selectedMicId=localStorage.getItem('mock_mic_device_id')||'';
 
 function show(id){['loading','error','home','ready','interview','complete'].forEach(x=>els[x].classList.toggle('hidden',x!==id));}
 function fail(msg){els.errorText.textContent=msg;show('error');}
@@ -111,21 +124,87 @@ async function init(){
 function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
+  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected.';els.micTestResult.className='mic-detail';
   els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(v?' · Voice: '+v.name:'');show('ready');
+  refreshMicDevices(false);
 }
 els.backHome.onclick=()=>show('home');
 els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
 
-async function ensureMic(){
-  if(micStream)return true;
+async function closeMicStream(){
+  try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}
+  mediaRecorder=null;audioChunks=[];
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){try{await audioCtx.close();}catch(e){}audioCtx=null;}
+  analyser=null;
+}
+async function ensureMic(force=false){
+  if(micStream&&!force)return true;
+  if(force)await closeMicStream();
   try{
-    micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    const audioConstraints={echoCancellation:true,noiseSuppression:true,autoGainControl:true};
+    if(selectedMicId)audioConstraints.deviceId={exact:selectedMicId};
+    micStream=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
+    const track=micStream.getAudioTracks()[0];
+    if(!track)throw new Error('No audio track.');
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     if(audioCtx.state==='suspended')await audioCtx.resume();
     const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=2048;src.connect(analyser);
+    const settings=track.getSettings?track.getSettings():{};
+    els.micDeviceDetail.textContent='Active input: '+(track.label||'Microphone')+(settings.sampleRate?' · '+settings.sampleRate+' Hz':'');
     return true;
-  }catch(e){return false;}
+  }catch(e){
+    els.micDeviceDetail.textContent='Microphone error: '+String(e&&e.message||e);
+    els.micDeviceDetail.className='mic-detail bad';
+    return false;
+  }
 }
+async function refreshMicDevices(requestPermission=true){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices){
+    els.micDeviceDetail.textContent='This browser cannot list microphone devices.';return;
+  }
+  if(requestPermission&&!micStream)await ensureMic(false);
+  try{
+    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput');
+    const current=selectedMicId;
+    els.micSelect.innerHTML='<option value="">System / browser default</option>'+devices.map((d,i)=>'<option value="'+esc(d.deviceId)+'">'+esc(d.label||('Microphone '+(i+1)))+'</option>').join('');
+    if(current&&devices.some(d=>d.deviceId===current))els.micSelect.value=current;else els.micSelect.value='';
+  }catch(e){els.micDeviceDetail.textContent='Could not list microphones: '+String(e&&e.message||e);}
+}
+function currentRms(){
+  if(!analyser)return 0;
+  const data=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(data);let sum=0;
+  for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
+  return Math.sqrt(sum/data.length);
+}
+async function runMicTest(){
+  els.micTestBtn.disabled=true;els.startBtn.disabled=true;micVerified=false;
+  els.micTestResult.textContent='Testing… speak normally now.';els.micTestResult.className='mic-detail warn';
+  const ok=await ensureMic(true);if(!ok){els.micTestBtn.disabled=false;return;}
+  await refreshMicDevices(false);
+  let peak=0;const chunks=[];let recorder=null;
+  try{
+    if(typeof MediaRecorder!=='undefined'){const opt={};if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))opt.mimeType='audio/webm;codecs=opus';recorder=new MediaRecorder(micStream,opt);recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};recorder.start();}
+  }catch(e){recorder=null;}
+  const started=performance.now();
+  clearInterval(micTestTimer);micTestTimer=setInterval(()=>{const rms=currentRms();peak=Math.max(peak,rms);els.micLevelBar.style.width=Math.min(100,Math.round(rms*1600))+'%';},80);
+  await new Promise(r=>setTimeout(r,5000));
+  clearInterval(micTestTimer);micTestTimer=null;els.micLevelBar.style.width='0%';
+  if(recorder&&recorder.state!=='inactive')await new Promise(resolve=>{recorder.onstop=resolve;try{recorder.stop();}catch(e){resolve();}});
+  if(micTestBlobUrl){URL.revokeObjectURL(micTestBlobUrl);micTestBlobUrl='';}
+  if(chunks.length){const blob=new Blob(chunks,{type:recorder&&recorder.mimeType||'audio/webm'});micTestBlobUrl=URL.createObjectURL(blob);els.micTestPlayback.src=micTestBlobUrl;els.micTestPlayback.style.display='block';}
+  const track=micStream&&micStream.getAudioTracks()[0];const label=track&&track.label||'Microphone';
+  micVerified=peak>=0.008;
+  els.startBtn.disabled=!micVerified;
+  els.micTestResult.textContent=micVerified?'PASS — input detected from '+label+'. Peak level '+peak.toFixed(3)+'. Play the recording below to confirm.':'FAIL — no usable input detected from '+label+'. Select another microphone and test again.';
+  els.micTestResult.className='mic-detail '+(micVerified?'good':'bad');
+  els.micTestBtn.disabled=false;
+}
+els.micSelect.onchange=async()=>{
+  selectedMicId=els.micSelect.value||'';localStorage.setItem('mock_mic_device_id',selectedMicId);micVerified=false;els.startBtn.disabled=true;els.micTestPlayback.style.display='none';els.micTestResult.textContent='Device changed. Run the microphone test again.';els.micTestResult.className='mic-detail warn';await closeMicStream();
+};
+els.micTestBtn.onclick=runMicTest;
+els.refreshMicsBtn.onclick=()=>refreshMicDevices(true);
 function startMeter(){
   stopMeter();if(!analyser)return;
   const data=new Uint8Array(analyser.fftSize);
@@ -146,14 +225,15 @@ function startMeter(){
 }
 function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
 function cleanupAudio(){
-  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
   try{speechSynthesis.cancel();}catch(e){}
   if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
 }
 async function startInterview(){
+  if(!micVerified){els.micTestResult.textContent='Run a successful microphone test before starting.';els.micTestResult.className='mic-detail bad';return;}
   els.startBtn.disabled=true;
-  const micOk=await ensureMic();
+  const micOk=await ensureMic(false);
   try{
     sessionId='mock_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);sessionStarted=Date.now();index=0;sessionRows=[];
     const r=await gas('mockStartSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,profile,started_at:new Date().toISOString(),recognition_supported:recognitionSupported,device_id:deviceId,user_agent:navigator.userAgent}]);
