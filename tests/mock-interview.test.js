@@ -108,36 +108,39 @@ test('admin mock bootstrap is explicitly test mode',()=>{
   assert.equal(r.test_mode,true);
 });
 
-test('admin mock start does not create an applicant session row',()=>{
+test('admin mock start is saved only to separate test history',()=>{
   const {api,sheets}=createHarness();
-  const before=sheets.MockSessions.data.length;
+  const applicantBefore=sheets.MockSessions.data.length;
+  const testBefore=sheets.MockTestSessions.data.length;
   const r=api.mockStartSession('admin-token-123456','admin',{
     session_id:'admin-test-1',profile:'shimpei',started_at:'2026-09-28T00:00:00Z',
     recognition_supported:true,device_id:'parent-device',user_agent:'test'
   });
   assert.equal(r.ok,true);
   assert.equal(r.test_mode,true);
-  assert.equal(r.persisted,false);
-  assert.equal(sheets.MockSessions.data.length,before);
+  assert.equal(r.persisted,true);
+  assert.equal(r.data_scope,'test');
+  assert.equal(sheets.MockSessions.data.length,applicantBefore);
+  assert.equal(sheets.MockTestSessions.data.length,testBefore+1);
 });
 
-test('admin mock answers and finish never persist into applicant history',()=>{
+test('admin mock answers and finish remain isolated from applicant history and are reviewable',()=>{
   const {api,sheets}=createHarness();
-  const beforeAnswers=sheets.MockAnswers.data.length;
-  const beforeSessions=sheets.MockSessions.data.length;
+  const applicantAnswers=sheets.MockAnswers.data.length;
+  const applicantSessions=sheets.MockSessions.data.length;
+  api.mockStartSession('admin-token-123456','admin',{session_id:'admin-test-1',profile:'shimpei',started_at:'x'});
   const save=api.mockSaveAnswer('admin-token-123456','admin',{
     session_id:'admin-test-1',profile:'shimpei',question_id:'HIGA-1',
     started_at:'x',completed_at:'y',transcript:'Parent test'
   });
-  assert.equal(save.ok,true);
-  assert.equal(save.test_mode,true);
-  assert.equal(save.persisted,false);
-  assert.equal(sheets.MockAnswers.data.length,beforeAnswers);
-  const finish=api.mockFinishSession('admin-token-123456','admin',{
-    session_id:'admin-test-1',completed_at:'done',elapsed_ms:1234,notes:''
-  });
-  assert.equal(finish.ok,true);
-  assert.equal(finish.test_mode,true);
-  assert.equal(finish.persisted,false);
-  assert.equal(sheets.MockSessions.data.length,beforeSessions);
+  assert.equal(save.ok,true);assert.equal(save.data_scope,'test');
+  assert.equal(sheets.MockAnswers.data.length,applicantAnswers);
+  assert.equal(sheets.MockTestAnswers.data.length,2);
+  const finish=api.mockFinishSession('admin-token-123456','admin',{session_id:'admin-test-1',completed_at:'done',elapsed_ms:1234,notes:''});
+  assert.equal(finish.ok,true);assert.equal(finish.data_scope,'test');
+  assert.equal(sheets.MockSessions.data.length,applicantSessions);
+  const review=api.mockReviewBootstrap('admin-token-123456','admin');
+  assert.equal(review.ok,true);
+  assert.equal(review.sessions.some(x=>x.session_id==='admin-test-1'&&x.scope==='test'),true);
+  assert.equal(review.answers.some(x=>x.transcript==='Parent test'&&x.scope==='test'),true);
 });

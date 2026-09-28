@@ -102,7 +102,7 @@ async function init(){
     const r=await gas('mockBootstrap',[ACCESS.token,ACCESS.role||'student']);
     if(!r||!r.ok)throw new Error(r&&r.error||'Unable to load interview.');
     boot=r;testMode=!!r.test_mode;
-    els.speechStatus.textContent=testMode?'Parent/Admin test mode: this session will not be saved as applicant data.':(recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.');
+    els.speechStatus.textContent=testMode?'Parent/Admin test mode: this session is saved separately as test data and will not affect applicant history.':(recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.');
     els.speechStatus.className='status '+(testMode?'warn':(recognitionSupported?'good':'warn'));
     document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));
     show('home');
@@ -111,7 +111,7 @@ async function init(){
 function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
-  els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=testMode?'Parent/Admin test · not saved':queue.length+' approved prompts';show('ready');
+  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(v?' · Voice: '+v.name:'');show('ready');
 }
 els.backHome.onclick=()=>show('home');
 els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
@@ -121,23 +121,28 @@ async function ensureMic(){
   try{
     micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=1024;src.connect(analyser);
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=2048;src.connect(analyser);
     return true;
   }catch(e){return false;}
 }
 function startMeter(){
   stopMeter();if(!analyser)return;
   const data=new Uint8Array(analyser.fftSize);
+  let floor=0.004,samples=0;
   meterTimer=setInterval(()=>{
     analyser.getByteTimeDomainData(data);let sum=0;
     for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
-    const rms=Math.sqrt(sum/data.length);const now=performance.now();const speaking=rms>0.028;
+    const rms=Math.sqrt(sum/data.length);const now=performance.now();
+    if(!firstSpeechAt && samples<6){floor=(floor*samples+rms)/(samples+1);samples++;}
+    const threshold=Math.max(0.008,Math.min(0.02,floor*2.2));
+    const speaking=rms>threshold;
     if(speaking){
       if(!firstSpeechAt)firstSpeechAt=now;
       lastVoiceAt=now;
       if(silenceStart){longestSilence=Math.max(longestSilence,now-silenceStart);silenceStart=0;}
     }else if(firstSpeechAt && !silenceStart && lastVoiceAt && now-lastVoiceAt>650){silenceStart=lastVoiceAt;}
-  },100);
+  },80);
 }
 function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
 function cleanupAudio(){
@@ -168,12 +173,22 @@ async function nextQuestion(){
   await speakCurrent(false);
 }
 function selectVoice(lang){
-  const voices=speechSynthesis.getVoices();const exact=voices.find(v=>v.lang&&v.lang.toLowerCase()===lang.toLowerCase());
-  return exact||voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith(lang.split('-')[0].toLowerCase()))||null;
+  const base=String(lang||'en-US').toLowerCase().split('-')[0];
+  const voices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith(base));
+  const score=v=>{
+    const n=(v.name||'').toLowerCase();let x=0;
+    if((v.lang||'').toLowerCase()===String(lang||'').toLowerCase())x+=20;
+    if(/natural|neural|premium|enhanced/.test(n))x+=50;
+    if(/google/.test(n))x+=35;
+    if(/aria|jenny|guy|samantha|ava|andrew|nanami|haruka/.test(n))x+=25;
+    if(v.localService===false)x+=8;
+    return x;
+  };
+  return voices.sort((a,b)=>score(b)-score(a))[0]||null;
 }
 function speak(text,lang){
   return new Promise(resolve=>{
-    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'en-US';const v=selectVoice(u.lang);if(v)u.voice=v;u.rate=0.95;u.onend=resolve;u.onerror=resolve;speechSynthesis.speak(u);}
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'en-US';const v=selectVoice(u.lang);if(v)u.voice=v;u.rate=0.92;u.pitch=1.0;u.onend=resolve;u.onerror=resolve;speechSynthesis.speak(u);}
     catch(e){resolve();}
   });
 }
@@ -219,7 +234,7 @@ async function finishInterview(endedEarly){
 }
 function renderComplete(endedEarly){
   const longRows=sessionRows.filter(r=>Number(r.latency)>=7000);const empty=sessionRows.filter(r=>!r.text);
-  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'')+(testMode?' · TEST — not saved':'');
+  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'')+(testMode?' · TEST — separate history':'');
   els.statAnswers.textContent=sessionRows.length;els.statLong.textContent=longRows.length;els.statEmpty.textContent=empty.length;
   els.sessionLog.innerHTML=sessionRows.map((r,i)=>'<div class="log-row"><b>'+(i+1)+'. '+esc(phaseLabel(r.q))+'</b><span>Response start: '+(r.latency===''?'not detected':(r.latency/1000).toFixed(1)+' s')+' · Answer: '+fmt(r.duration)+' · Longest pause: '+(r.longest/1000).toFixed(1)+' s'+(!r.text?' · No transcript captured':'')+'</span></div>').join('')||'<div class="status">No answers were saved.</div>';
 }

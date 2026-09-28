@@ -23,3 +23,10 @@ test('MockInterview inline JavaScript parses without syntax errors',()=>{
   const script=inlineScript(html);
   assert.doesNotThrow(()=>new vm.Script(script,{filename:'mock-interview-inline.js'}));
 });
+
+
+test('MockReview inline JavaScript parses without syntax errors',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  const script=inlineScript(html);
+  assert.doesNotThrow(()=>new vm.Script(script,{filename:'mock-review-inline.js'}));
+});

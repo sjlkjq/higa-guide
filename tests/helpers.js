@@ -37,7 +37,7 @@ const QUESTION_HEADERS=['id','category','priority','source','main_question','fol
 const EVENT_HEADERS=['timestamp','session_id','device_id','question_id','event_type','event_value','elapsed_sec','page','attempt_id','user_role','app_version','note'];
 const ACK_HEADERS=['timestamp','session_id','student_summary','promise_text','accepted','device_id','app_version'];
 const MOCKQ_HEADERS=['id','profile','phase','language','kind','parent_id','order','active','source_type','source_ref','question_text','concept','ask_rule','notes'];
-const MOCKA_HEADERS=['session_id','profile','question_id','parent_id','question_kind','language','started_at','completed_at','transcript','response_latency_ms','answer_duration_ms','longest_internal_silence_ms','speech_detected','recognition_supported','recognition_error','repeat_count','device_id','user_agent'];
+const MOCKA_HEADERS=['session_id','profile','question_id','parent_id','question_kind','language','started_at','completed_at','transcript','response_latency_ms','answer_duration_ms','longest_internal_silence_ms','speech_detected','recognition_supported','recognition_error','repeat_count','device_id','user_agent','audio_file_id','audio_mime_type'];
 const MOCKS_HEADERS=['session_id','profile','started_at','completed_at','elapsed_ms','questions_asked','followups_asked','answers_saved','recognition_supported','device_id','user_agent','notes'];
 
 function defaultConfig(overrides={}){
@@ -67,7 +67,9 @@ function createHarness(options={}){
       {id:'KAI-1',profile:'shiori',phase:'japanese_oral_interview',language:'ja-JP',kind:'main',parent_id:'',order:1,active:true,source_type:'application_based',source_ref:'Applicant',question_text:'自己紹介をしてください。',concept:'self_intro',ask_rule:'always',notes:''}
     ])),
     MockAnswers:new Sheet('MockAnswers',objectRows(MOCKA_HEADERS,options.mockAnswers||[])),
-    MockSessions:new Sheet('MockSessions',objectRows(MOCKS_HEADERS,options.mockSessions||[]))
+    MockSessions:new Sheet('MockSessions',objectRows(MOCKS_HEADERS,options.mockSessions||[])),
+    MockTestAnswers:new Sheet('MockTestAnswers',objectRows(MOCKA_HEADERS,options.mockTestAnswers||[])),
+    MockTestSessions:new Sheet('MockTestSessions',objectRows(MOCKS_HEADERS,options.mockTestSessions||[]))
   };
   const spreadsheet=new Spreadsheet(sheets);
   const context={
@@ -80,7 +82,7 @@ function createHarness(options={}){
     console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set
   };
   vm.createContext(context);
-  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
+  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
   vm.runInContext(src,context,{filename:'Code.gs'});
   return {api:context.__higa,sheets,cfg,spreadsheet,context};
 }

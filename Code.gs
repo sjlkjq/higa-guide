@@ -1,10 +1,10 @@
-const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions'};
-const APP_VERSION = '1.3.0';
+const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
+const APP_VERSION = '1.4.0';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
   const mode=String(params.mode||'').toLowerCase();
-  const fileName=mode==='mock'?'MockInterview':'index';
+  const fileName=mode==='mock'?'MockInterview':mode==='mockreview'?'MockReview':'index';
   const source = HtmlService.createHtmlOutputFromFile(fileName).getContent();
   const access = {
     role: String(params.role || ''),
@@ -13,12 +13,12 @@ function doGet(e){
   const accessScript = '<script>window.__HIGA_ACCESS__=' + JSON.stringify(access) + ';' +
     'try{if(window.__HIGA_ACCESS__.token){localStorage.setItem("higa_token",window.__HIGA_ACCESS__.token);localStorage.setItem("higa_role",window.__HIGA_ACCESS__.role||"student");}}catch(e){}</script>';
   let html = source.includes('</head>') ? source.replace('</head>', accessScript + '</head>') : accessScript + source;
-  if(mode!=='mock' && access.role === 'admin' && html.includes('</body>')){
+  if(!['mock','mockreview'].includes(mode) && access.role === 'admin' && html.includes('</body>')){
     const adminJa = HtmlService.createHtmlOutputFromFile('AdminJa').getContent();
     html = html.replace('</body>', adminJa + '</body>');
   }
   return HtmlService.createHtmlOutput(html)
-    .setTitle(mode==='mock'?'Mock Interview':'HiGA Interview Training')
+    .setTitle(mode==='mock'?'Mock Interview':mode==='mockreview'?'Mock Review':'HiGA Interview Training')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -164,15 +164,15 @@ function mockStartSession(token, requestedRole, payload){
   const profile=String(payload.profile||'').toLowerCase();
   if(!['shimpei','shiori'].includes(profile))return {ok:false,error:'Invalid profile.'};
   const sessionId=String(payload.session_id||('mock_'+new Date().getTime()+'_'+Math.random().toString(36).slice(2,8)));
-  if(auth.role!=='student')return {ok:true,session_id:sessionId,test_mode:true,persisted:false};
-  if(findBy_(SHEETS.MOCKS,'session_id',sessionId))return {ok:false,error:'Mock session already exists.'};
-  appendObject_(SHEETS.MOCKS,{
+  const names=mockSheetNames_(auth.role);
+  if(findBy_(names.sessions,'session_id',sessionId))return {ok:false,error:'Mock session already exists.'};
+  appendObject_(names.sessions,{
     session_id:sessionId,profile,started_at:payload.started_at||new Date().toISOString(),completed_at:'',
     elapsed_ms:'',questions_asked:0,followups_asked:0,answers_saved:0,
     recognition_supported:payload.recognition_supported,device_id:payload.device_id||'',
     user_agent:payload.user_agent||'',notes:''
   });
-  return {ok:true,session_id:sessionId};
+  return {ok:true,session_id:sessionId,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope};
 }
 
 function mockSaveAnswer(token, requestedRole, payload){
@@ -181,14 +181,14 @@ function mockSaveAnswer(token, requestedRole, payload){
   const q=findBy_(SHEETS.MOCKQ,'id',payload.question_id);
   if(!q || !truthy_(q.active))return {ok:false,error:'Mock question not found.'};
   if(String(q.profile)!==String(payload.profile))return {ok:false,error:'Question/profile mismatch.'};
-  if(auth.role!=='student')return {ok:true,test_mode:true,persisted:false};
-  const session=findBy_(SHEETS.MOCKS,'session_id',payload.session_id);
+  const names=mockSheetNames_(auth.role);
+  const session=findBy_(names.sessions,'session_id',payload.session_id);
   if(!session)return {ok:false,error:'Mock session not found.'};
   if(String(session.profile)!==String(payload.profile))return {ok:false,error:'Session/profile mismatch.'};
   if(String(session.completed_at||'').trim())return {ok:false,error:'Mock session is already completed.'};
-  const duplicate=rows_(SHEETS.MOCKA).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
+  const duplicate=rows_(names.answers).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
   if(duplicate)return {ok:true,persisted:true,duplicate:true};
-  appendObject_(SHEETS.MOCKA,{
+  appendObject_(names.answers,{
     session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
     question_kind:q.kind||'main',language:q.language||'',started_at:payload.started_at||'',
     completed_at:payload.completed_at||new Date().toISOString(),transcript:payload.transcript||'',
@@ -197,15 +197,15 @@ function mockSaveAnswer(token, requestedRole, payload){
     recognition_supported:truthy_(payload.recognition_supported),recognition_error:payload.recognition_error||'',
     repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||''
   });
-  incrementMockSessionCounters_(payload.session_id,String(q.kind)==='followup');
-  return {ok:true};
+  incrementMockSessionCounters_(names.sessions,payload.session_id,String(q.kind)==='followup');
+  return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope};
 }
 
 function mockFinishSession(token, requestedRole, payload){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
   if(!payload || typeof payload!=='object')return {ok:false,error:'Invalid mock finish payload.'};
-  if(auth.role!=='student')return {ok:true,test_mode:true,persisted:false};
-  const sh=sheet_(SHEETS.MOCKS),vals=sh.getDataRange().getValues(); if(vals.length<2)return {ok:false,error:'Mock session not found.'};
+  const names=mockSheetNames_(auth.role);
+  const sh=sheet_(names.sessions),vals=sh.getDataRange().getValues(); if(vals.length<2)return {ok:false,error:'Mock session not found.'};
   const h=vals[0].map(String),idc=h.indexOf('session_id');
   const ri=vals.findIndex((r,i)=>i>0&&String(r[idc])===String(payload.session_id));
   if(ri<1)return {ok:false,error:'Mock session not found.'};
@@ -215,11 +215,11 @@ function mockFinishSession(token, requestedRole, payload){
   setByHeader_(sh,h,row,'completed_at',payload.completed_at||new Date().toISOString());
   setByHeader_(sh,h,row,'elapsed_ms',numberOrBlank_(payload.elapsed_ms));
   setByHeader_(sh,h,row,'notes',payload.notes||'');
-  return {ok:true};
+  return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope};
 }
 
-function incrementMockSessionCounters_(sessionId,isFollowup){
-  const sh=sheet_(SHEETS.MOCKS),vals=sh.getDataRange().getValues(); if(vals.length<2)return;
+function incrementMockSessionCounters_(sheetName,sessionId,isFollowup){
+  const sh=sheet_(sheetName),vals=sh.getDataRange().getValues(); if(vals.length<2)return;
   const h=vals[0].map(String),idc=h.indexOf('session_id');
   const ri=vals.findIndex((r,i)=>i>0&&String(r[idc])===String(sessionId)); if(ri<1)return;
   const row=ri+1;
@@ -227,6 +227,32 @@ function incrementMockSessionCounters_(sessionId,isFollowup){
   bump('answers_saved'); bump(isFollowup?'followups_asked':'questions_asked');
 }
 function numberOrBlank_(v){if(v===null||v===undefined||String(v).trim()==='')return '';const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n)):'';}
+
+function mockSheetNames_(role){
+  return role==='student'
+    ? {sessions:SHEETS.MOCKS,answers:SHEETS.MOCKA,scope:'applicant'}
+    : {sessions:SHEETS.MOCKTS,answers:SHEETS.MOCKTA,scope:'test'};
+}
+
+function mockReviewBootstrap(token, requestedRole){
+  try{
+    const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+    if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
+    const qMap=Object.fromEntries(rows_(SHEETS.MOCKQ).map(q=>[String(q.id),{question_text:String(q.question_text||''),concept:String(q.concept||''),phase:String(q.phase||''),kind:String(q.kind||''),profile:String(q.profile||'')}]));
+    const collect=(sessionSheet,answerSheet,scope)=>{
+      const sessions=rows_(sessionSheet).map(r=>({...r,scope}));
+      const answers=rows_(answerSheet).map(r=>({...r,scope,question:qMap[String(r.question_id)]||{}}));
+      return {sessions,answers};
+    };
+    const applicant=collect(SHEETS.MOCKS,SHEETS.MOCKA,'applicant');
+    const test=collect(SHEETS.MOCKTS,SHEETS.MOCKTA,'test');
+    const sessions=[...applicant.sessions,...test.sessions].sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||''))).slice(0,200);
+    const allowed=new Set(sessions.map(s=>String(s.session_id)));
+    const answers=[...applicant.answers,...test.answers].filter(a=>allowed.has(String(a.session_id)));
+    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION};
+  }catch(err){return {ok:false,error:String(err.message||err)};}
+}
+
 
 function authorize_(token, requestedRole){
   const c=config_();
