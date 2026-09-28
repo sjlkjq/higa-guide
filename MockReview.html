@@ -7,12 +7,21 @@
 <title>Mock Review</title>
 <style>
 :root{--bg:#f6f8fb;--panel:#fff;--text:#17202b;--muted:#667085;--line:#dfe4ec;--accent:#315fcb;--test:#8a5a12;--app:#17613b}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:1120px;margin:0 auto;padding:24px 18px 50px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}h1{margin:0;font-size:28px}.muted{color:var(--muted);font-size:13px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.btn,.select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font:inherit}.btn{cursor:pointer}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}.session{padding:12px;border:1px solid var(--line);border-radius:11px;margin:8px 0;cursor:pointer}.session:hover,.session.active{border-color:#8ea8e8;background:#f7f9ff}.tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700}.tag.applicant{background:#e9f7ef;color:var(--app)}.tag.test{background:#fff3df;color:var(--test)}.q{border-top:1px solid var(--line);padding:14px 0}.q:first-child{border-top:0}.qtitle{font-weight:700;line-height:1.5}.meta{font-size:11px;color:var(--muted);margin:5px 0 8px}.transcript{background:#f8fafc;border:1px solid #e5eaf1;border-radius:9px;padding:10px;font-size:13px;line-height:1.55;white-space:pre-wrap}.empty{text-align:center;color:var(--muted);padding:35px 10px}.warn{color:#9a6700}.bad{color:#b42318}.good{color:#067647}@media(max-width:850px){.grid{grid-template-columns:1fr}.wrap{padding:15px 10px 35px}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:1120px;margin:0 auto;padding:24px 18px 50px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}h1{margin:0;font-size:28px}.muted{color:var(--muted);font-size:13px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.btn,.select{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font:inherit}.btn{cursor:pointer}.grid{display:grid;grid-template-columns:360px 1fr;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}.session{padding:12px;border:1px solid var(--line);border-radius:11px;margin:8px 0;cursor:pointer}.session:hover,.session.active{border-color:#8ea8e8;background:#f7f9ff}.tag{display:inline-block;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700}.tag.applicant{background:#e9f7ef;color:var(--app)}.tag.test{background:#fff3df;color:var(--test)}.q{border-top:1px solid var(--line);padding:14px 0}.q:first-child{border-top:0}.qtitle{font-weight:700;line-height:1.5}.meta{font-size:11px;color:var(--muted);margin:5px 0 8px}.transcript{background:#f8fafc;border:1px solid #e5eaf1;border-radius:9px;padding:10px;font-size:13px;line-height:1.55;white-space:pre-wrap}.empty{text-align:center;color:var(--muted);padding:35px 10px}.warn{color:#9a6700}.bad{color:#b42318}.good{color:#067647}.sttbox{margin:0 0 14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}.sttrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sttinput{min-width:280px;flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit}.browserstt{margin-top:7px;padding:8px 10px;border-left:3px solid #cbd5e1;background:#f8fafc;font-size:12px;color:var(--muted);white-space:pre-wrap}@media(max-width:850px){.grid{grid-template-columns:1fr}.wrap{padding:15px 10px 35px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top"><div><h1>模擬面接レビュー</h1><div class="muted">Applicant history と Parent/Admin test history は分離されています。</div></div><button class="btn" onclick="window.close()">閉じる</button></div>
+  <div class="sttbox">
+    <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span></div>
+    <div id="sttAdminSetup" class="sttrow" style="margin-top:9px;display:none">
+      <input id="deepgramKey" class="sttinput" type="password" autocomplete="off" placeholder="Deepgram API Key">
+      <button class="btn" id="saveDeepgramKey">API Keyを保存</button>
+      <button class="btn" id="clearDeepgramKey">解除</button>
+    </div>
+    <div class="muted" style="margin-top:7px">Shimpei: Nova-3 English / Shiori: Nova-3 multilingual code-switching (日本語＋英語混在)</div>
+  </div>
   <div class="toolbar">
     <select class="select" id="scope"><option value="all">すべて</option><option value="applicant">本人データのみ</option><option value="test">親/Adminテストのみ</option></select>
     <select class="select" id="profile"><option value="all">心平・栞</option><option value="shimpei">Shimpei</option><option value="shiori">Shiori</option></select>
@@ -46,7 +55,9 @@ function renderDetail(){
     const q=a.question||{};const speech=a.speech_detected===true||String(a.speech_detected).toLowerCase()==='true';
     return '<div class="q"><div class="qtitle">'+(i+1)+'. '+esc(q.question_text||a.question_id)+'</div>'+
       '<div class="meta">Response start: '+fmtMs(a.response_latency_ms)+' · Answer: '+fmtMs(a.answer_duration_ms)+' · Longest internal pause: '+fmtMs(a.longest_internal_silence_ms)+' · Speech: '+(speech?'detected':'not detected')+'</div>'+
+      '<div class="meta">STT: '+esc(a.stt_provider||'legacy')+(a.stt_model?' · '+esc(a.stt_model):'')+(a.stt_language_mode?' · mode '+esc(a.stt_language_mode):'')+(a.stt_detected_language?' · detected '+esc(a.stt_detected_language):'')+(a.stt_confidence!==''&&a.stt_confidence!==undefined?' · confidence '+esc(Number(a.stt_confidence).toFixed(2)):'')+(a.stt_status?' · '+esc(a.stt_status):'')+'</div>'+
       '<div class="transcript">'+(a.transcript?esc(a.transcript):'<span class="bad">Transcriptなし</span>')+'</div>'+
+      (a.browser_transcript&&String(a.browser_transcript)!==String(a.transcript)?'<div class="browserstt"><b>Browser STT (diagnostic)</b><br>'+esc(a.browser_transcript)+'</div>':'')+
       (a.audio_file_id?'<div style="margin-top:8px"><button class="btn playAudio" data-file="'+esc(a.audio_file_id)+'">▶ 回答音声を再生</button></div>':'<div class="meta warn">録音なし</div>')+
       (a.recognition_error?'<div class="meta bad">Speech recognition error: '+esc(a.recognition_error)+'</div>':'')+'</div>';
   }).join(''):'<div class="empty">回答データはありません。</div>';
@@ -62,12 +73,30 @@ function renderDetail(){
     }catch(e){btn.disabled=false;btn.textContent='再生失敗';setTimeout(()=>btn.textContent=original,1500);}
   });
 }
+function renderSttStatus(){
+  const c=data.stt_config||{};
+  $('sttStatus').textContent=c.configured?'Deepgram Nova-3: configured':'Deepgram: not configured — browser STT fallback';
+  $('sttStatus').className=c.configured?'good':'warn';
+  if((data.role||ACCESS.role)==='admin')$('sttAdminSetup').style.display='flex';
+}
+async function saveDeepgramKey(clear=false){
+  const key=clear?'':String($('deepgramKey').value||'').trim();
+  if(!clear&&!key){$('sttStatus').textContent='API Keyを入力してください。';$('sttStatus').className='bad';return;}
+  $('saveDeepgramKey').disabled=true;$('clearDeepgramKey').disabled=true;
+  try{
+    const r=await gas('mockSetDeepgramApiKey',[ACCESS.token,ACCESS.role||'admin',key]);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Save failed');
+    $('deepgramKey').value='';
+    await load();
+  }catch(e){$('sttStatus').textContent='Deepgram設定エラー: '+e.message;$('sttStatus').className='bad';}
+  finally{$('saveDeepgramKey').disabled=false;$('clearDeepgramKey').disabled=false;}
+}
 async function load(){
   $('sessions').innerHTML='<div class="empty">Loading…</div>';
-  try{const r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');data=r;selected='';renderSessions();renderDetail();}
+  try{const r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');data=r;selected='';renderSttStatus();renderSessions();renderDetail();}
   catch(e){$('sessions').innerHTML='<div class="empty bad">'+esc(e.message)+'</div>';}
 }
-$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;load();
+$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);load();
 </script>
 </body>
 </html>
