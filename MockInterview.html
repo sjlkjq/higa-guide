@@ -80,7 +80,7 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 const ACCESS=window.__HIGA_ACCESS__||{};
 const els={};
 ['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
-let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='';
+let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[];
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 recognitionSupported=!!SpeechRecognition;
 deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);
@@ -146,7 +146,7 @@ function startMeter(){
 }
 function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
 function cleanupAudio(){
-  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
   try{speechSynthesis.cancel();}catch(e){}
   if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
@@ -193,11 +193,11 @@ function speak(text,lang){
   });
 }
 async function speakCurrent(isRepeat){
-  stopRecognition();stopMeter();els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  stopRecognition();stopMeter();if(isRepeat)await stopAnswerRecording(true);els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
   if(isRepeat){repeatCount++;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;els.transcript.textContent='';delete els.transcript.dataset.error;}
   await speak(current.question_text,current.language);
   questionSpokenAt=performance.now();answerStartedAt=Date.now();els.promptState.textContent='Your answer';els.mic.classList.add('live');els.doneBtn.disabled=false;els.repeatBtn.disabled=false;
-  startClock();startMeter();startRecognition(current.language);
+  startClock();startMeter();startRecognition(current.language);startAnswerRecording();
 }
 function startClock(){clearInterval(clockTimer);clockTimer=setInterval(()=>{els.answerClock.textContent=fmt(Date.now()-answerStartedAt);},250);}
 function startRecognition(lang){
@@ -212,12 +212,36 @@ function startRecognition(lang){
   }catch(e){els.transcript.dataset.error=String(e.message||e);}
 }
 function stopRecognition(){recognitionWanted=false;if(recognizer){try{recognizer.onend=null;recognizer.stop();}catch(e){}recognizer=null;}}
+
+function startAnswerRecording(){
+  audioChunks=[];if(!micStream||typeof MediaRecorder==='undefined')return;
+  try{
+    const options={};
+    if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))options.mimeType='audio/webm;codecs=opus';
+    mediaRecorder=new MediaRecorder(micStream,options);
+    mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)audioChunks.push(e.data);};
+    mediaRecorder.start();
+  }catch(e){mediaRecorder=null;audioChunks=[];}
+}
+function stopAnswerRecording(discard=false){
+  return new Promise(resolve=>{
+    if(!mediaRecorder||mediaRecorder.state==='inactive'){const blob=discard?null:(audioChunks.length?new Blob(audioChunks,{type:'audio/webm'}):null);mediaRecorder=null;audioChunks=[];return resolve(blob);}
+    const mr=mediaRecorder;
+    mr.onstop=()=>{const blob=discard?null:(audioChunks.length?new Blob(audioChunks,{type:mr.mimeType||'audio/webm'}):null);mediaRecorder=null;audioChunks=[];resolve(blob);};
+    try{mr.stop();}catch(e){mediaRecorder=null;audioChunks=[];resolve(null);}
+  });
+}
+function blobToBase64(blob){
+  return new Promise(resolve=>{if(!blob)return resolve({base64:'',mime:''});const fr=new FileReader();fr.onload=()=>resolve({base64:String(fr.result||'').split(',')[1]||'',mime:blob.type||'audio/webm'});fr.onerror=()=>resolve({base64:'',mime:''});fr.readAsDataURL(blob);});
+}
+
 els.repeatBtn.onclick=()=>speakCurrent(true);
 
 async function saveAndAdvance(){
   els.doneBtn.disabled=true;els.repeatBtn.disabled=true;stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;els.mic.classList.remove('live');els.promptState.textContent='Saving…';
+  const audioBlob=await stopAnswerRecording(false);const audio=await blobToBase64(audioBlob);
   const end=Date.now();const text=(transcriptFinal+' '+transcriptInterim).trim();const latency=firstSpeechAt?Math.round(firstSpeechAt-questionSpokenAt):'';
-  const payload={session_id:sessionId,profile,question_id:current.id,started_at:new Date(answerStartedAt).toISOString(),completed_at:new Date(end).toISOString(),transcript:text,response_latency_ms:latency,answer_duration_ms:end-answerStartedAt,longest_internal_silence_ms:Math.round(longestSilence),speech_detected:!!firstSpeechAt,recognition_supported:recognitionSupported,recognition_error:els.transcript.dataset.error||'',repeat_count:repeatCount,device_id:deviceId,user_agent:navigator.userAgent};
+  const payload={session_id:sessionId,profile,question_id:current.id,started_at:new Date(answerStartedAt).toISOString(),completed_at:new Date(end).toISOString(),transcript:text,response_latency_ms:latency,answer_duration_ms:end-answerStartedAt,longest_internal_silence_ms:Math.round(longestSilence),speech_detected:!!firstSpeechAt,recognition_supported:recognitionSupported,recognition_error:els.transcript.dataset.error||'',repeat_count:repeatCount,device_id:deviceId,user_agent:navigator.userAgent,audio_base64:audio.base64,audio_mime_type:audio.mime};
   try{
     const r=await gas('mockSaveAnswer',[ACCESS.token,ACCESS.role||'student',payload]);if(!r||!r.ok)throw new Error(r&&r.error||'Save failed');
     sessionRows.push({q:current,text,latency,duration:end-answerStartedAt,longest:Math.round(longestSilence),speech:!!firstSpeechAt});

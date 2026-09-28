@@ -472,3 +472,45 @@ test('QA-53 Mock Review UI parses and exposes applicant/test filters',()=>{
   assert.match(html,/親\/Adminテストのみ/);
   assert.match(html,/mockReviewBootstrap/);
 });
+
+
+test('QA-54 answer audio is stored with the answer row',()=>{
+  const {api,sheets,driveFiles}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('fake-audio-bytes').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({audio_base64:audio,audio_mime_type:'audio/webm'}));
+  assert.equal(r.ok,true);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.match(String(a.audio_file_id),/^drive_/);
+  assert.equal(a.audio_mime_type,'audio/webm');
+  assert.equal(driveFiles.has(String(a.audio_file_id)),true);
+});
+
+test('QA-55 admin can securely retrieve only audio referenced by mock history',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('play-me').toString('base64');
+  api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({audio_base64:audio,audio_mime_type:'audio/webm'}));
+  const fileId=objects(sheets.MockAnswers)[0].audio_file_id;
+  const ok=api.mockGetAudio('admin-token-123456','admin',fileId);
+  assert.equal(ok.ok,true);
+  assert.equal(Buffer.from(ok.base64,'base64').toString(),'play-me');
+  const denied=api.mockGetAudio('admin-token-123456','admin','drive_not_referenced');
+  assert.equal(denied.ok,false);
+});
+
+test('QA-56 student cannot use reviewer audio retrieval endpoint',()=>{
+  const {api}=createHarness();
+  const r=api.mockGetAudio('student-token-123456','student','anything');
+  assert.equal(r.ok,false);
+  assert.match(r.error,/Reviewer access required/i);
+});
+
+test('QA-57 browser runtime records each spoken answer with MediaRecorder when supported',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/new MediaRecorder\(micStream/);
+  assert.match(html,/startAnswerRecording\(\)/);
+  assert.match(html,/stopAnswerRecording\(false\)/);
+  assert.match(html,/audio_base64:audio\.base64/);
+  const review=fs.readFileSync('MockReview.html','utf8');
+  assert.match(review,/mockGetAudio/);
+  assert.match(review,/回答音声を再生/);
+});
