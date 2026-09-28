@@ -160,7 +160,17 @@ function formatTime(sec){let m=Math.floor(sec/60),s=sec%60;return String(m).padS
 async function logEvent(type,qid,elapsed,page,aid,note=''){try{await server('logEvent',[token,role,{timestamp:new Date().toISOString(),session_id:sessionId(),device_id:deviceId(),question_id:qid,event_type:type,event_value:note,elapsed_sec:elapsed,page:page,attempt_id:aid,user_role:role,app_version:APP_VERSION,note:''}])}catch(e){console.warn(e)}}
 function showSec(id){if(id==='practice'&&!currentQ&&role==='student'){id='questions'}document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.sec===id));$('pageTitle').textContent={overview:'Overview',questions:'Question Bank',practice:'Practice',feedback:'Feedback Review',strategy:'Strategy',reviewer:'Reviewer Dashboard'}[id]||'Interview Training';$('pageSub').textContent={overview:'Shared progress, feedback and interview readiness.',questions:'Choose one item and improve it over repeated attempts.',practice:'One question at a time.',feedback:'Review previous answers and turn feedback into the next attempt.',strategy:'Why this training works this way.',reviewer:'Review home practice and record live interview performance.'}[id]||''}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{if(b.id==='mockNav'||b.id==='mockReviewNav')return;if(b.disabled){toast('First save your explanation of the training purpose.','error');return}showSec(b.dataset.sec)});
-$('mockNav').onclick=()=>{const base='https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec';const target=base+'?mode=mock&role='+encodeURIComponent(role)+'&token='+encodeURIComponent(token);window.open(target,'_blank','noopener')};
+const MOCK_ORIGIN='https://sjlkjq.github.io';
+const MOCK_ALLOWED_RPC=new Set(['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession']);
+window.addEventListener('message',e=>{
+  if(e.origin!==MOCK_ORIGIN||!e.data||e.data.type!=='higa-mock-rpc'||!MOCK_ALLOWED_RPC.has(e.data.name))return;
+  const source=e.source,id=e.data.id,name=e.data.name,args=Array.isArray(e.data.args)?e.data.args.slice():[];
+  args[0]=token;args[1]=role;
+  let runner=google.script.run.withSuccessHandler(result=>{try{source.postMessage({type:'higa-mock-rpc-result',id,result},MOCK_ORIGIN)}catch(err){}})
+    .withFailureHandler(err=>{try{source.postMessage({type:'higa-mock-rpc-result',id,ok:false,error:String(err&&err.message||err)},MOCK_ORIGIN)}catch(ex){}});
+  runner[name](...args);
+});
+$('mockNav').onclick=()=>{const target=MOCK_ORIGIN+'/higa-guide/mock.html#role='+encodeURIComponent(role);window.open(target,'higaMockInterview')};
 $('mockReviewNav').onclick=()=>{const base='https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec';const target=base+'?mode=mockreview&role='+encodeURIComponent(role)+'&token='+encodeURIComponent(token);window.open(target,'_blank','noopener')};
 init();
 </script>

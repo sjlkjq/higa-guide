@@ -275,65 +275,71 @@ test('QA-27 malformed blank timing fields are not coerced to zero in persisted t
 });
 
 test('QA-28 runtime contains no LLM-generated interviewer path',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.doesNotMatch(html,/api\.openai\.com|chat\/completions|responses\/v1|anthropic|gemini/i);
   assert.match(html,/speak\(current\.question_text,current\.language\)/);
 });
 
 test('QA-29 live transcript is hidden during the mock',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/\.transcript\{display:none\}/);
 });
 
 test('QA-30 TTS and speech recognition both use each configured question language',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/speak\(current\.question_text,current\.language\)/);
   assert.match(html,/startRecognition\(current\.language\)/);
 });
 
 test('QA-31 unsupported speech recognition has an explicit fallback path',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/if\(!recognitionSupported\)return/);
   assert.match(html,/Speech recognition is not available/);
 });
 
 test('QA-32 microphone denial is handled without crashing interview start',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/Microphone error:/);
   assert.match(html,/return false;/);
   assert.match(html,/Microphone permission was not granted/);
 });
 
 test('QA-33 parent/admin test mode is visibly labelled as separate history',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/saved separately as test data and will not affect applicant history/);
   assert.match(html,/Parent\/Admin test · saved separately/);
   assert.match(html,/TEST — separate history/);
 });
 
 test('QA-34 response recognition error is cleared between questions',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/delete\s+els\.transcript\.dataset\.error/);
 });
 
 test('QA-35 repeating a question resets answer timing and recognition state safely',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/if\(isRepeat\).*firstSpeechAt=0/);
   assert.match(html,/if\(isRepeat\).*transcriptFinal=''/);
 });
 
-test('QA-36 root GitHub mock URL exists and routes to Apps Script mock mode',()=>{
+test('QA-36 root GitHub mock URL is the top-level media runtime, not an Apps Script redirect',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/mode=mock/);
-  assert.match(html,/script\.google\.com\/macros\/s\//);
-  assert.match(html,/location\.replace\(target\)/);
+  assert.match(html,/github-pages-top-level-media/);
+  assert.match(html,/window\.opener\.postMessage/);
+  assert.doesNotMatch(html,/location\.replace\(target\)/);
+  assert.doesNotMatch(html,/script\.google\.com\/macros\/s\/.*mode=mock/);
 });
 
-test('QA-37 parent/student main UI launches mock using fixed Apps Script deployment URL, not iframe origin',()=>{
+test('QA-37 parent/student main UI launches top-level GitHub mock and relays backend RPC securely',()=>{
   const html=fs.readFileSync('index.html','utf8');
   const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
-  assert.match(line,/script\.google\.com\/macros\/s\//);
-  assert.doesNotMatch(line,/location\.origin|location\.pathname/);
+  assert.match(html,/const MOCK_ORIGIN='https:\/\/sjlkjq\.github\.io'/);
+  assert.match(line,/\/higa-guide\/mock\.html/);
+  assert.doesNotMatch(line,/token=/);
+  assert.doesNotMatch(line,/noopener/);
+  assert.match(html,/e\.origin!==MOCK_ORIGIN/);
+  assert.match(html,/MOCK_ALLOWED_RPC/);
+  assert.match(html,/args\[0\]=token;args\[1\]=role/);
 });
 
 test('QA-38 parent/admin sees mock nav and reviewer does not by default',()=>{
@@ -455,13 +461,13 @@ test('QA-50 Mock Review returns applicant and test histories with explicit scope
 });
 
 test('QA-51 pause detector resumes AudioContext and uses a lower adaptive speech threshold',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/audioCtx\.state==='suspended'.*audioCtx\.resume\(\)/s);
   assert.match(html,/Math\.max\(0\.008,Math\.min\(0\.02,floor\*2\.2\)\)/);
 });
 
 test('QA-52 higher quality system voices are preferred when available',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/natural\|neural\|premium\|enhanced/);
   assert.match(html,/google/);
   assert.match(html,/aria\|jenny\|guy\|samantha\|ava\|andrew\|nanami\|haruka/);
@@ -506,7 +512,7 @@ test('QA-56 student cannot use reviewer audio retrieval endpoint',()=>{
 });
 
 test('QA-57 browser runtime records each spoken answer with MediaRecorder when supported',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/new MediaRecorder\(micStream/);
   assert.match(html,/startAnswerRecording\(\)/);
   assert.match(html,/stopAnswerRecording\(false\)/);
@@ -518,7 +524,7 @@ test('QA-57 browser runtime records each spoken answer with MediaRecorder when s
 
 
 test('QA-58 microphone setup lists audio input devices and stores selected device id',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/enumerateDevices\(\)/);
   assert.match(html,/kind==='audioinput'/);
   assert.match(html,/mock_mic_device_id/);
@@ -526,7 +532,7 @@ test('QA-58 microphone setup lists audio input devices and stores selected devic
 });
 
 test('QA-59 interview cannot start until microphone test detects input',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/id="startBtn" disabled/);
   assert.match(html,/if\(!micVerified\)/);
   assert.match(html,/Run a successful microphone test before starting/);
@@ -534,7 +540,7 @@ test('QA-59 interview cannot start until microphone test detects input',()=>{
 });
 
 test('QA-60 microphone diagnostic shows actual active track label and live level',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/track\.label/);
   assert.match(html,/Active input:/);
   assert.match(html,/micLevelBar\.style\.width/);
@@ -542,7 +548,7 @@ test('QA-60 microphone diagnostic shows actual active track label and live level
 });
 
 test('QA-61 microphone diagnostic records five-second playback sample locally',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/Test microphone \(5 sec\)/);
   assert.match(html,/new MediaRecorder\(micStream/);
   assert.match(html,/setTimeout\(r,5000\)/);
@@ -550,8 +556,30 @@ test('QA-61 microphone diagnostic records five-second playback sample locally',(
 });
 
 test('QA-62 changing microphone invalidates prior microphone verification',()=>{
-  const html=fs.readFileSync('MockInterview.html','utf8');
+  const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/micSelect\.onchange/);
   assert.match(html,/micVerified=false/);
   assert.match(html,/Device changed\. Run the microphone test again/);
+});
+
+
+test('QA-63 permission-gated device labels are not fabricated before permission grant',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.doesNotMatch(html,/Microphone '\+\(i\+1\)/);
+  assert.match(html,/Microphone names will appear after permission is granted/);
+  assert.match(html,/getMicPermissionState/);
+});
+
+test('QA-64 denied microphone permission gives site-specific recovery guidance',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/Microphone permission is blocked for https:\/\/sjlkjq\.github\.io/);
+  assert.match(html,/Site settings/);
+  assert.match(html,/set Microphone to Allow/);
+});
+
+test('QA-65 static mock never sends the private token to GitHub Pages',()=>{
+  const html=fs.readFileSync('index.html','utf8');
+  const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
+  assert.doesNotMatch(line,/token=/);
+  assert.match(line,/mock\.html#role=/);
 });
