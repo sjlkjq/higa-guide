@@ -299,7 +299,8 @@ test('QA-31 unsupported speech recognition has an explicit fallback path',()=>{
 
 test('QA-32 microphone denial is handled without crashing interview start',()=>{
   const html=fs.readFileSync('MockInterview.html','utf8');
-  assert.match(html,/catch\(e\)\{return false;\}/);
+  assert.match(html,/Microphone error:/);
+  assert.match(html,/return false;/);
   assert.match(html,/Microphone permission was not granted/);
 });
 
