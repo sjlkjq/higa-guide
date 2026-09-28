@@ -1,36 +1,372 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <title>Mock Interview</title>
-  <style>
-    html,body{margin:0;width:100%;height:100%;background:#0b1020;font-family:Arial,Helvetica,sans-serif}
-    #loading,#error{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;color:#f7f8fb}
-    #error{display:none}.card{max-width:560px;background:#151b2e;border:1px solid #2e3956;border-radius:14px;padding:24px}.muted{color:#aeb7ca;font-size:14px;line-height:1.5;margin-top:10px}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Mock Interview</title>
+<meta name="higa-runtime" content="github-pages-top-level-media">
+<style>
+:root{--bg:#0b1020;--panel:#151b2e;--panel2:#1d253b;--text:#f7f8fb;--muted:#aeb7ca;--line:#2e3956;--accent:#7ca7ff;--good:#5bd19a;--warn:#ffc56d;--bad:#ff8585}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}.wrap{max-width:760px;margin:0 auto;padding:24px 18px 42px}.brand{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.22)}
+h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-height:1.55;margin:0}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}.choice{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:18px;padding:22px;text-align:left;cursor:pointer}.choice:hover,.choice:focus{border-color:var(--accent);outline:none}.choice b{display:block;font-size:21px;margin-bottom:5px}.choice span{font-size:12px;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:13px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer}.btn.primary{background:var(--accent);border-color:var(--accent);color:#071226}.btn.warn{border-color:#66553b}.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.status{font-size:12px;color:var(--muted)}.status.good{color:var(--good)}.status.warn{color:var(--warn)}.status.bad{color:var(--bad)}
+.top{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:18px}.who{font-weight:800}.counter{font-size:12px;color:var(--muted)}
+.interview{min-height:78vh;display:flex;flex-direction:column}.stage{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:30px 2px}.phase{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}.prompt-state{font-size:16px;color:var(--muted);margin-bottom:14px}.mic{width:98px;height:98px;border-radius:50%;margin:0 auto 22px;background:#202a44;border:1px solid #39476d;display:grid;place-items:center;font-size:38px;position:relative}.mic.live:after{content:"";position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(124,167,255,.5);animation:pulse 1.5s infinite}@keyframes pulse{0%{transform:scale(.92);opacity:.8}100%{transform:scale(1.25);opacity:0}}
+.live-time{font-size:42px;font-variant-numeric:tabular-nums;font-weight:750;margin-bottom:8px}.transcript{display:none}.controls{border-top:1px solid var(--line);padding-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.complete{text-align:center}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px}.stat b{display:block;font-size:24px}.stat span{font-size:11px;color:var(--muted)}
+.log{margin-top:18px;text-align:left}.log-row{padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}.log-row b{display:block;margin-bottom:3px}.log-row span{color:var(--muted)}
+.error{background:#351d28;border-color:#6d3245;color:#ffd9e2}
+.mic-setup{margin-top:20px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);text-align:left}.mic-setup label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.mic-select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);font:inherit}.level-wrap{margin-top:12px;height:12px;border-radius:999px;background:#0f1526;overflow:hidden;border:1px solid var(--line)}.level-bar{height:100%;width:0%;background:var(--accent);transition:width .08s linear}.mic-detail{margin-top:9px;font-size:12px;color:var(--muted);line-height:1.5}.mic-detail.good{color:var(--good)}.mic-detail.bad{color:var(--bad)}.mic-test-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.mic-playback{width:100%;margin-top:10px;display:none}
+@media(max-width:600px){.choice-grid,.stats{grid-template-columns:1fr}.wrap{padding:16px 12px 30px}.card{padding:18px}.live-time{font-size:36px}.stage{padding:22px 0}}
+</style>
 </head>
 <body>
-  <div id="loading"><div class="card"><strong>Loading Mock Interview…</strong></div></div>
-  <div id="error"><div class="card"><strong>Invalid access link.</strong><div class="muted">Open Mock Interview from the Student or Parent/Admin screen, or use a valid access token.</div></div></div>
-  <script>
-    (() => {
-      const DEPLOYMENT_URL='https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec';
-      const validRoles=['student','reviewer','admin'];
-      const url=new URL(location.href);
-      const hash=new URLSearchParams(String(url.hash||'').replace(/^#/,''));
-      const query=new URLSearchParams(String(url.search||'').replace(/^\?/,''));
-      const role=String(hash.get('role')||query.get('role')||'').toLowerCase();
-      const token=String(hash.get('token')||query.get('token')||'');
-      if(!validRoles.includes(role)||token.length<12){
-        document.getElementById('loading').style.display='none';
-        document.getElementById('error').style.display='flex';
-        return;
-      }
-      const target=DEPLOYMENT_URL+'?mode=mock&role='+encodeURIComponent(role)+'&token='+encodeURIComponent(token);
-      location.replace(target);
-    })();
-  </script>
+<div class="wrap">
+  <div class="brand">Application Interview Training</div>
+
+  <section id="loading" class="card"><h1>Loading…</h1><p>Preparing the approved interview script.</p></section>
+
+  <section id="error" class="card error hidden"><h1>Cannot start</h1><p id="errorText"></p></section>
+
+  <section id="home" class="card hidden">
+    <h1>Mock Interview</h1>
+    <p>Select the applicant. The interview will ask only pre-approved questions stored in the interview database.</p>
+    <div class="choice-grid">
+      <button class="choice" data-profile="shimpei"><b>Shimpei</b><span>HiGA</span></button>
+      <button class="choice" data-profile="shiori"><b>Shiori</b><span>Kaichi Tokorozawa GSC</span></button>
+    </div>
+    <div class="status" id="speechStatus" style="margin-top:18px"></div>
+  </section>
+
+  <section id="ready" class="card hidden">
+    <div class="top"><div><div class="who" id="readyWho"></div><div class="status" id="readyMeta"></div></div><button class="btn" id="backHome">Back</button></div>
+    <h1>Ready?</h1>
+    <p>The interviewer will read one question at a time. Answer aloud as you would in the real interview. Feedback is not shown during the interview.</p>
+    <div class="mic-setup">
+      <label for="micSelect">Microphone input</label>
+      <select id="micSelect" class="mic-select"><option value="">System / browser default</option></select>
+      <div class="mic-detail" id="micDeviceDetail">Run the microphone test before starting.</div>
+      <div class="level-wrap"><div id="micLevelBar" class="level-bar"></div></div>
+      <div class="mic-test-actions">
+        <button class="btn" id="micTestBtn">Test microphone (5 sec)</button>
+        <button class="btn" id="refreshMicsBtn">Refresh devices</button>
+      </div>
+      <audio id="micTestPlayback" class="mic-playback" controls></audio>
+      <div class="mic-detail" id="micTestResult">Speak normally during the test. Start Interview unlocks after input is detected.</div>
+    </div>
+    <div class="row" style="margin-top:20px"><button class="btn primary" id="startBtn" disabled>Start Interview</button></div>
+  </section>
+
+  <section id="interview" class="card interview hidden">
+    <div class="top"><div class="who" id="interviewWho"></div><div class="counter" id="counter"></div></div>
+    <div class="stage">
+      <div class="phase" id="phase"></div>
+      <div class="prompt-state" id="promptState">Preparing question…</div>
+      <div class="mic" id="mic">🎙</div>
+      <div class="live-time" id="answerClock">00:00</div>
+      <div class="transcript" id="transcript"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="repeatBtn" disabled>I didn't hear it</button>
+      <button class="btn primary" id="doneBtn" disabled>Answer finished</button>
+      <button class="btn warn" id="endBtn">End interview</button>
+    </div>
+  </section>
+
+  <section id="complete" class="card complete hidden">
+    <h1>Interview Complete</h1>
+    <p id="completeWho"></p>
+    <div class="stats">
+      <div class="stat"><b id="statAnswers">0</b><span>answers saved</span></div>
+      <div class="stat"><b id="statLong">0</b><span>long response starts</span></div>
+      <div class="stat"><b id="statEmpty">0</b><span>no transcript</span></div>
+    </div>
+    <div class="log" id="sessionLog"></div>
+    <div class="row" style="justify-content:center;margin-top:22px"><button class="btn primary" id="againBtn">Back to Home</button></div>
+  </section>
+</div>
+<script>
+const _hash=new URLSearchParams(String(location.hash||'').replace(/^#/,''));const ACCESS={role:String(_hash.get('role')||'student').toLowerCase(),token:''};
+const els={};
+['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
+let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null;
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+recognitionSupported=!!SpeechRecognition;
+deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);selectedMicId=localStorage.getItem('mock_mic_device_id')||'';
+
+function show(id){['loading','error','home','ready','interview','complete'].forEach(x=>els[x].classList.toggle('hidden',x!==id));}
+function fail(msg){els.errorText.textContent=msg;show('error');}
+let rpcSeq=0;const rpcPending=new Map();
+window.addEventListener('message',e=>{if(e.source!==window.opener||!e.data||e.data.type!=='higa-mock-rpc-result')return;const p=rpcPending.get(e.data.id);if(!p)return;rpcPending.delete(e.data.id);clearTimeout(p.timer);if(e.data.ok===false)p.reject(new Error(e.data.error||'Backend request failed.'));else p.resolve(e.data.result);});
+function gas(name,args=[]){return new Promise((resolve,reject)=>{if(!window.opener)return reject(new Error('Open Mock Interview from the Student or Parent/Admin screen.'));const id='rpc_'+Date.now()+'_'+(++rpcSeq);const timer=setTimeout(()=>{rpcPending.delete(id);reject(new Error('Backend request timed out.'));},30000);rpcPending.set(id,{resolve,reject,timer});window.opener.postMessage({type:'higa-mock-rpc',id,name,args},'*');});}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmt(ms){let s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function profileLabel(p){return p==='shimpei'?'Shimpei · HiGA':'Shiori · Kaichi Tokorozawa GSC';}
+function phaseLabel(q){
+  if(q.profile==='shimpei') return q.phase==='math_oral'?'Mathematics oral examination':'Interview';
+  if(q.phase==='gsc_english_oral_interview')return 'English oral interview';
+  if(q.phase==='oral_exam_sample')return 'Oral examination';
+  return 'Japanese oral interview';
+}
+async function init(){
+  try{
+    if(!window.opener)throw new Error('Open Mock Interview from the Student or Parent/Admin screen. Direct opening cannot access the private interview database.');
+    const r=await gas('mockBootstrap',[ACCESS.token,ACCESS.role||'student']);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Unable to load interview.');
+    boot=r;testMode=!!r.test_mode;
+    els.speechStatus.textContent=testMode?'Parent/Admin test mode: this session is saved separately as test data and will not affect applicant history.':(recognitionSupported?'Speech recognition is available on this browser.':'Speech recognition is not available. The interview will still run, but transcript timing will be limited.');
+    els.speechStatus.className='status '+(testMode?'warn':(recognitionSupported?'good':'warn'));
+    document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>chooseProfile(b.dataset.profile));
+    show('home');
+  }catch(e){fail(e.message);}
+}
+function chooseProfile(p){
+  profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
+  if(!queue.length)return fail('No approved questions are configured for this applicant.');
+  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected.';els.micTestResult.className='mic-detail';
+  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(v?' · Voice: '+v.name:'');show('ready');
+  refreshMicDevices(false);
+}
+els.backHome.onclick=()=>show('home');
+els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
+
+async function closeMicStream(){
+  try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}
+  mediaRecorder=null;audioChunks=[];
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){try{await audioCtx.close();}catch(e){}audioCtx=null;}
+  analyser=null;
+}
+async function ensureMic(force=false){
+  if(micStream&&!force)return true;
+  if(force)await closeMicStream();
+  try{
+    const audioConstraints={echoCancellation:true,noiseSuppression:true,autoGainControl:true};
+    if(selectedMicId)audioConstraints.deviceId={exact:selectedMicId};
+    micStream=await navigator.mediaDevices.getUserMedia({audio:audioConstraints});
+    const track=micStream.getAudioTracks()[0];
+    if(!track)throw new Error('No audio track.');
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended')await audioCtx.resume();
+    const src=audioCtx.createMediaStreamSource(micStream);analyser=audioCtx.createAnalyser();analyser.fftSize=2048;src.connect(analyser);
+    const settings=track.getSettings?track.getSettings():{};
+    els.micDeviceDetail.textContent='Active input: '+(track.label||'Microphone')+(settings.sampleRate?' · '+settings.sampleRate+' Hz':'');
+    return true;
+  }catch(e){
+    const state=await getMicPermissionState();
+    const msg=String(e&&e.message||e);
+    if(state==='denied'){
+      els.micDeviceDetail.textContent='Microphone permission is blocked for https://sjlkjq.github.io. In Chrome, open Site settings for this page, set Microphone to Allow, then reload.';
+    }else{
+      els.micDeviceDetail.textContent='Microphone error: '+msg+'. Check Chrome site permission and Windows microphone privacy settings.';
+    }
+    els.micDeviceDetail.className='mic-detail bad';
+    return false;
+  }
+}
+async function getMicPermissionState(){
+  try{if(navigator.permissions&&navigator.permissions.query){const p=await navigator.permissions.query({name:'microphone'});return p.state||'unknown';}}catch(e){}
+  return 'unknown';
+}
+async function refreshMicDevices(requestPermission=true){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices){
+    els.micDeviceDetail.textContent='This browser cannot list microphone devices.';els.micDeviceDetail.className='mic-detail bad';return;
+  }
+  const state=await getMicPermissionState();
+  if(!micStream&&state!=='granted'){
+    els.micSelect.innerHTML='<option value="">System / browser default</option>';
+    els.micSelect.value='';
+    els.micDeviceDetail.textContent=state==='denied'?'Microphone permission is blocked for this site. Allow microphone access in the browser site settings, then reload.':'Microphone names will appear after permission is granted. Click Test microphone to request access.';
+    els.micDeviceDetail.className='mic-detail '+(state==='denied'?'bad':'');
+    return;
+  }
+  if(requestPermission&&!micStream){const ok=await ensureMic(false);if(!ok)return;}
+  try{
+    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audioinput'&&d.label);
+    const current=selectedMicId;
+    els.micSelect.innerHTML='<option value="">System / browser default</option>'+devices.map(d=>'<option value="'+esc(d.deviceId)+'">'+esc(d.label)+'</option>').join('');
+    if(current&&devices.some(d=>d.deviceId===current))els.micSelect.value=current;else els.micSelect.value='';
+  }catch(e){els.micDeviceDetail.textContent='Could not list microphones: '+String(e&&e.message||e);els.micDeviceDetail.className='mic-detail bad';}
+}
+function currentRms(){
+  if(!analyser)return 0;
+  const data=new Uint8Array(analyser.fftSize);analyser.getByteTimeDomainData(data);let sum=0;
+  for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
+  return Math.sqrt(sum/data.length);
+}
+async function runMicTest(){
+  els.micTestBtn.disabled=true;els.startBtn.disabled=true;micVerified=false;
+  els.micTestResult.textContent='Requesting microphone access…';els.micTestResult.className='mic-detail warn';
+  const ok=await ensureMic(true);if(!ok){els.micTestResult.textContent='FAIL — microphone access was not granted. Fix the browser/site permission shown above, then try again.';els.micTestResult.className='mic-detail bad';els.micTestBtn.disabled=false;return;}
+  els.micTestResult.textContent='Testing… speak normally now.';
+  await refreshMicDevices(false);
+  let peak=0;const chunks=[];let recorder=null;
+  try{
+    if(typeof MediaRecorder!=='undefined'){const opt={};if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))opt.mimeType='audio/webm;codecs=opus';recorder=new MediaRecorder(micStream,opt);recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};recorder.start();}
+  }catch(e){recorder=null;}
+  const started=performance.now();
+  clearInterval(micTestTimer);micTestTimer=setInterval(()=>{const rms=currentRms();peak=Math.max(peak,rms);els.micLevelBar.style.width=Math.min(100,Math.round(rms*1600))+'%';},80);
+  await new Promise(r=>setTimeout(r,5000));
+  clearInterval(micTestTimer);micTestTimer=null;els.micLevelBar.style.width='0%';
+  if(recorder&&recorder.state!=='inactive')await new Promise(resolve=>{recorder.onstop=resolve;try{recorder.stop();}catch(e){resolve();}});
+  if(micTestBlobUrl){URL.revokeObjectURL(micTestBlobUrl);micTestBlobUrl='';}
+  if(chunks.length){const blob=new Blob(chunks,{type:recorder&&recorder.mimeType||'audio/webm'});micTestBlobUrl=URL.createObjectURL(blob);els.micTestPlayback.src=micTestBlobUrl;els.micTestPlayback.style.display='block';}
+  const track=micStream&&micStream.getAudioTracks()[0];const label=track&&track.label||'Microphone';
+  micVerified=peak>=0.008;
+  els.startBtn.disabled=!micVerified;
+  els.micTestResult.textContent=micVerified?'PASS — input detected from '+label+'. Peak level '+peak.toFixed(3)+'. Play the recording below to confirm.':'FAIL — no usable input detected from '+label+'. Select another microphone and test again.';
+  els.micTestResult.className='mic-detail '+(micVerified?'good':'bad');
+  els.micTestBtn.disabled=false;
+}
+els.micSelect.onchange=async()=>{
+  selectedMicId=els.micSelect.value||'';localStorage.setItem('mock_mic_device_id',selectedMicId);micVerified=false;els.startBtn.disabled=true;els.micTestPlayback.style.display='none';els.micTestResult.textContent='Device changed. Run the microphone test again.';els.micTestResult.className='mic-detail warn';await closeMicStream();
+};
+els.micTestBtn.onclick=runMicTest;
+els.refreshMicsBtn.onclick=()=>refreshMicDevices(true);
+function startMeter(){
+  stopMeter();if(!analyser)return;
+  const data=new Uint8Array(analyser.fftSize);
+  let floor=0.004,samples=0;
+  meterTimer=setInterval(()=>{
+    analyser.getByteTimeDomainData(data);let sum=0;
+    for(let i=0;i<data.length;i++){const x=(data[i]-128)/128;sum+=x*x;}
+    const rms=Math.sqrt(sum/data.length);const now=performance.now();
+    if(!firstSpeechAt && samples<6){floor=(floor*samples+rms)/(samples+1);samples++;}
+    const threshold=Math.max(0.008,Math.min(0.02,floor*2.2));
+    const speaking=rms>threshold;
+    if(speaking){
+      if(!firstSpeechAt)firstSpeechAt=now;
+      lastVoiceAt=now;
+      if(silenceStart){longestSilence=Math.max(longestSilence,now-silenceStart);silenceStart=0;}
+    }else if(firstSpeechAt && !silenceStart && lastVoiceAt && now-lastVoiceAt>650){silenceStart=lastVoiceAt;}
+  },80);
+}
+function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
+function cleanupAudio(){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
+  try{speechSynthesis.cancel();}catch(e){}
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
+}
+async function startInterview(){
+  if(!micVerified){els.micTestResult.textContent='Run a successful microphone test before starting.';els.micTestResult.className='mic-detail bad';return;}
+  els.startBtn.disabled=true;
+  const micOk=await ensureMic(false);
+  try{
+    sessionId='mock_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);sessionStarted=Date.now();index=0;sessionRows=[];
+    const r=await gas('mockStartSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,profile,started_at:new Date().toISOString(),recognition_supported:recognitionSupported,device_id:deviceId,user_agent:navigator.userAgent}]);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Could not start session.');
+    sessionId=r.session_id||sessionId;els.interviewWho.textContent=profileLabel(profile);show('interview');
+    if(!micOk){els.promptState.textContent='Microphone permission was not granted. You can still listen to the script.';}
+    await nextQuestion();
+  }catch(e){fail(e.message);}finally{els.startBtn.disabled=false;}
+}
+els.startBtn.onclick=startInterview;
+
+async function nextQuestion(){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;
+  if(index>=queue.length)return finishInterview(false);
+  current=queue[index];repeatCount=0;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;answerStartedAt=0;
+  els.counter.textContent=(index+1)+' / '+queue.length;els.phase.textContent=phaseLabel(current);els.transcript.textContent='';delete els.transcript.dataset.error;els.answerClock.textContent='00:00';els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  await speakCurrent(false);
+}
+function selectVoice(lang){
+  const base=String(lang||'en-US').toLowerCase().split('-')[0];
+  const voices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith(base));
+  const score=v=>{
+    const n=(v.name||'').toLowerCase();let x=0;
+    if((v.lang||'').toLowerCase()===String(lang||'').toLowerCase())x+=20;
+    if(/natural|neural|premium|enhanced/.test(n))x+=50;
+    if(/google/.test(n))x+=35;
+    if(/aria|jenny|guy|samantha|ava|andrew|nanami|haruka/.test(n))x+=25;
+    if(v.localService===false)x+=8;
+    return x;
+  };
+  return voices.sort((a,b)=>score(b)-score(a))[0]||null;
+}
+function speak(text,lang){
+  return new Promise(resolve=>{
+    try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang||'en-US';const v=selectVoice(u.lang);if(v)u.voice=v;u.rate=0.92;u.pitch=1.0;u.onend=resolve;u.onerror=resolve;speechSynthesis.speak(u);}
+    catch(e){resolve();}
+  });
+}
+async function speakCurrent(isRepeat){
+  stopRecognition();stopMeter();if(isRepeat)await stopAnswerRecording(true);els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
+  if(isRepeat){repeatCount++;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;els.transcript.textContent='';delete els.transcript.dataset.error;}
+  await speak(current.question_text,current.language);
+  questionSpokenAt=performance.now();answerStartedAt=Date.now();els.promptState.textContent='Your answer';els.mic.classList.add('live');els.doneBtn.disabled=false;els.repeatBtn.disabled=false;
+  startClock();startMeter();startRecognition(current.language);startAnswerRecording();
+}
+function startClock(){clearInterval(clockTimer);clockTimer=setInterval(()=>{els.answerClock.textContent=fmt(Date.now()-answerStartedAt);},250);}
+function startRecognition(lang){
+  stopRecognition();if(!recognitionSupported)return;
+  recognitionWanted=true;
+  try{
+    recognizer=new SpeechRecognition();recognizer.lang=lang||'en-US';recognizer.continuous=true;recognizer.interimResults=true;
+    recognizer.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)transcriptFinal+=(transcriptFinal?' ':'')+t.trim();else interim+=t;}transcriptInterim=interim;els.transcript.textContent=(transcriptFinal+' '+transcriptInterim).trim();};
+    recognizer.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')els.transcript.dataset.error=e.error;};
+    recognizer.onend=()=>{if(recognitionWanted&&els.interview&&!els.interview.classList.contains('hidden')){try{recognizer.start();}catch(e){}}};
+    recognizer.start();
+  }catch(e){els.transcript.dataset.error=String(e.message||e);}
+}
+function stopRecognition(){recognitionWanted=false;if(recognizer){try{recognizer.onend=null;recognizer.stop();}catch(e){}recognizer=null;}}
+
+function startAnswerRecording(){
+  audioChunks=[];if(!micStream||typeof MediaRecorder==='undefined')return;
+  try{
+    const options={};
+    if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))options.mimeType='audio/webm;codecs=opus';
+    mediaRecorder=new MediaRecorder(micStream,options);
+    mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)audioChunks.push(e.data);};
+    mediaRecorder.start();
+  }catch(e){mediaRecorder=null;audioChunks=[];}
+}
+function stopAnswerRecording(discard=false){
+  return new Promise(resolve=>{
+    if(!mediaRecorder||mediaRecorder.state==='inactive'){const blob=discard?null:(audioChunks.length?new Blob(audioChunks,{type:'audio/webm'}):null);mediaRecorder=null;audioChunks=[];return resolve(blob);}
+    const mr=mediaRecorder;
+    mr.onstop=()=>{const blob=discard?null:(audioChunks.length?new Blob(audioChunks,{type:mr.mimeType||'audio/webm'}):null);mediaRecorder=null;audioChunks=[];resolve(blob);};
+    try{mr.stop();}catch(e){mediaRecorder=null;audioChunks=[];resolve(null);}
+  });
+}
+function blobToBase64(blob){
+  return new Promise(resolve=>{if(!blob)return resolve({base64:'',mime:''});const fr=new FileReader();fr.onload=()=>resolve({base64:String(fr.result||'').split(',')[1]||'',mime:blob.type||'audio/webm'});fr.onerror=()=>resolve({base64:'',mime:''});fr.readAsDataURL(blob);});
+}
+
+els.repeatBtn.onclick=()=>speakCurrent(true);
+
+async function saveAndAdvance(){
+  els.doneBtn.disabled=true;els.repeatBtn.disabled=true;stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;els.mic.classList.remove('live');els.promptState.textContent='Saving…';
+  const audioBlob=await stopAnswerRecording(false);const audio=await blobToBase64(audioBlob);
+  const end=Date.now();const text=(transcriptFinal+' '+transcriptInterim).trim();const latency=firstSpeechAt?Math.round(firstSpeechAt-questionSpokenAt):'';
+  const payload={session_id:sessionId,profile,question_id:current.id,started_at:new Date(answerStartedAt).toISOString(),completed_at:new Date(end).toISOString(),transcript:text,response_latency_ms:latency,answer_duration_ms:end-answerStartedAt,longest_internal_silence_ms:Math.round(longestSilence),speech_detected:!!firstSpeechAt,recognition_supported:recognitionSupported,recognition_error:els.transcript.dataset.error||'',repeat_count:repeatCount,device_id:deviceId,user_agent:navigator.userAgent,audio_base64:audio.base64,audio_mime_type:audio.mime};
+  try{
+    const r=await gas('mockSaveAnswer',[ACCESS.token,ACCESS.role||'student',payload]);if(!r||!r.ok)throw new Error(r&&r.error||'Save failed');
+    sessionRows.push({q:current,text,latency,duration:end-answerStartedAt,longest:Math.round(longestSilence),speech:!!firstSpeechAt});
+    index++;await nextQuestion();
+  }catch(e){els.promptState.textContent='Could not save: '+e.message;els.promptState.className='prompt-state status bad';els.doneBtn.disabled=false;els.repeatBtn.disabled=false;}
+}
+els.doneBtn.onclick=saveAndAdvance;
+els.endBtn.onclick=()=>{if(confirm('End this mock interview now?'))finishInterview(true);};
+
+async function finishInterview(endedEarly){
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;try{speechSynthesis.cancel();}catch(e){}
+  try{await gas('mockFinishSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,completed_at:new Date().toISOString(),elapsed_ms:Date.now()-sessionStarted,notes:endedEarly?'Ended early by applicant':''}]);}catch(e){}
+  renderComplete(endedEarly);show('complete');
+}
+function renderComplete(endedEarly){
+  const longRows=sessionRows.filter(r=>Number(r.latency)>=7000);const empty=sessionRows.filter(r=>!r.text);
+  els.completeWho.textContent=profileLabel(profile)+(endedEarly?' · ended early':'')+(testMode?' · TEST — separate history':'');
+  els.statAnswers.textContent=sessionRows.length;els.statLong.textContent=longRows.length;els.statEmpty.textContent=empty.length;
+  els.sessionLog.innerHTML=sessionRows.map((r,i)=>'<div class="log-row"><b>'+(i+1)+'. '+esc(phaseLabel(r.q))+'</b><span>Response start: '+(r.latency===''?'not detected':(r.latency/1000).toFixed(1)+' s')+' · Answer: '+fmt(r.duration)+' · Longest pause: '+(r.longest/1000).toFixed(1)+' s'+(!r.text?' · No transcript captured':'')+'</span></div>').join('')||'<div class="status">No answers were saved.</div>';
+}
+window.addEventListener('beforeunload',cleanupAudio);
+init();
+</script>
 </body>
 </html>
