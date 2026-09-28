@@ -52,3 +52,19 @@ test('portal changes iframe role when only the URL hash changes in the same tab'
   assert.match(frame.src,/role=reviewer/);
   assert.match(frame.src,/reviewer-token-123456/);
 });
+
+
+test('root mock page exists and redirects valid access to mock mode',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/mode=mock/);
+  assert.match(html,/role=/);
+  assert.match(html,/token=/);
+  assert.match(html,/Invalid access link/);
+});
+
+test('main app exposes Mock Interview to student and admin roles',()=>{
+  const html=fs.readFileSync('index.html','utf8');
+  assert.match(html,/id="mockNav"/);
+  assert.match(html,/\['student','admin'\]\.includes\(role\)/);
+  assert.match(html,/mode=mock/);
+});
