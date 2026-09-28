@@ -99,3 +99,45 @@ test('mock runtime does not contain LLM endpoints and live transcript is hidden'
   assert.match(html,/\.transcript\{display:none\}/);
   assert.match(html,/speak\(current\.question_text,current\.language\)/);
 });
+
+
+test('admin mock bootstrap is explicitly test mode',()=>{
+  const {api}=createHarness();
+  const r=api.mockBootstrap('admin-token-123456','admin');
+  assert.equal(r.ok,true);
+  assert.equal(r.test_mode,true);
+});
+
+test('admin mock start does not create an applicant session row',()=>{
+  const {api,sheets}=createHarness();
+  const before=sheets.MockSessions.data.length;
+  const r=api.mockStartSession('admin-token-123456','admin',{
+    session_id:'admin-test-1',profile:'shimpei',started_at:'2026-09-28T00:00:00Z',
+    recognition_supported:true,device_id:'parent-device',user_agent:'test'
+  });
+  assert.equal(r.ok,true);
+  assert.equal(r.test_mode,true);
+  assert.equal(r.persisted,false);
+  assert.equal(sheets.MockSessions.data.length,before);
+});
+
+test('admin mock answers and finish never persist into applicant history',()=>{
+  const {api,sheets}=createHarness();
+  const beforeAnswers=sheets.MockAnswers.data.length;
+  const beforeSessions=sheets.MockSessions.data.length;
+  const save=api.mockSaveAnswer('admin-token-123456','admin',{
+    session_id:'admin-test-1',profile:'shimpei',question_id:'HIGA-1',
+    started_at:'x',completed_at:'y',transcript:'Parent test'
+  });
+  assert.equal(save.ok,true);
+  assert.equal(save.test_mode,true);
+  assert.equal(save.persisted,false);
+  assert.equal(sheets.MockAnswers.data.length,beforeAnswers);
+  const finish=api.mockFinishSession('admin-token-123456','admin',{
+    session_id:'admin-test-1',completed_at:'done',elapsed_ms:1234,notes:''
+  });
+  assert.equal(finish.ok,true);
+  assert.equal(finish.test_mode,true);
+  assert.equal(finish.persisted,false);
+  assert.equal(sheets.MockSessions.data.length,beforeSessions);
+});
