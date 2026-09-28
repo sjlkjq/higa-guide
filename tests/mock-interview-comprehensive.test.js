@@ -514,3 +514,43 @@ test('QA-57 browser runtime records each spoken answer with MediaRecorder when s
   assert.match(review,/mockGetAudio/);
   assert.match(review,/回答音声を再生/);
 });
+
+
+test('QA-58 microphone setup lists audio input devices and stores selected device id',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/enumerateDevices\(\)/);
+  assert.match(html,/kind==='audioinput'/);
+  assert.match(html,/mock_mic_device_id/);
+  assert.match(html,/deviceId=\{exact:selectedMicId\}/);
+});
+
+test('QA-59 interview cannot start until microphone test detects input',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/id="startBtn" disabled/);
+  assert.match(html,/if\(!micVerified\)/);
+  assert.match(html,/Run a successful microphone test before starting/);
+  assert.match(html,/micVerified=peak>=0\.008/);
+});
+
+test('QA-60 microphone diagnostic shows actual active track label and live level',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/track\.label/);
+  assert.match(html,/Active input:/);
+  assert.match(html,/micLevelBar\.style\.width/);
+  assert.match(html,/Peak level/);
+});
+
+test('QA-61 microphone diagnostic records five-second playback sample locally',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/Test microphone \(5 sec\)/);
+  assert.match(html,/new MediaRecorder\(micStream/);
+  assert.match(html,/setTimeout\(r,5000\)/);
+  assert.match(html,/micTestPlayback\.src=micTestBlobUrl/);
+});
+
+test('QA-62 changing microphone invalidates prior microphone verification',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/micSelect\.onchange/);
+  assert.match(html,/micVerified=false/);
+  assert.match(html,/Device changed\. Run the microphone test again/);
+});
