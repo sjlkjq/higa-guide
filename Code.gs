@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -189,18 +189,23 @@ function mockSaveAnswer(token, requestedRole, payload){
   const duplicate=rows_(names.answers).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
   if(duplicate)return {ok:true,persisted:true,duplicate:true};
   const audio=saveMockAudio_(auth.role,payload);
+  const stt=mockTranscribeDeepgram_(payload,String(payload.profile||''));
   appendObject_(names.answers,{
     session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
     question_kind:q.kind||'main',language:q.language||'',started_at:payload.started_at||'',
-    completed_at:payload.completed_at||new Date().toISOString(),transcript:payload.transcript||'',
+    completed_at:payload.completed_at||new Date().toISOString(),transcript:stt.transcript||'',
     response_latency_ms:numberOrBlank_(payload.response_latency_ms),answer_duration_ms:numberOrBlank_(payload.answer_duration_ms),
     longest_internal_silence_ms:numberOrBlank_(payload.longest_internal_silence_ms),speech_detected:truthy_(payload.speech_detected),
     recognition_supported:truthy_(payload.recognition_supported),recognition_error:payload.recognition_error||'',
     repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||'',
-    audio_file_id:audio.file_id||'',audio_mime_type:audio.mime_type||''
+    audio_file_id:audio.file_id||'',audio_mime_type:audio.mime_type||'',
+    browser_transcript:stt.browser_transcript||'',stt_provider:stt.provider||'',stt_model:stt.model||'',
+    stt_language_mode:stt.language_mode||'',stt_detected_language:stt.detected_language||'',
+    stt_confidence:stt.confidence===''?'':stt.confidence,stt_status:stt.status||'',stt_error:stt.error||''
   });
   incrementMockSessionCounters_(names.sessions,payload.session_id,String(q.kind)==='followup');
-  return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope};
+  return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope,
+    stt:{provider:stt.provider,status:stt.status,language_mode:stt.language_mode,detected_language:stt.detected_language,confidence:stt.confidence}};
 }
 
 function mockFinishSession(token, requestedRole, payload){
@@ -229,6 +234,90 @@ function incrementMockSessionCounters_(sheetName,sessionId,isFollowup){
   bump('answers_saved'); bump(isFollowup?'followups_asked':'questions_asked');
 }
 function numberOrBlank_(v){if(v===null||v===undefined||String(v).trim()==='')return '';const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n)):'';}
+
+function deepgramApiKey_(){
+  try{return String(PropertiesService.getScriptProperties().getProperty('DEEPGRAM_API_KEY')||'').trim();}
+  catch(err){return '';}
+}
+
+function mockSttSettings_(profile){
+  const p=String(profile||'').toLowerCase();
+  if(p==='shiori'){
+    return {
+      provider:'deepgram',model:'nova-3',language:'multi',
+      keyterms:['GSC','Kaichi Tokorozawa','Kaichi','Cambridge','IGCSE','international school','attitude','evidence']
+    };
+  }
+  return {
+    provider:'deepgram',model:'nova-3',language:'en',
+    keyterms:['HiGA','Hiroshima Global Academy','Seto Inland Sea','horseshoe crab','marine biology','ecology','conservation','quadratic','parabola','Inquiry Report','Mathematics Report','Koh Tao']
+  };
+}
+
+function mockTranscribeDeepgram_(payload,profile){
+  const browserTranscript=String(payload&&payload.transcript||'').trim();
+  const settings=mockSttSettings_(profile);
+  const base={
+    transcript:browserTranscript,browser_transcript:browserTranscript,provider:'browser-fallback',
+    model:'',language_mode:settings.language,detected_language:'',confidence:'',status:'',error:''
+  };
+  const b64=String(payload&&payload.audio_base64||'').trim();
+  if(!b64){base.status='no_audio';return base;}
+  const key=deepgramApiKey_();
+  if(!key){base.status='deepgram_not_configured';return base;}
+  try{
+    const mime=String(payload.audio_mime_type||'audio/webm');
+    const query=['model='+encodeURIComponent(settings.model),'language='+encodeURIComponent(settings.language),'smart_format=true'];
+    settings.keyterms.forEach(k=>query.push('keyterm='+encodeURIComponent(k)));
+    const url='https://api.deepgram.com/v1/listen?'+query.join('&');
+    const response=UrlFetchApp.fetch(url,{
+      method:'post',
+      headers:{Authorization:'Token '+key},
+      contentType:mime,
+      payload:Utilities.base64Decode(b64),
+      muteHttpExceptions:true
+    });
+    const code=Number(response.getResponseCode());
+    const text=String(response.getContentText()||'');
+    if(code<200||code>=300){
+      base.status='deepgram_http_'+code;base.error=text.slice(0,500);return base;
+    }
+    const data=JSON.parse(text||'{}');
+    const channel=data&&data.results&&data.results.channels&&data.results.channels[0]||{};
+    const alt=channel.alternatives&&channel.alternatives[0]||{};
+    const transcript=String(alt.transcript||'').trim();
+    return {
+      transcript:transcript||browserTranscript,
+      browser_transcript:browserTranscript,
+      provider:'deepgram',
+      model:settings.model,
+      language_mode:settings.language,
+      detected_language:String(channel.detected_language||''),
+      confidence:(alt.confidence===0||alt.confidence)?Number(alt.confidence):'',
+      status:transcript?'ok':'empty_fallback_browser',
+      error:''
+    };
+  }catch(err){
+    base.status='deepgram_error';base.error=String(err.message||err).slice(0,500);return base;
+  }
+}
+
+function mockSttConfig(token,requestedRole){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
+  return {ok:true,configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',
+    shimpei_language:'en',shiori_language:'multi',role:auth.role};
+}
+
+function mockSetDeepgramApiKey(token,requestedRole,apiKey){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(auth.role!=='admin')return {ok:false,error:'Admin access required.'};
+  const key=String(apiKey||'').trim();
+  if(key && key.length<20)return {ok:false,error:'Deepgram API key looks too short.'};
+  const props=PropertiesService.getScriptProperties();
+  if(key)props.setProperty('DEEPGRAM_API_KEY',key);else props.deleteProperty('DEEPGRAM_API_KEY');
+  return {ok:true,configured:!!key};
+}
 
 function saveMockAudio_(role,payload){
   try{
@@ -282,7 +371,7 @@ function mockReviewBootstrap(token, requestedRole){
     const sessions=[...applicant.sessions,...test.sessions].sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||''))).slice(0,200);
     const allowed=new Set(sessions.map(s=>String(s.session_id)));
     const answers=[...applicant.answers,...test.answers].filter(a=>allowed.has(String(a.session_id)));
-    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION};
+    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION,stt_config:{configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',shimpei_language:'en',shiori_language:'multi'}};
   }catch(err){return {ok:false,error:String(err.message||err)};}
 }
 
