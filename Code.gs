@@ -13,7 +13,7 @@ function doGet(e){
   const accessScript = '<script>window.__HIGA_ACCESS__=' + JSON.stringify(access) + ';' +
     'try{if(window.__HIGA_ACCESS__.token){localStorage.setItem("higa_token",window.__HIGA_ACCESS__.token);localStorage.setItem("higa_role",window.__HIGA_ACCESS__.role||"student");}}catch(e){}</script>';
   let html = source.includes('</head>') ? source.replace('</head>', accessScript + '</head>') : accessScript + source;
-  if(mode!=='mock' && access.role === 'admin' && html.includes('</body>')){
+  if(!['mock','mockreview'].includes(mode) && access.role === 'admin' && html.includes('</body>')){
     const adminJa = HtmlService.createHtmlOutputFromFile('AdminJa').getContent();
     html = html.replace('</body>', adminJa + '</body>');
   }
