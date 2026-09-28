@@ -92,29 +92,33 @@ test('QA-09 invalid profile cannot create a session',()=>{
   assert.equal(sheets.MockSessions.data.length,before);
 });
 
-test('QA-10 admin start never persists for either applicant',()=>{
+test('QA-10 admin start persists only in separate test history for either applicant',()=>{
   for(const profile of ['shimpei','shiori']){
     const {api,sheets}=createHarness();
-    const before=sheets.MockSessions.data.length;
+    const applicantBefore=sheets.MockSessions.data.length,testBefore=sheets.MockTestSessions.data.length;
     const r=api.mockStartSession('admin-token-123456','admin',{session_id:'a-'+profile,profile});
-    assert.equal(r.ok,true);assert.equal(r.persisted,false);assert.equal(r.test_mode,true);
-    assert.equal(sheets.MockSessions.data.length,before);
+    assert.equal(r.ok,true);assert.equal(r.persisted,true);assert.equal(r.test_mode,true);assert.equal(r.data_scope,'test');
+    assert.equal(sheets.MockSessions.data.length,applicantBefore);
+    assert.equal(sheets.MockTestSessions.data.length,testBefore+1);
   }
 });
 
-test('QA-11 reviewer direct start never persists',()=>{
+test('QA-11 reviewer direct start persists only in separate test history',()=>{
   const {api,sheets}=createHarness();
-  const before=sheets.MockSessions.data.length;
+  const applicantBefore=sheets.MockSessions.data.length,testBefore=sheets.MockTestSessions.data.length;
   const r=api.mockStartSession('reviewer-token-123456','reviewer',{session_id:'rv1',profile:'shimpei'});
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);assert.equal(sheets.MockSessions.data.length,before);
+  assert.equal(r.ok,true);assert.equal(r.data_scope,'test');
+  assert.equal(sheets.MockSessions.data.length,applicantBefore);
+  assert.equal(sheets.MockTestSessions.data.length,testBefore+1);
 });
 
-test('QA-12 admin token cannot be forced into persistent mode by requestedRole=student',()=>{
+test('QA-12 admin token spoofed as student still goes to test history, never applicant history',()=>{
   const {api,sheets}=createHarness();
-  const before=sheets.MockSessions.data.length;
+  const applicantBefore=sheets.MockSessions.data.length;
   const r=api.mockStartSession('admin-token-123456','student',{session_id:'a1',profile:'shimpei'});
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);
-  assert.equal(sheets.MockSessions.data.length,before);
+  assert.equal(r.ok,true);assert.equal(r.data_scope,'test');
+  assert.equal(sheets.MockSessions.data.length,applicantBefore);
+  assert.equal(sheets.MockTestSessions.data.length,2);
 });
 
 test('QA-13 answer requires an existing student session',()=>{
@@ -189,20 +193,24 @@ test('QA-19 blank response latency remains blank rather than becoming zero',()=>
   assert.equal(a.response_latency_ms,'');
 });
 
-test('QA-20 admin answer never persists even with valid applicant question',()=>{
+test('QA-20 admin answer persists only in test answer history',()=>{
   const {api,sheets}=createHarness();
-  const before=sheets.MockAnswers.data.length;
+  const applicantBefore=sheets.MockAnswers.data.length;
+  api.mockStartSession('admin-token-123456','admin',{session_id:'admin-local',profile:'shimpei'});
   const r=api.mockSaveAnswer('admin-token-123456','admin',shimpeiAnswer({session_id:'admin-local'}));
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);
-  assert.equal(sheets.MockAnswers.data.length,before);
+  assert.equal(r.ok,true);assert.equal(r.data_scope,'test');
+  assert.equal(sheets.MockAnswers.data.length,applicantBefore);
+  assert.equal(sheets.MockTestAnswers.data.length,2);
 });
 
-test('QA-21 reviewer answer never persists',()=>{
+test('QA-21 reviewer answer persists only in test answer history',()=>{
   const {api,sheets}=createHarness();
-  const before=sheets.MockAnswers.data.length;
+  const applicantBefore=sheets.MockAnswers.data.length;
+  api.mockStartSession('reviewer-token-123456','reviewer',{session_id:'reviewer-local',profile:'shimpei'});
   const r=api.mockSaveAnswer('reviewer-token-123456','reviewer',shimpeiAnswer({session_id:'reviewer-local'}));
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);
-  assert.equal(sheets.MockAnswers.data.length,before);
+  assert.equal(r.ok,true);assert.equal(r.data_scope,'test');
+  assert.equal(sheets.MockAnswers.data.length,applicantBefore);
+  assert.equal(sheets.MockTestAnswers.data.length,2);
 });
 
 test('QA-22 duplicate answer retry must not duplicate data or counters',()=>{
@@ -247,12 +255,13 @@ test('QA-25 finishing a session only updates that session',()=>{
   assert.equal(rows[1].completed_at,'');
 });
 
-test('QA-26 admin finish never mutates applicant history',()=>{
+test('QA-26 admin finish cannot mutate applicant history',()=>{
   const existing=shimpeiSession({session_id:'real-student'});
   const {api,sheets}=createHarness({mockSessions:[existing]});
   const before=JSON.stringify(sheets.MockSessions.data);
   const r=api.mockFinishSession('admin-token-123456','admin',{session_id:'real-student',completed_at:'tamper',elapsed_ms:999});
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);
+  assert.equal(r.ok,false);
+  assert.match(r.error,/not found/i);
   assert.equal(JSON.stringify(sheets.MockSessions.data),before);
 });
 
@@ -294,11 +303,11 @@ test('QA-32 microphone denial is handled without crashing interview start',()=>{
   assert.match(html,/Microphone permission was not granted/);
 });
 
-test('QA-33 parent/admin test mode is visibly labelled non-persistent',()=>{
+test('QA-33 parent/admin test mode is visibly labelled as separate history',()=>{
   const html=fs.readFileSync('MockInterview.html','utf8');
-  assert.match(html,/Parent\/Admin test mode: this session will not be saved as applicant data/);
-  assert.match(html,/Parent\/Admin test · not saved/);
-  assert.match(html,/TEST — not saved/);
+  assert.match(html,/saved separately as test data and will not affect applicant history/);
+  assert.match(html,/Parent\/Admin test · saved separately/);
+  assert.match(html,/TEST — separate history/);
 });
 
 test('QA-34 response recognition error is cleared between questions',()=>{
@@ -409,12 +418,57 @@ test('QA-47 invalid token cannot start, save, or finish a mock session',()=>{
   assert.equal(JSON.stringify(sheets.MockAnswers.data),beforeA);
 });
 
-test('QA-48 admin test mode remains non-persistent for Shiori answer path',()=>{
+test('QA-48 admin Shiori test data remains isolated from applicant history',()=>{
   const {api,sheets}=createHarness();
   const beforeA=sheets.MockAnswers.data.length;
+  api.mockStartSession('admin-token-123456','admin',{session_id:'admin-shiori',profile:'shiori'});
   const r=api.mockSaveAnswer('admin-token-123456','admin',{
     session_id:'admin-shiori',profile:'shiori',question_id:'KAI-1',started_at:'x',completed_at:'y',transcript:'test'
   });
-  assert.equal(r.ok,true);assert.equal(r.persisted,false);
+  assert.equal(r.ok,true);assert.equal(r.data_scope,'test');
   assert.equal(sheets.MockAnswers.data.length,beforeA);
+  assert.equal(sheets.MockTestAnswers.data.length,2);
+});
+
+
+test('QA-49 Mock Review is restricted to admin/reviewer',()=>{
+  const {api}=createHarness();
+  assert.equal(api.mockReviewBootstrap('student-token-123456','student').ok,false);
+  assert.equal(api.mockReviewBootstrap('admin-token-123456','admin').ok,true);
+  assert.equal(api.mockReviewBootstrap('reviewer-token-123456','reviewer').ok,true);
+});
+
+test('QA-50 Mock Review returns applicant and test histories with explicit scopes',()=>{
+  const {api}=createHarness({
+    mockSessions:[shimpeiSession({session_id:'real1'})],
+    mockAnswers:[shimpeiAnswer({session_id:'real1',transcript:'real answer'})],
+    mockTestSessions:[shimpeiSession({session_id:'test1'})],
+    mockTestAnswers:[shimpeiAnswer({session_id:'test1',transcript:'test answer'})]
+  });
+  const r=api.mockReviewBootstrap('admin-token-123456','admin');
+  assert.equal(r.ok,true);
+  assert.equal(r.sessions.some(x=>x.session_id==='real1'&&x.scope==='applicant'),true);
+  assert.equal(r.sessions.some(x=>x.session_id==='test1'&&x.scope==='test'),true);
+  assert.equal(r.answers.some(x=>x.transcript==='real answer'&&x.scope==='applicant'),true);
+  assert.equal(r.answers.some(x=>x.transcript==='test answer'&&x.scope==='test'),true);
+});
+
+test('QA-51 pause detector resumes AudioContext and uses a lower adaptive speech threshold',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/audioCtx\.state==='suspended'.*audioCtx\.resume\(\)/s);
+  assert.match(html,/Math\.max\(0\.008,Math\.min\(0\.02,floor\*2\.2\)\)/);
+});
+
+test('QA-52 higher quality system voices are preferred when available',()=>{
+  const html=fs.readFileSync('MockInterview.html','utf8');
+  assert.match(html,/natural\|neural\|premium\|enhanced/);
+  assert.match(html,/google/);
+  assert.match(html,/aria\|jenny\|guy\|samantha\|ava\|andrew\|nanami\|haruka/);
+});
+
+test('QA-53 Mock Review UI parses and exposes applicant/test filters',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/本人データのみ/);
+  assert.match(html,/親\/Adminテストのみ/);
+  assert.match(html,/mockReviewBootstrap/);
 });
