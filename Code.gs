@@ -188,6 +188,7 @@ function mockSaveAnswer(token, requestedRole, payload){
   if(String(session.completed_at||'').trim())return {ok:false,error:'Mock session is already completed.'};
   const duplicate=rows_(names.answers).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
   if(duplicate)return {ok:true,persisted:true,duplicate:true};
+  const audio=saveMockAudio_(auth.role,payload);
   appendObject_(names.answers,{
     session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
     question_kind:q.kind||'main',language:q.language||'',started_at:payload.started_at||'',
@@ -195,7 +196,8 @@ function mockSaveAnswer(token, requestedRole, payload){
     response_latency_ms:numberOrBlank_(payload.response_latency_ms),answer_duration_ms:numberOrBlank_(payload.answer_duration_ms),
     longest_internal_silence_ms:numberOrBlank_(payload.longest_internal_silence_ms),speech_detected:truthy_(payload.speech_detected),
     recognition_supported:truthy_(payload.recognition_supported),recognition_error:payload.recognition_error||'',
-    repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||''
+    repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||'',
+    audio_file_id:audio.file_id||'',audio_mime_type:audio.mime_type||''
   });
   incrementMockSessionCounters_(names.sessions,payload.session_id,String(q.kind)==='followup');
   return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope};
@@ -227,6 +229,37 @@ function incrementMockSessionCounters_(sheetName,sessionId,isFollowup){
   bump('answers_saved'); bump(isFollowup?'followups_asked':'questions_asked');
 }
 function numberOrBlank_(v){if(v===null||v===undefined||String(v).trim()==='')return '';const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n)):'';}
+
+function saveMockAudio_(role,payload){
+  try{
+    const b64=String(payload&&payload.audio_base64||'').trim();
+    if(!b64)return {file_id:'',mime_type:''};
+    const c=config_(),folderId=String(c.mock_audio_folder_id||'').trim();
+    if(!folderId)return {file_id:'',mime_type:''};
+    const mime=String(payload.audio_mime_type||'audio/webm');
+    const ext=mime.includes('ogg')?'ogg':mime.includes('mp4')?'m4a':'webm';
+    const safe=s=>String(s||'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,80);
+    const name=[role==='student'?'applicant':'test',safe(payload.profile),safe(payload.session_id),safe(payload.question_id)].join('__')+'.'+ext;
+    const bytes=Utilities.base64Decode(b64);
+    const blob=Utilities.newBlob(bytes,mime,name);
+    const file=DriveApp.getFolderById(folderId).createFile(blob);
+    return {file_id:file.getId(),mime_type:mime};
+  }catch(err){
+    return {file_id:'',mime_type:'',error:String(err.message||err)};
+  }
+}
+
+function mockGetAudio(token,requestedRole,fileId){
+  try{
+    const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+    if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
+    const id=String(fileId||'').trim(); if(!id)return {ok:false,error:'Audio file not found.'};
+    const allowed=[...rows_(SHEETS.MOCKA),...rows_(SHEETS.MOCKTA)].some(r=>String(r.audio_file_id||'')===id);
+    if(!allowed)return {ok:false,error:'Audio file is not part of mock interview history.'};
+    const blob=DriveApp.getFileById(id).getBlob();
+    return {ok:true,mime_type:blob.getContentType()||'audio/webm',base64:Utilities.base64Encode(blob.getBytes())};
+  }catch(err){return {ok:false,error:String(err.message||err)};}
+}
 
 function mockSheetNames_(role){
   return role==='student'
