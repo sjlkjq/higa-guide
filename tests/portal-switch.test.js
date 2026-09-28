@@ -78,3 +78,13 @@ test('Mock Interview launcher opens GitHub Pages without leaking the token and k
   assert.doesNotMatch(line,/noopener/);
   assert.match(html,/MOCK_ALLOWED_RPC/);
 });
+
+
+test('external mock backend relay accepts only the GitHub Pages origin and allowlisted RPC names',()=>{
+  const html=fs.readFileSync('index.html','utf8');
+  assert.match(html,/const MOCK_ORIGIN='https:\/\/sjlkjq\.github\.io'/);
+  assert.match(html,/e\.origin!==MOCK_ORIGIN/);
+  assert.match(html,/MOCK_ALLOWED_RPC\.has\(e\.data\.name\)/);
+  assert.match(html,/mockBootstrap/);
+  assert.match(html,/mockSaveAnswer/);
+});
