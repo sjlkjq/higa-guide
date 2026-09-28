@@ -583,3 +583,41 @@ test('QA-65 static mock never sends the private token to GitHub Pages',()=>{
   assert.doesNotMatch(line,/token=/);
   assert.match(line,/mock\.html#role=/);
 });
+
+
+test('QA-66 STT diagnostic supports English US, English UK, and Japanese',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/English \(US\)/);
+  assert.match(html,/English \(UK\)/);
+  assert.match(html,/日本語/);
+  assert.match(html,/私は海洋生物学と数学に興味があります。/);
+});
+
+test('QA-67 STT diagnostic reports a text-match score against a known phrase',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/textMatchPercent/);
+  assert.match(html,/Text match:/);
+  assert.match(html,/levenshtein/);
+});
+
+test('QA-68 SpeechRecognition is started on the selected live microphone track when supported',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/rec\.start\(track\)/);
+  assert.match(html,/track\.readyState==='live'/);
+  assert.match(html,/startRecognitionOnSelectedTrack\(recognizer\)/);
+});
+
+test('QA-69 SpeechRecognition falls back to browser default input if audio-track start is unsupported',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/catch\(e\)\{\}/);
+  assert.match(html,/rec\.start\(\);return 'browser-default'/);
+});
+
+test('QA-70 contextual biasing is attempted for HiGA domain-specific terms without becoming mandatory',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/SpeechRecognitionPhrase/);
+  assert.match(html,/Seto Inland Sea/);
+  assert.match(html,/horseshoe crab/);
+  assert.match(html,/quadratic function/);
+  assert.match(html,/try\{[\s\S]*rec\.phrases[\s\S]*\}catch\(e\)\{\}/);
+});
