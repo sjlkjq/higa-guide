@@ -45,7 +45,7 @@ function defaultConfig(overrides={}){
     version:'1.0',app_title:'HiGA Interview Training',student_label:'Shimpei',default_think_seconds:45,
     require_acknowledgement:true,min_key_points:2,min_ready_attempts:2,ready_threshold:4,
     student_token:'student-token-123456',parent_token:'admin-token-123456',reviewer_token:'reviewer-token-123456',
-    admin_label:'Hiro',reviewer_label:'Sakai-sensei',min_followup_key_points:1,live_mode:true,...overrides
+    admin_label:'Hiro',reviewer_label:'Sakai-sensei',min_followup_key_points:1,live_mode:true,mock_audio_folder_id:'test-folder',...overrides
   };
 }
 
