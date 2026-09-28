@@ -66,14 +66,16 @@ test('main app exposes external Mock Interview to student and admin roles',()=>{
   const html=fs.readFileSync('index.html','utf8');
   assert.match(html,/id="mockNav"/);
   assert.match(html,/\['student','admin'\]\.includes\(role\)/);
-  assert.match(html,/sjlkjq\.github\.io\/higa-guide\/mock\.html/);
+  assert.match(html,/const MOCK_ORIGIN='https:\/\/sjlkjq\.github\.io'/);
+  assert.match(html,/\/higa-guide\/mock\.html/);
 });
 
 
 test('Mock Interview launcher opens GitHub Pages without leaking the token and keeps opener RPC',()=>{
   const html=fs.readFileSync('index.html','utf8');
   const line=html.split('\n').find(x=>x.includes("mockNav').onclick"))||'';
-  assert.match(line,/https:\/\/sjlkjq\.github\.io\/higa-guide\/mock\.html/);
+  assert.match(html,/const MOCK_ORIGIN='https:\/\/sjlkjq\.github\.io'/);
+  assert.match(line,/\/higa-guide\/mock\.html/);
   assert.doesNotMatch(line,/token=/);
   assert.doesNotMatch(line,/noopener/);
   assert.match(html,/MOCK_ALLOWED_RPC/);
