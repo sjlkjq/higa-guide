@@ -72,19 +72,30 @@ function createHarness(options={}){
     MockTestSessions:new Sheet('MockTestSessions',objectRows(MOCKS_HEADERS,options.mockTestSessions||[]))
   };
   const spreadsheet=new Spreadsheet(sheets);
+  const driveFiles=new Map();
+  let driveSeq=0;
   const context={
     SpreadsheetApp:{getActiveSpreadsheet:()=>spreadsheet},
+    Utilities:{
+      base64Decode:s=>Array.from(Buffer.from(String(s),'base64')),
+      base64Encode:bytes=>Buffer.from(bytes).toString('base64'),
+      newBlob:(bytes,mime,name)=>({getBytes:()=>Array.from(bytes),getContentType:()=>mime,getName:()=>name})
+    },
+    DriveApp:{
+      getFolderById:()=>({createFile:blob=>{const id='drive_'+(++driveSeq);driveFiles.set(id,blob);return {getId:()=>id};}}),
+      getFileById:id=>{if(!driveFiles.has(id))throw new Error('File not found');return {getBlob:()=>driveFiles.get(id)};}
+    },
     HtmlService:{
       createHtmlOutputFromFile:()=>({getContent:()=>'<html><head></head><body></body></html>'}),
       createHtmlOutput:(html)=>({html,setTitle(){return this;},setXFrameOptionsMode(){return this;}}),
       XFrameOptionsMode:{ALLOWALL:'ALLOWALL'}
     },
-    console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set
+    console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set,Buffer
   };
   vm.createContext(context);
-  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
+  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
   vm.runInContext(src,context,{filename:'Code.gs'});
-  return {api:context.__higa,sheets,cfg,spreadsheet,context};
+  return {api:context.__higa,sheets,cfg,spreadsheet,context,driveFiles};
 }
 
 function validAttempt(overrides={}){
