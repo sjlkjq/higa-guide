@@ -20,12 +20,13 @@
   <div class="sttbox" id="sttConfigBox">
     <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span><a class="btn" id="authorizeDeepgram" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">外部APIアクセスを承認</a></div>
     <div id="sttDetail" class="muted" style="margin-top:7px"></div>
+    <div id="autoRecoveryStatus" class="muted" style="margin-top:7px"></div>
     <div id="sttAdminSetup" class="sttrow" style="margin-top:9px;display:none">
       <input id="deepgramKey" class="sttinput" type="password" autocomplete="off" placeholder="Deepgram API Key">
       <button class="btn" id="saveDeepgramKey">API Keyを保存</button>
       <button class="btn" id="clearDeepgramKey">解除</button>
     </div>
-    <div class="muted" style="margin-top:7px">Browser STTを優先。Transcriptが空でSpeech detectedの場合のみ、Deepgram Nova-3 multilingual（日本語・英語・混在）で再認識します。</div>
+    <div class="muted" style="margin-top:7px">Browser STTを優先。Transcriptが空でSpeech detectedの場合のみ、Deepgram Nova-3 multilingual（日本語・英語・混在）で再認識します。Applicantの保存済み録音でTranscriptが欠けているものは、このReview画面を開いた時に自動復元します。自動復元に失敗した録音は、不要なAPI利用を避けるため自動再試行しません。</div>
   </div>
   <div class="toolbar">
     <select class="select" id="scope"><option value="all">すべて</option><option value="applicant">本人データのみ</option><option value="test">親/Adminテストのみ</option></select>
@@ -151,14 +152,46 @@ async function saveDeepgramKey(clear=false){
   }catch(e){$('sttStatus').textContent='Deepgram設定エラー: '+e.message;$('sttStatus').className='bad';}
   finally{$('saveDeepgramKey').disabled=false;$('clearDeepgramKey').disabled=false;}
 }
-async function load(){
+function autoRecoveryEligible(a){
+  const status=String(a.stt_status||'').trim();
+  return a.scope==='applicant'&&!String(a.transcript||'').trim()&&!!String(a.audio_file_id||'').trim()&&status!=='fallback_empty'&&!status.startsWith('auto_failed_');
+}
+async function runAutoRecovery(){
+  const c=data.stt_config||{},status=$('autoRecoveryStatus');
+  const isAdmin=(data.role||ACCESS.role)==='admin',ready=c.ready!==undefined?!!c.ready:(!!c.configured&&!c.authorization_required);
+  const eligible=(data.answers||[]).filter(autoRecoveryEligible).length;
+  if(!isAdmin){status.textContent='欠損Transcriptの自動復元はAdmin画面で実行されます。';return false;}
+  if(!ready){status.textContent=eligible?'欠損Transcript '+eligible+'件待機中。Deepgram設定完了後に自動復元します。':'欠損Transcriptの自動復元対象はありません。';return false;}
+  if(!eligible){status.textContent='欠損Transcriptの自動復元対象はありません。';return false;}
+  status.textContent='欠損Transcriptを自動復元中… ('+Math.min(eligible,20)+'件まで)';
+  status.className='muted';
+  const r=await gas('mockAutoRetranscribeMissing',[ACCESS.token,ACCESS.role||'admin',20]);
+  if(!r||!r.ok)throw new Error(r&&r.error||'Automatic re-transcription failed');
+  if(r.rescued){
+    status.textContent='欠損Transcriptを自動復元しました: '+r.rescued+'/'+r.processed+'件'+(r.remaining?'（残りは次回ロード時に続行）':'');
+    status.className='good';
+  }else if(r.failed){
+    status.textContent='自動復元に失敗: '+r.failed+'件。自動再試行は停止しました。必要な場合のみ各セッションの再生成ボタンで手動再試行できます。';
+    status.className='bad';
+  }else{
+    status.textContent='欠損Transcriptの自動復元対象はありません。';
+  }
+  return Number(r.processed||0)>0;
+}
+async function load(runAuto=true){
   $('sessions').innerHTML='<div class="empty">Loading…</div>';
   try{
-    const r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');
+    let r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');
     data=r;selected='';renderSttStatus();renderSessions();renderDetail();
+    if(runAuto&&await runAutoRecovery()){
+      r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Reload failed');
+      data=r;renderSttStatus();renderSessions();renderDetail();
+    }else if(!runAuto){
+      await runAutoRecovery();
+    }
     await loadAudioStorageStatus((data.role||ACCESS.role)==='admin');
   }
-  catch(e){$('sessions').innerHTML='<div class="empty bad">'+esc(e.message)+'</div>';}
+  catch(e){$('sessions').innerHTML='<div class="empty bad">'+esc(e.message)+'</div>';$('autoRecoveryStatus').textContent='自動復元エラー: '+e.message;$('autoRecoveryStatus').className='bad';}
 }
 $('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);$('repairAudioStorage').onclick=()=>loadAudioStorageStatus(true);
 window.addEventListener('focus',()=>{if($('authorizeDeepgram').style.display!=='none')setTimeout(()=>load(),700);});
