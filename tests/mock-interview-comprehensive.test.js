@@ -483,7 +483,7 @@ test('QA-53 Mock Review UI parses and exposes applicant/test filters',()=>{
 
 
 test('QA-54 answer audio is stored with the answer row',()=>{
-  const {api,sheets,driveFiles}=createHarness({mockSessions:[shimpeiSession()]});
+  const {api,sheets,driveFiles,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
   const audio=Buffer.from('fake-audio-bytes').toString('base64');
   const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({audio_base64:audio,audio_mime_type:'audio/webm'}));
   assert.equal(r.ok,true);
@@ -1009,7 +1009,7 @@ test('QA-98 production health endpoint reports Drive authorization without expos
   assert.equal(data.ok,true);
   assert.equal(data.drive_authorized,false);
   assert.equal(data.authorization_status,'REQUIRED');
-  assert.equal(data.app_version,'1.7.2');
+  assert.equal(data.app_version,'1.7.3');
   assert.equal(JSON.stringify(data).includes('student-token'),false);
   assert.equal(JSON.stringify(data).includes('test-folder'),false);
 });
