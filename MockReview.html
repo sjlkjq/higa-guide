@@ -18,7 +18,8 @@
     <div id="audioStorageDetail" class="muted" style="margin-top:7px"></div>
   </div>
   <div class="sttbox" id="sttConfigBox">
-    <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span></div>
+    <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span><a class="btn" id="authorizeDeepgram" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">外部APIアクセスを承認</a></div>
+    <div id="sttDetail" class="muted" style="margin-top:7px"></div>
     <div id="sttAdminSetup" class="sttrow" style="margin-top:9px;display:none">
       <input id="deepgramKey" class="sttinput" type="password" autocomplete="off" placeholder="Deepgram API Key">
       <button class="btn" id="saveDeepgramKey">API Keyを保存</button>
@@ -64,6 +65,7 @@ function renderDetail(){
     return '<div class="q"><div class="qtitle">'+(i+1)+'. '+esc(q.question_text||a.question_id)+'</div>'+
       '<div class="meta">Response start: '+fmtMs(a.response_latency_ms)+' · Answer: '+fmtMs(a.answer_duration_ms)+' · Longest internal pause: '+fmtMs(a.longest_internal_silence_ms)+' · Speech: '+(speech?'detected':'not detected')+'</div>'+
       '<div class="meta">STT: '+esc(a.stt_provider||'legacy')+(a.stt_model?' · '+esc(a.stt_model):'')+(a.stt_language_mode?' · mode '+esc(a.stt_language_mode):'')+(a.stt_detected_language?' · detected '+esc(a.stt_detected_language):'')+(a.stt_confidence!==''&&a.stt_confidence!==undefined?' · confidence '+esc(Number(a.stt_confidence).toFixed(2)):'')+(a.stt_status?' · '+esc(a.stt_status):'')+'</div>'+
+      (a.stt_error?'<div class="meta bad">STT error: '+esc(a.stt_error)+'</div>':'')+
       '<div class="transcript">'+(a.transcript?esc(a.transcript):'<span class="bad">Transcriptなし</span>')+'</div>'+
       (a.browser_transcript&&String(a.browser_transcript)!==String(a.transcript)?'<div class="browserstt"><b>Browser STT (diagnostic)</b><br>'+esc(a.browser_transcript)+'</div>':'')+
       (a.audio_file_id?'<div style="margin-top:8px"><button class="btn playAudio" data-file="'+esc(a.audio_file_id)+'">▶ 回答音声を再生</button> <span class="meta good">録音保存済み'+(a.audio_bytes?' · '+esc(a.audio_bytes)+' bytes':'')+'</span></div>':'<div class="meta '+(a.audio_error?'bad':'warn')+'">録音なし'+(a.audio_status?' · '+esc(a.audio_status):'')+(a.audio_error?' · '+esc(a.audio_error):'')+'</div>')+
@@ -94,10 +96,27 @@ function renderDetail(){
   });
 }
 function renderSttStatus(){
-  const c=data.stt_config||{};
-  $('sttStatus').textContent=c.configured?'Deepgram multilingual rescue: configured':'Deepgram rescue: not configured — browser STT only';
-  $('sttStatus').className=c.configured?'good':'warn';
-  if((data.role||ACCESS.role)==='admin')$('sttAdminSetup').style.display='flex';
+  const c=data.stt_config||{},isAdmin=(data.role||ACCESS.role)==='admin';
+  const keyConfigured=c.key_configured!==undefined?!!c.key_configured:!!c.configured;
+  const ready=c.ready!==undefined?!!c.ready:(keyConfigured&&!c.authorization_required);
+  const authBtn=$('authorizeDeepgram'),detail=$('sttDetail');
+  authBtn.style.display='none';authBtn.href='#';detail.textContent='';
+  if(!keyConfigured){
+    $('sttStatus').textContent='Deepgram rescue: API Key未設定 — browser STT only';
+    $('sttStatus').className='warn';
+  }else if(c.authorization_required){
+    $('sttStatus').textContent='Deepgram API Key保存済み · Apps Scriptの外部APIアクセス承認が必要';
+    $('sttStatus').className='warn';
+    detail.textContent='API Keyは保存済みです。Deepgramへ接続するため、Apps Script所有者が外部APIアクセスを一度承認してください。';
+    if(isAdmin&&c.authorization_url){authBtn.href=c.authorization_url;authBtn.style.display='inline-block';}
+  }else if(ready){
+    $('sttStatus').textContent='Deepgram multilingual rescue: ready';
+    $('sttStatus').className='good';
+  }else{
+    $('sttStatus').textContent='Deepgram rescue: setup incomplete';
+    $('sttStatus').className='warn';
+  }
+  if(isAdmin)$('sttAdminSetup').style.display='flex';
 }
 async function loadAudioStorageStatus(repair=false){
   const status=$('audioStorageStatus'),detail=$('audioStorageDetail'),btn=$('repairAudioStorage'),authBtn=$('authorizeDrive');
@@ -141,7 +160,9 @@ async function load(){
   }
   catch(e){$('sessions').innerHTML='<div class="empty bad">'+esc(e.message)+'</div>';}
 }
-$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);$('repairAudioStorage').onclick=()=>loadAudioStorageStatus(true);load();
+$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);$('repairAudioStorage').onclick=()=>loadAudioStorageStatus(true);
+window.addEventListener('focus',()=>{if($('authorizeDeepgram').style.display!=='none')setTimeout(()=>load(),700);});
+load();
 </script>
 </body>
 </html>

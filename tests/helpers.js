@@ -119,11 +119,21 @@ function createHarness(options={}){
     ScriptApp:{
       AuthMode:{FULL:'FULL'},
       AuthorizationStatus:{REQUIRED:'REQUIRED',NOT_REQUIRED:'NOT_REQUIRED'},
-      getAuthorizationInfo:()=>({
-        getAuthorizationStatus:()=>options.driveAuthorized===false?'REQUIRED':'NOT_REQUIRED',
-        getAuthorizationUrl:()=>options.driveAuthorized===false?'https://accounts.google.com/o/oauth2/auth?mock=drive':null,
-        getAuthorizedScopes:()=>options.driveAuthorized===false?[]:['https://www.googleapis.com/auth/drive']
-      })
+      getAuthorizationInfo:(mode,scopes=[])=>{
+        const requested=Array.isArray(scopes)?scopes.map(String):[];
+        const driveScope='https://www.googleapis.com/auth/drive';
+        const externalScope='https://www.googleapis.com/auth/script.external_request';
+        const wantsDrive=requested.includes(driveScope),wantsExternal=requested.includes(externalScope);
+        const driveOk=options.driveAuthorized!==false,externalOk=options.externalRequestAuthorized!==false;
+        const required=(wantsDrive&&!driveOk)||(wantsExternal&&!externalOk);
+        const url=wantsExternal&&!externalOk?'https://accounts.google.com/o/oauth2/auth?mock=external':wantsDrive&&!driveOk?'https://accounts.google.com/o/oauth2/auth?mock=drive':null;
+        const authorized=requested.filter(scope=>scope===driveScope?driveOk:scope===externalScope?externalOk:true);
+        return {
+          getAuthorizationStatus:()=>required?'REQUIRED':'NOT_REQUIRED',
+          getAuthorizationUrl:()=>url,
+          getAuthorizedScopes:()=>authorized
+        };
+      }
     },
     ContentService:{
       MimeType:{JSON:'application/json'},

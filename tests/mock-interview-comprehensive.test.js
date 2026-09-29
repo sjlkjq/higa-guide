@@ -1218,3 +1218,62 @@ test('QA-118 Mock Review offers re-transcription only for saved answers with mis
   assert.match(html,/mockRetranscribeMissing/);
   assert.match(html,/Deepgram設定済みの場合のみ実行/);
 });
+
+
+test('QA-119 Deepgram fallback reports missing external-request authorization without calling the API',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    externalRequestAuthorized:false,
+    mockSessions:[shimpeiSession()]
+  });
+  const audio=Buffer.from('recorded-answer').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm;codecs=opus'
+  }));
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,0);
+  const row=objects(sheets.MockAnswers)[0];
+  assert.equal(row.stt_status,'deepgram_authorization_required');
+  assert.match(String(row.stt_error),/external API access/i);
+});
+
+test('QA-120 Deepgram config separates saved API key from runtime authorization readiness',()=>{
+  const {api}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    externalRequestAuthorized:false
+  });
+  const admin=api.mockSttConfig('admin-token-123456','admin');
+  assert.equal(admin.ok,true);
+  assert.equal(admin.key_configured,true);
+  assert.equal(admin.configured,true);
+  assert.equal(admin.ready,false);
+  assert.equal(admin.authorization_required,true);
+  assert.match(String(admin.authorization_url),/mock=external/);
+  const reviewer=api.mockSttConfig('reviewer-token-123456','reviewer');
+  assert.equal(reviewer.authorization_required,true);
+  assert.equal(reviewer.authorization_url,'');
+});
+
+test('QA-121 Deepgram request strips MediaRecorder codec parameters from Content-Type',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockSessions:[shimpeiSession()]
+  });
+  const audio=Buffer.from('recorded-answer').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm;codecs=opus'
+  }));
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,1);
+  assert.equal(fetchCalls[0].opts.contentType,'audio/webm');
+  const row=objects(sheets.MockAnswers)[0];
+  assert.equal(row.stt_status,'fallback_ok');
+});
+
+test('QA-122 Mock Review exposes Deepgram authorization and exact STT errors',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/外部APIアクセスを承認/);
+  assert.match(html,/authorization_required/);
+  assert.match(html,/STT error:/);
+  assert.match(html,/stt_error/);
+});

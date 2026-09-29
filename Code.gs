@@ -258,6 +258,38 @@ function deepgramApiKey_(){
   catch(err){return '';}
 }
 
+function deepgramAuthorization_(){
+  try{
+    const scopes=['https://www.googleapis.com/auth/script.external_request'];
+    const info=ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL,scopes);
+    const status=String(info.getAuthorizationStatus()||'');
+    const authorized=status!==String(ScriptApp.AuthorizationStatus.REQUIRED);
+    return {
+      authorized,
+      status:status||'UNKNOWN',
+      authorization_url:authorized?'':String(info.getAuthorizationUrl()||''),
+      authorized_scopes:(info.getAuthorizedScopes&&info.getAuthorizedScopes())||[]
+    };
+  }catch(err){
+    return {authorized:false,status:'ERROR',authorization_url:'',authorized_scopes:[],error:String(err.message||err)};
+  }
+}
+
+function mockSttConfigData_(role){
+  const keyConfigured=!!deepgramApiKey_();
+  const authz=keyConfigured?deepgramAuthorization_():{authorized:true,status:'NOT_REQUIRED',authorization_url:''};
+  const authorizationRequired=keyConfigured&&!authz.authorized;
+  return {
+    configured:keyConfigured,
+    key_configured:keyConfigured,
+    ready:keyConfigured&&!authorizationRequired,
+    authorization_required:authorizationRequired,
+    authorization_status:authz.status||'',
+    authorization_url:role==='admin'&&authorizationRequired?(authz.authorization_url||''):'',
+    provider:'Deepgram',model:'nova-3',mode:'no-result-only',fallback_language:'multi'
+  };
+}
+
 function mockSttSettings_(profile){
   const p=String(profile||'').toLowerCase();
   const common=['attitude','evidence','international school'];
@@ -285,8 +317,14 @@ function mockTranscribeDeepgram_(payload,profile){
   if(!b64){base.status='no_audio_for_fallback';return base;}
   const key=deepgramApiKey_();
   if(!key){base.status='deepgram_not_configured';return base;}
+  const authz=deepgramAuthorization_();
+  if(!authz.authorized){
+    base.status='deepgram_authorization_required';
+    base.error='Apps Script owner has not authorized external API access for Deepgram.';
+    return base;
+  }
   try{
-    const mime=String(payload.audio_mime_type||'audio/webm');
+    const mime=String(payload.audio_mime_type||'audio/webm').split(';')[0].trim()||'audio/webm';
     const query=['model='+encodeURIComponent(settings.model),'language=multi','smart_format=true'];
     settings.keyterms.forEach(k=>query.push('keyterm='+encodeURIComponent(k)));
     const url='https://api.deepgram.com/v1/listen?'+query.join('&');
@@ -327,6 +365,8 @@ function mockRetranscribeMissing(token,requestedRole,scope,sessionId){
   if(auth.role!=='admin')return {ok:false,error:'Admin access required.'};
   const key=deepgramApiKey_();
   if(!key)return {ok:false,error:'Deepgram API key is not configured.'};
+  const authz=deepgramAuthorization_();
+  if(!authz.authorized)return {ok:false,error:'Apps Script owner must authorize external API access before Deepgram can run.',authorization_required:true,authorization_url:authz.authorization_url||''};
   const normalizedScope=String(scope||'').toLowerCase();
   if(!['applicant','test'].includes(normalizedScope))return {ok:false,error:'Invalid scope.'};
   const sheetName=normalizedScope==='applicant'?SHEETS.MOCKA:SHEETS.MOCKTA;
@@ -375,8 +415,7 @@ function mockRetranscribeMissing(token,requestedRole,scope,sessionId){
 function mockSttConfig(token,requestedRole){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
   if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
-  return {ok:true,configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',
-    mode:'no-result-only',fallback_language:'multi',role:auth.role};
+  return {ok:true,role:auth.role,...mockSttConfigData_(auth.role)};
 }
 
 function mockSetDeepgramApiKey(token,requestedRole,apiKey){
@@ -585,7 +624,7 @@ function mockReviewBootstrap(token, requestedRole){
     const sessions=[...applicant.sessions,...test.sessions].sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||''))).slice(0,200);
     const allowed=new Set(sessions.map(s=>String(s.session_id)));
     const answers=[...applicant.answers,...test.answers].filter(a=>allowed.has(String(a.session_id)));
-    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION,stt_config:{configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',mode:'no-result-only',fallback_language:'multi'}};
+    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION,stt_config:mockSttConfigData_(auth.role)};
   }catch(err){return {ok:false,error:String(err.message||err)};}
 }
 
