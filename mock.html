@@ -94,7 +94,7 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 const _hash=new URLSearchParams(String(location.hash||'').replace(/^#/,''));const ACCESS={role:String(_hash.get('role')||'student').toLowerCase(),token:''};
 const els={};
 ['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
-let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null;
+let boot=null,testMode=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null,questionTtsCache=new Map(),questionTtsUrls=[];
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
 recognitionSupported=!!SpeechRecognition;
 deviceId=localStorage.getItem('mock_device_id')||('d_'+Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem('mock_device_id',deviceId);selectedMicId=localStorage.getItem('mock_mic_device_id')||'';
@@ -129,8 +129,8 @@ function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
   micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected.';els.micTestResult.className='mic-detail';
-  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(v?' · Voice: '+v.name:'');show('ready');
-  refreshMicDevices(false);
+  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(p==='shiori'?' · Japanese voice: Aura-2 Ama':(v?' · Voice: '+v.name:''));show('ready');
+  refreshMicDevices(false);prefetchQuestionAudio(queue[0]);
 }
 els.backHome.onclick=()=>show('home');
 els.againBtn.onclick=()=>{cleanupAudio();profile='';queue=[];sessionRows=[];show('home');};
@@ -248,7 +248,7 @@ function startMeter(){
 }
 function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
 function cleanupAudio(){
-  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}questionTtsUrls.forEach(u=>{try{URL.revokeObjectURL(u);}catch(e){}});questionTtsUrls=[];questionTtsCache.clear();try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
   try{speechSynthesis.cancel();}catch(e){}
   if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
@@ -275,6 +275,43 @@ async function nextQuestion(){
   els.counter.textContent=(index+1)+' / '+queue.length;els.phase.textContent=phaseLabel(current);els.transcript.textContent='';delete els.transcript.dataset.error;els.answerClock.textContent='00:00';els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
   await speakCurrent(false);
 }
+function spokenTextForQuestion(q){
+  let text=String(q&&q.question_text||'').trim();
+  text=text.replace(/^\s*\(\d+\)\s*/,'');
+  text=text.replace(/開智所沢中等教育学校/g,'かいちところざわ中等教育学校');
+  text=text.replace(/開智所沢/g,'かいちところざわ');
+  text=text.replace(/GSC/g,'ジーエスシー');
+  text=text.replace(/^なぜ(?![、,])/,'なぜ、');
+  text=text.replace(/か。$/,'か？');
+  return text;
+}
+function isNaturalJapaneseQuestion(q){
+  return !!q&&q.profile==='shiori'&&String(q.language||'').toLowerCase().startsWith('ja');
+}
+function prefetchQuestionAudio(q){
+  if(!isNaturalJapaneseQuestion(q))return Promise.resolve(null);
+  if(questionTtsCache.has(q.id))return questionTtsCache.get(q.id);
+  const p=gas('mockTtsQuestion',[ACCESS.token,ACCESS.role||'student',q.id]).then(r=>{
+    if(!r||!r.ok||!r.audio_base64)return null;
+    const bytes=Uint8Array.from(atob(r.audio_base64),c=>c.charCodeAt(0));
+    const url=URL.createObjectURL(new Blob([bytes],{type:r.mime_type||'audio/mpeg'}));
+    questionTtsUrls.push(url);
+    return {url,voice:r.voice||'aura-2-ama-ja',spoken_text:r.spoken_text||spokenTextForQuestion(q)};
+  }).catch(()=>null);
+  questionTtsCache.set(q.id,p);
+  return p;
+}
+async function playNaturalQuestion(q){
+  const item=await prefetchQuestionAudio(q);
+  if(!item)return false;
+  return new Promise(resolve=>{
+    const audio=new Audio(item.url);
+    let done=false;const finish=v=>{if(done)return;done=true;resolve(v);};
+    audio.onended=()=>finish(true);audio.onerror=()=>finish(false);
+    try{const p=audio.play();if(p&&p.catch)p.catch(()=>finish(false));}catch(e){finish(false);}
+  });
+}
+
 function selectVoice(lang){
   const base=String(lang||'en-US').toLowerCase().split('-')[0];
   const voices=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith(base));
@@ -298,9 +335,11 @@ function speak(text,lang){
 async function speakCurrent(isRepeat){
   stopRecognition();stopMeter();if(isRepeat)await stopAnswerRecording(true);els.promptState.textContent=isRepeat?'Repeating question…':'Interviewer is asking…';els.mic.classList.remove('live');els.doneBtn.disabled=true;els.repeatBtn.disabled=true;
   if(isRepeat){repeatCount++;transcriptFinal='';transcriptInterim='';firstSpeechAt=0;lastVoiceAt=0;longestSilence=0;silenceStart=0;els.transcript.textContent='';delete els.transcript.dataset.error;}
-  await speak(current.question_text,current.language);
+  const natural=await playNaturalQuestion(current);
+  if(!natural)await speak(spokenTextForQuestion(current),current.language);
   questionSpokenAt=performance.now();answerStartedAt=Date.now();els.promptState.textContent='Your answer';els.mic.classList.add('live');els.doneBtn.disabled=false;els.repeatBtn.disabled=false;
   startClock();startMeter();startRecognition(current.language);startAnswerRecording();
+  if(queue[index+1])prefetchQuestionAudio(queue[index+1]);
 }
 function startClock(){clearInterval(clockTimer);clockTimer=setInterval(()=>{els.answerClock.textContent=fmt(Date.now()-answerStartedAt);},250);}
 function startRecognition(lang){
