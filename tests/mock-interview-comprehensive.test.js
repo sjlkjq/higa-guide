@@ -776,13 +776,13 @@ test('QA-78 cloud Japanese interviewer TTS is limited to Shiori Japanese questio
   assert.equal(fetchCalls.length,0);
 });
 
-test('QA-79 browser mock prefers natural Japanese cloud audio, caches it, and retains corrected browser fallback',()=>{
+test('QA-79 browser mock retains natural Japanese fallback behind static AI Voice audio',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/mockTtsQuestion/);
   assert.match(html,/playNaturalQuestion\(current\)/);
-  assert.match(html,/if\(!natural\)await speak\(spokenTextForQuestion\(current\),current\.language\)/);
+  assert.match(html,/if\(!aiVoice\)\{const natural=await playNaturalQuestion\(current\);if\(!natural\)await speak\(spokenTextForQuestion\(current\),current\.language\);\}/);
   assert.match(html,/questionTtsCache\.has\(q\.id\)/);
-  assert.match(html,/prefetchQuestionAudio\(queue\[index\+1\]\)/);
+  assert.match(html,/prefetchStaticQuestionAudio\(queue\[index\+1\]\)/);
   assert.match(html,/開智所沢中等教育学校\/g,'かいちところざわ中等教育学校'/);
   assert.match(html,/text\.replace\(\/か。\$\/,'か？'\)/);
 });
