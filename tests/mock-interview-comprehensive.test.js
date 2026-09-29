@@ -943,3 +943,63 @@ test('QA-92 Apps Script manifest explicitly declares Drive, Sheets, and external
   assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/spreadsheets'));
   assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/script.external_request'));
 });
+
+
+test('QA-93 missing Drive OAuth is detected before any Drive folder access',()=>{
+  const {api}=createHarness({driveAuthorized:false});
+  const r=api.mockAudioStorageStatus('admin-token-123456','admin',true);
+  assert.equal(r.ok,true);
+  assert.equal(r.authorization_required,true);
+  assert.equal(r.writable,false);
+  assert.match(r.authorization_url,/accounts\.google\.com\/o\/oauth2\/auth/);
+  assert.match(r.error,/permission has not yet been granted/i);
+});
+
+test('QA-94 student bootstrap exposes Drive authorization readiness without exposing an OAuth URL',()=>{
+  const {api}=createHarness({driveAuthorized:false});
+  const r=api.mockBootstrap('student-token-123456','student');
+  assert.equal(r.ok,true);
+  assert.equal(r.audio_storage.authorized,false);
+  assert.equal(r.audio_storage.status,'REQUIRED');
+  assert.equal(r.audio_storage.authorization_url,undefined);
+});
+
+test('QA-95 an audio-expected answer is blocked with a parent-action message when Drive OAuth is missing',()=>{
+  const {api,sheets}=createHarness({driveAuthorized:false,mockSessions:[shimpeiSession()]});
+  const before=sheets.MockAnswers.data.length;
+  const audio=Buffer.from('recorded-answer').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(r.ok,false);
+  assert.equal(r.audio_status,'authorization_required');
+  assert.match(r.error,/Parent\/Admin must open Mock Review and authorize Google Drive once/i);
+  assert.equal(sheets.MockAnswers.data.length,before);
+});
+
+test('QA-96 Mock Review shows the one-click Google Drive authorization path and recheck instructions',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/id="authorizeDrive"/);
+  assert.match(html,/Google Driveを承認/);
+  assert.match(html,/authorization_required/);
+  assert.match(html,/承認後、この画面に戻って「保存先を再確認・修復」を押してください/);
+});
+
+test('QA-97 mock runtime cannot start when recording storage authorization is not ready',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/audioStorageReady=!!\(r\.audio_storage&&r\.audio_storage\.authorized\)/);
+  assert.match(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
+  assert.match(html,/if\(!audioStorageReady\)\{els\.micTestResult\.textContent='Google Drive recording storage is not authorized/);
+});
+
+test('QA-98 production health endpoint reports Drive authorization without exposing tokens or folder ids',()=>{
+  const {api}=createHarness({driveAuthorized:false});
+  const out=api.doGet({parameter:{mode:'mockhealth'}});
+  const data=JSON.parse(out.text);
+  assert.equal(data.ok,true);
+  assert.equal(data.drive_authorized,false);
+  assert.equal(data.authorization_status,'REQUIRED');
+  assert.equal(data.app_version,'1.7.1');
+  assert.equal(JSON.stringify(data).includes('student-token'),false);
+  assert.equal(JSON.stringify(data).includes('test-folder'),false);
+});
