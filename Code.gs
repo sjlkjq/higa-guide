@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.7.3';
+const APP_VERSION = '1.7.4';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -320,6 +320,45 @@ function mockTranscribeDeepgram_(payload,profile){
   }catch(err){
     base.status='deepgram_error';base.error=String(err.message||err).slice(0,500);return base;
   }
+}
+
+function mockRetranscribeMissing(token,requestedRole,scope,sessionId){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(auth.role!=='admin')return {ok:false,error:'Admin access required.'};
+  const key=deepgramApiKey_();
+  if(!key)return {ok:false,error:'Deepgram API key is not configured.'};
+  const normalizedScope=String(scope||'').toLowerCase();
+  if(!['applicant','test'].includes(normalizedScope))return {ok:false,error:'Invalid scope.'};
+  const sheetName=normalizedScope==='applicant'?SHEETS.MOCKA:SHEETS.MOCKTA;
+  const sh=sheet_(sheetName),vals=sh.getDataRange().getValues();
+  if(vals.length<2)return {ok:true,processed:0,rescued:0,failed:0};
+  const h=vals[0].map(String);
+  const idx=name=>h.indexOf(name);
+  const sc=idx('session_id'),tc=idx('transcript'),fc=idx('audio_file_id'),pc=idx('profile'),mc=idx('audio_mime_type');
+  if([sc,tc,fc,pc].some(i=>i<0))return {ok:false,error:'Answer sheet is missing required columns.'};
+  let processed=0,rescued=0,failed=0;
+  const failures=[];
+  for(let i=1;i<vals.length&&processed<20;i++){
+    const row=vals[i];
+    if(String(row[sc])!==String(sessionId))continue;
+    if(String(row[tc]||'').trim())continue;
+    const fileId=String(row[fc]||'').trim(); if(!fileId)continue;
+    processed++;
+    try{
+      const blob=DriveApp.getFileById(fileId).getBlob();
+      const payload={
+        transcript:'',speech_detected:true,
+        audio_base64:Utilities.base64Encode(blob.getBytes()),
+        audio_mime_type:String(row[mc]||blob.getContentType()||'audio/webm')
+      };
+      const stt=mockTranscribeDeepgram_(payload,String(row[pc]||''));
+      ['transcript','browser_transcript','stt_provider','stt_model','stt_language_mode','stt_detected_language','stt_confidence','stt_status','stt_error'].forEach(col=>{
+        const ci=idx(col);if(ci>=0)sh.getRange(i+1,ci+1).setValue(stt[col]??'');
+      });
+      if(String(stt.transcript||'').trim())rescued++;else{failed++;failures.push({row:i+1,status:stt.status||'empty',error:stt.error||''});}
+    }catch(err){failed++;failures.push({row:i+1,status:'exception',error:String(err.message||err).slice(0,300)});}
+  }
+  return {ok:true,processed,rescued,failed,failures};
 }
 
 function mockSttConfig(token,requestedRole){
