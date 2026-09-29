@@ -787,9 +787,9 @@ test('QA-79 browser mock retains natural Japanese fallback behind static AI Voic
   assert.match(html,/text\.replace\(\/か。\$\/,'か？'\)/);
 });
 
-test('QA-80 parent app RPC allowlist permits TTS but still controls backend access',()=>{
+test('QA-80 parent app RPC allowlist permits mock TTS and recording-status RPCs but still controls backend access',()=>{
   const html=fs.readFileSync('index.html','utf8');
-  assert.match(html,/MOCK_ALLOWED_RPC=new Set\(\['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession','mockTtsQuestion'\]\)/);
+  assert.match(html,/MOCK_ALLOWED_RPC=new Set\(\['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession','mockTtsQuestion','mockAudioStorageStatus','mockAudioStorageReady'\]\)/);
   assert.match(html,/MOCK_ALLOWED_RPC\.has\(e\.data\.name\)/);
   assert.match(html,/args\[0\]=token;args\[1\]=role/);
 });
@@ -989,7 +989,7 @@ test('QA-97 mock runtime cannot start when recording storage authorization is no
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/audioStorageReady=!!\(r\.audio_storage&&r\.audio_storage\.authorized\)/);
   assert.match(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
-  assert.match(html,/if\(!audioStorageReady\)\{els\.micTestResult\.textContent='Google Drive recording storage is not authorized/);
+  assert.match(html,/await refreshAudioStorageReady\(\);\s*if\(!audioStorageReady\)/);
 });
 
 test('QA-98 production health endpoint reports Drive authorization without exposing tokens or folder ids',()=>{
@@ -1002,4 +1002,45 @@ test('QA-98 production health endpoint reports Drive authorization without expos
   assert.equal(data.app_version,'1.7.1');
   assert.equal(JSON.stringify(data).includes('student-token'),false);
   assert.equal(JSON.stringify(data).includes('test-folder'),false);
+});
+
+
+test('QA-99 student readiness check never exposes the deployer authorization URL',()=>{
+  const {api}=createHarness({driveAuthorized:false});
+  const r=api.mockAudioStorageReady('student-token-123456','student');
+  assert.equal(r.ok,true);
+  assert.equal(r.ready,false);
+  assert.equal(r.authorization_required,true);
+  assert.equal(r.authorization_url,'');
+});
+
+test('QA-100 admin readiness check exposes one-time authorization URL when needed',()=>{
+  const {api}=createHarness({driveAuthorized:false});
+  const r=api.mockAudioStorageReady('admin-token-123456','admin');
+  assert.equal(r.ok,true);
+  assert.equal(r.ready,false);
+  assert.match(r.authorization_url,/accounts\.google\.com\/o\/oauth2\/auth/);
+});
+
+test('QA-101 once deployer Drive authorization is granted, student readiness succeeds without child OAuth',()=>{
+  const {api}=createHarness({driveAuthorized:true});
+  const r=api.mockAudioStorageReady('student-token-123456','student');
+  assert.equal(r.ok,true);
+  assert.equal(r.ready,true);
+  assert.equal(r.status,'READY');
+  assert.equal(r.authorization_url,undefined);
+});
+
+test('QA-102 Ready screen gives parent a one-time authorize button but tells children no authorization is required',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/id="authorizeDriveReady"/);
+  assert.match(html,/One-time Parent\/Admin setup required\. Authorize Google Drive here; children will not need to authorize anything\./);
+  assert.match(html,/No Google Drive authorization is required on this device\./);
+  assert.match(html,/setInterval\(\(\)=>\{if\(!audioStorageReady\)refreshAudioStorageReady\(\);\},5000\)/);
+  assert.match(html,/await refreshAudioStorageReady\(\);\s*startAudioStoragePolling\(\)/);
+});
+
+test('QA-103 a successful mic test rechecks Drive readiness and unlocks Start only when both are ready',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
 });
