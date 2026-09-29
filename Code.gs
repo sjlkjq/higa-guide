@@ -1,9 +1,17 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
   const mode=String(params.mode||'').toLowerCase();
+  if(mode==='mockhealth'){
+    const a=mockDriveAuthorization_();
+    return ContentService.createTextOutput(JSON.stringify({
+      ok:true,app_version:APP_VERSION,
+      drive_authorized:!!a.authorized,
+      authorization_status:a.status||'unknown'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
   const fileName=mode==='mock'?'MockInterview':mode==='mockreview'?'MockReview':'index';
   const source = HtmlService.createHtmlOutputFromFile(fileName).getContent();
   const access = {
@@ -154,7 +162,9 @@ function mockBootstrap(token, requestedRole){
       .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))
       .slice(0,20)
       .map(r=>({session_id:r.session_id,profile:r.profile,started_at:r.started_at,completed_at:r.completed_at,questions_asked:r.questions_asked,followups_asked:r.followups_asked,answers_saved:r.answers_saved}));
-    return {ok:true,role:auth.role,actor_label:auth.label,test_mode:auth.role!=='student',questions,recent_sessions:recent,app_version:APP_VERSION};
+    const driveAuth=mockDriveAuthorization_();
+    return {ok:true,role:auth.role,actor_label:auth.label,test_mode:auth.role!=='student',questions,recent_sessions:recent,app_version:APP_VERSION,
+      audio_storage:{authorized:!!driveAuth.authorized,status:driveAuth.status||'UNKNOWN'}};
   }catch(err){return {ok:false,error:String(err.message||err)};}
 }
 
@@ -190,8 +200,10 @@ function mockSaveAnswer(token, requestedRole, payload){
   if(duplicate)return {ok:true,persisted:true,duplicate:true,audio_saved:!!String(duplicate.audio_file_id||'').trim(),audio_status:duplicate.audio_status||''};
   const audio=saveMockAudio_(auth.role,payload);
   if(truthy_(payload.audio_expected) && !audio.file_id){
-    return {ok:false,error:'Audio recording could not be saved to Google Drive: '+String(audio.error||audio.status||'unknown error'),
-      audio_saved:false,audio_status:audio.status||'save_error'};
+    const msg=audio.status==='authorization_required'
+      ?'Audio recording cannot be saved because Google Drive authorization is missing. Parent/Admin must open Mock Review and authorize Google Drive once.'
+      :'Audio recording could not be saved to Google Drive: '+String(audio.error||audio.status||'unknown error');
+    return {ok:false,error:msg,audio_saved:false,audio_status:audio.status||'save_error'};
   }
   const stt=mockTranscribeDeepgram_(payload,String(payload.profile||''));
   appendObject_(names.answers,{
@@ -371,6 +383,23 @@ function mockTtsQuestion(token,requestedRole,questionId){
   }
 }
 
+function mockDriveAuthorization_(){
+  try{
+    const scopes=['https://www.googleapis.com/auth/drive'];
+    const info=ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL,scopes);
+    const status=String(info.getAuthorizationStatus()||'');
+    const authorized=status!==String(ScriptApp.AuthorizationStatus.REQUIRED);
+    return {
+      authorized,
+      status:status||'UNKNOWN',
+      authorization_url:authorized?'':String(info.getAuthorizationUrl()||''),
+      authorized_scopes:(info.getAuthorizedScopes&&info.getAuthorizedScopes())||[]
+    };
+  }catch(err){
+    return {authorized:false,status:'ERROR',authorization_url:'',authorized_scopes:[],error:String(err.message||err)};
+  }
+}
+
 function setConfigValue_(key,value){
   const sh=sheet_(SHEETS.CONFIG),vals=sh.getDataRange().getValues(),h=vals[0].map(String);
   const kc=h.indexOf('key'),vc=h.indexOf('value'); if(kc<0||vc<0)throw new Error('Config sheet must contain key/value columns.');
@@ -380,6 +409,11 @@ function setConfigValue_(key,value){
 }
 
 function ensureMockAudioFolder_(repair){
+  const authz=mockDriveAuthorization_();
+  if(!authz.authorized){
+    return {ok:false,authorization_required:true,authorization_url:authz.authorization_url||'',
+      error:'Google Drive authorization is required for the Apps Script owner before recordings can be saved.'};
+  }
   const c=config_(),configuredId=String(c.mock_audio_folder_id||'').trim();
   if(configuredId){
     try{
@@ -407,7 +441,7 @@ function saveMockAudio_(role,payload){
   if(!b64)return {file_id:'',mime_type:'',status:expected?'missing_payload':'not_recorded',error:expected?'Browser recording was expected but no audio payload was received.':'',bytes:0};
   try{
     const storage=ensureMockAudioFolder_(true);
-    if(!storage.ok)return {file_id:'',mime_type:'',status:'storage_unavailable',error:storage.error||'Audio storage unavailable.',bytes:0};
+    if(!storage.ok)return {file_id:'',mime_type:'',status:storage.authorization_required?'authorization_required':'storage_unavailable',error:storage.error||'Audio storage unavailable.',bytes:0};
     const mime=String(payload.audio_mime_type||'audio/webm');
     const ext=mime.includes('ogg')?'ogg':mime.includes('mp4')?'m4a':'webm';
     const safe=x=>String(x||'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,80);
@@ -425,9 +459,18 @@ function mockAudioStorageStatus(token,requestedRole,repair){
   try{
     const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
     if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
+    const authz=mockDriveAuthorization_();
+    if(!authz.authorized){
+      return {ok:true,accessible:false,writable:false,authorization_required:true,
+        authorization_url:auth.role==='admin'?(authz.authorization_url||''):'',
+        authorization_status:authz.status||'REQUIRED',
+        error:'Google Drive permission has not yet been granted to this Apps Script deployment.'};
+    }
     const doRepair=truthy_(repair)&&auth.role==='admin';
     const storage=ensureMockAudioFolder_(doRepair);
-    if(!storage.ok)return {ok:true,accessible:false,writable:false,error:storage.error||'Audio storage unavailable.',configured_id:storage.configured_id||''};
+    if(!storage.ok)return {ok:true,accessible:false,writable:false,authorization_required:!!storage.authorization_required,
+      authorization_url:auth.role==='admin'?(storage.authorization_url||''):'',
+      error:storage.error||'Audio storage unavailable.',configured_id:storage.configured_id||''};
     let writable=false,writeError='';
     try{
       const probe=storage.folder.createFile(Utilities.newBlob('ok','text/plain','__higa_audio_storage_probe__.txt'));
