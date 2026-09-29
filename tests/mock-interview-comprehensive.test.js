@@ -298,11 +298,11 @@ test('QA-31 unsupported speech recognition has an explicit fallback path',()=>{
   assert.match(html,/Speech recognition is not available/);
 });
 
-test('QA-32 microphone denial is handled without crashing interview start',()=>{
+test('QA-32 microphone denial is handled without starting an unrecorded interview',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/Microphone error:/);
   assert.match(html,/return false;/);
-  assert.match(html,/Microphone permission was not granted/);
+  assert.match(html,/Microphone access is required to record the interview/);
 });
 
 test('QA-33 parent/admin test mode is visibly labelled as separate history',()=>{
@@ -532,11 +532,11 @@ test('QA-58 microphone setup lists audio input devices and stores selected devic
   assert.match(html,/deviceId=\{exact:selectedMicId\}/);
 });
 
-test('QA-59 interview cannot start until microphone test detects input',()=>{
+test('QA-59 interview start no longer depends on microphone-test verification',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/id="startBtn" disabled/);
-  assert.match(html,/if\(!micVerified\)/);
-  assert.match(html,/Run a successful microphone test before starting/);
+  assert.doesNotMatch(html,/if\(!micVerified\)/);
+  assert.match(html,/const micOk=await ensureMic\(false\)/);
   assert.match(html,/micVerified=peak>=0\.008/);
 });
 
@@ -548,19 +548,20 @@ test('QA-60 microphone diagnostic shows actual active track label and live level
   assert.match(html,/Peak level/);
 });
 
-test('QA-61 microphone diagnostic records five-second playback sample locally',()=>{
+test('QA-61 optional microphone diagnostic still records a five-second playback sample locally',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/Test microphone \(5 sec\)/);
+  assert.match(html,/Test microphone \(optional\)/);
   assert.match(html,/new MediaRecorder\(micStream/);
   assert.match(html,/setTimeout\(r,5000\)/);
   assert.match(html,/micTestPlayback\.src=micTestBlobUrl/);
 });
 
-test('QA-62 changing microphone invalidates prior microphone verification',()=>{
+test('QA-62 changing microphone invalidates prior verification but does not force another test',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/micSelect\.onchange/);
   assert.match(html,/micVerified=false/);
-  assert.match(html,/Device changed\. Run the microphone test again/);
+  assert.match(html,/Microphone test is optional; the selected microphone will be used when the interview starts/);
+  assert.match(html,/els\.startBtn\.disabled=!audioStorageReady/);
 });
 
 
@@ -988,7 +989,7 @@ test('QA-96 Mock Review shows the one-click Google Drive authorization path and 
 test('QA-97 mock runtime cannot start when recording storage authorization is not ready',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/audioStorageReady=!!\(r\.audio_storage&&r\.audio_storage\.authorized\)/);
-  assert.match(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
+  assert.match(html,/els\.startBtn\.disabled=!audioStorageReady/);
   assert.match(html,/await refreshAudioStorageReady\(\);\s*if\(!audioStorageReady\)/);
 });
 
