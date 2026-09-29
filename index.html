@@ -161,7 +161,7 @@ async function logEvent(type,qid,elapsed,page,aid,note=''){try{await server('log
 function showSec(id){if(id==='practice'&&!currentQ&&role==='student'){id='questions'}document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.sec===id));$('pageTitle').textContent={overview:'Overview',questions:'Question Bank',practice:'Practice',feedback:'Feedback Review',strategy:'Strategy',reviewer:'Reviewer Dashboard'}[id]||'Interview Training';$('pageSub').textContent={overview:'Shared progress, feedback and interview readiness.',questions:'Choose one item and improve it over repeated attempts.',practice:'One question at a time.',feedback:'Review previous answers and turn feedback into the next attempt.',strategy:'Why this training works this way.',reviewer:'Review home practice and record live interview performance.'}[id]||''}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{if(b.id==='mockNav'||b.id==='mockReviewNav')return;if(b.disabled){toast('First save your explanation of the training purpose.','error');return}showSec(b.dataset.sec)});
 const MOCK_ORIGIN='https://sjlkjq.github.io';
-const MOCK_ALLOWED_RPC=new Set(['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession']);
+const MOCK_ALLOWED_RPC=new Set(['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession','mockTtsQuestion']);
 window.addEventListener('message',e=>{
   if(e.origin!==MOCK_ORIGIN||!e.data||e.data.type!=='higa-mock-rpc'||!MOCK_ALLOWED_RPC.has(e.data.name))return;
   const source=e.source,id=e.data.id,name=e.data.name,args=Array.isArray(e.data.args)?e.data.args.slice():[];
