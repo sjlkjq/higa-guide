@@ -1040,9 +1040,10 @@ test('QA-102 Ready screen gives parent a one-time authorize button but tells chi
   assert.match(html,/await refreshAudioStorageReady\(\);\s*startAudioStoragePolling\(\)/);
 });
 
-test('QA-103 a successful mic test rechecks Drive readiness and unlocks Start only when both are ready',()=>{
+test('QA-103 microphone test rechecks Drive readiness but does not gate Start Interview',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
+  assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!audioStorageReady/);
+  assert.doesNotMatch(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
 });
 
 
@@ -1071,4 +1072,34 @@ test('QA-106 speech with no browser transcript is explicitly marked no-result fo
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/const recognitionError=els\.transcript\.dataset\.error\|\|\(\(!!firstSpeechAt&&!text\)\?'no-result':'\'\)/);
   assert.match(html,/recognition_error:recognitionError/);
+});
+
+
+test('QA-107 microphone test is optional and Ready screen says so explicitly',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/Test microphone \(optional\)/);
+  assert.match(html,/Microphone test is optional\. If you skip it, microphone access will be requested when you start the interview\./);
+  assert.match(html,/You can start once recording storage is ready; microphone access will be requested automatically\./);
+});
+
+test('QA-108 Start Interview does not require micVerified',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  const start=html.indexOf('async function startInterview()');
+  const end=html.indexOf('els.startBtn.onclick=startInterview;',start);
+  const body=html.slice(start,end);
+  assert.doesNotMatch(body,/if\(!micVerified\)/);
+  assert.match(body,/const micOk=await ensureMic\(false\)/);
+  assert.match(body,/if\(!micOk\)/);
+});
+
+test('QA-109 recording storage alone controls Start button availability before interview',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/function applyAudioStorageState\(r\)[\s\S]*?els\.startBtn\.disabled=!audioStorageReady;/);
+  assert.match(html,/selectedMicId=els\.micSelect\.value\|\|'';[\s\S]*?els\.startBtn\.disabled=!audioStorageReady;/);
+});
+
+test('QA-110 skipping mic test still requires actual microphone permission when Start is pressed',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/Microphone access is required to record the interview\. Allow microphone access, then press Start Interview again\./);
+  assert.match(html,/const micOk=await ensureMic\(false\);\s*if\(!micOk\)/);
 });
