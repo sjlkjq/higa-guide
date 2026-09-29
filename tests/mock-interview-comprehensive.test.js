@@ -825,3 +825,121 @@ test('QA-83 static question audio is prefetched and repeat playback reuses the c
   assert.match(html,/questionAudioPreload\.get\(q\.id\)/);
   assert.match(html,/a\.currentTime=0/);
 });
+
+
+test('QA-84 audio-expected answers save to Drive and persist audio diagnostics',()=>{
+  const {api,sheets,driveFiles}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('recorded-answer').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(r.ok,true);
+  assert.equal(r.audio_saved,true);
+  assert.equal(r.audio_status,'saved');
+  const a=objects(sheets.MockAnswers)[0];
+  assert.match(String(a.audio_file_id),/^drive_/);
+  assert.equal(a.audio_status,'saved');
+  assert.equal(a.audio_error,'');
+  assert.equal(Number(a.audio_bytes),Buffer.from('recorded-answer').length);
+  assert.equal(driveFiles.has(String(a.audio_file_id)),true);
+});
+
+test('QA-85 inaccessible configured Drive folder self-heals to a new folder and still saves audio',()=>{
+  const {api,sheets,driveFolders}=createHarness({
+    mockSessions:[shimpeiSession()],
+    driveFolderAccessible:false
+  });
+  const audio=Buffer.from('repair-me').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(r.ok,true);
+  assert.equal(r.audio_saved,true);
+  const cfgRows=objects(sheets.Config);
+  const folderId=String(cfgRows.find(x=>x.key==='mock_audio_folder_id').value||'');
+  assert.match(folderId,/^folder_/);
+  assert.equal(driveFolders.has(folderId),true);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.audio_status,'saved');
+});
+
+test('QA-86 Drive write failure is not silently converted to recording missing',()=>{
+  const {api,sheets}=createHarness({
+    mockSessions:[shimpeiSession()],
+    driveWriteFails:true,
+    driveWriteError:'quota or permission denied'
+  });
+  const before=sheets.MockAnswers.data.length;
+  const audio=Buffer.from('must-not-be-lost').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(r.ok,false);
+  assert.match(r.error,/Audio recording could not be saved to Google Drive/i);
+  assert.match(r.error,/quota or permission denied/i);
+  assert.equal(sheets.MockAnswers.data.length,before);
+  const session=objects(sheets.MockSessions)[0];
+  assert.equal(Number(session.answers_saved),0);
+});
+
+test('QA-87 expected browser recording with an empty audio payload blocks answer persistence',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const before=sheets.MockAnswers.data.length;
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    audio_expected:true,audio_base64:'',audio_mime_type:''
+  }));
+  assert.equal(r.ok,false);
+  assert.match(r.error,/no audio payload was received/i);
+  assert.equal(sheets.MockAnswers.data.length,before);
+});
+
+test('QA-88 admin audio storage status proves the configured folder is writable',()=>{
+  const {api,driveFiles}=createHarness();
+  const r=api.mockAudioStorageStatus('admin-token-123456','admin',false);
+  assert.equal(r.ok,true);
+  assert.equal(r.accessible,true);
+  assert.equal(r.writable,true);
+  assert.equal(r.folder_id,'test-folder');
+  assert.match(r.folder_url,/drive\.google\.com\/drive\/folders\/test-folder/);
+  assert.ok(driveFiles.size>=1,'write probe should create a temporary Drive file');
+});
+
+test('QA-89 admin storage check can repair an inaccessible configured folder',()=>{
+  const {api,sheets}=createHarness({driveFolderAccessible:false});
+  const r=api.mockAudioStorageStatus('admin-token-123456','admin',true);
+  assert.equal(r.ok,true);
+  assert.equal(r.accessible,true);
+  assert.equal(r.writable,true);
+  assert.equal(r.repaired,true);
+  assert.match(String(r.folder_id),/^folder_/);
+  const cfgRows=objects(sheets.Config);
+  assert.equal(cfgRows.find(x=>x.key==='mock_audio_folder_id').value,r.folder_id);
+});
+
+test('QA-90 Mock Review exposes recording-storage health, repair, and per-answer diagnostics',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/録音保存/);
+  assert.match(html,/mockAudioStorageStatus/);
+  assert.match(html,/保存先を再確認・修復/);
+  assert.match(html,/audio_status/);
+  assert.match(html,/audio_error/);
+  assert.match(html,/audio_bytes/);
+});
+
+test('QA-91 browser retains the stopped recording payload for save retry and tells server audio is expected',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/pendingSavePayload=null/);
+  assert.match(html,/audio_expected:audioExpected/);
+  assert.match(html,/pendingSavePayload\?'Retrying save…':'Saving…'/);
+  assert.match(html,/if\(!pendingSavePayload\)/);
+  assert.match(html,/録音データはこの画面に保持しています/);
+  assert.match(html,/if\(payload\.audio_expected&&!r\.audio_saved\)/);
+});
+
+test('QA-92 Apps Script manifest explicitly declares Drive, Sheets, and external-request scopes',()=>{
+  const manifest=JSON.parse(fs.readFileSync('appsscript.json','utf8'));
+  assert.ok(Array.isArray(manifest.oauthScopes));
+  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/drive'));
+  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/spreadsheets'));
+  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/script.external_request'));
+});
