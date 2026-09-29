@@ -159,7 +159,7 @@ function createHarness(options={}){
     console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set,Buffer,encodeURIComponent
   };
   vm.createContext(context);
-  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockAudioStorageStatus,mockAudioStorageReady,mockSttConfig,mockSetDeepgramApiKey,mockTtsQuestion,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
+  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockAudioStorageStatus,mockAudioStorageReady,mockRetranscribeMissing,mockSttConfig,mockSetDeepgramApiKey,mockTtsQuestion,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
   vm.runInContext(src,context,{filename:'Code.gs'});
   return {api:context.__higa,sheets,cfg,spreadsheet,context,driveFiles,driveFolders,scriptProps,fetchCalls};
 }
