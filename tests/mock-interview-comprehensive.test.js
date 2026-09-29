@@ -713,7 +713,7 @@ test('QA-73 Mock Review labels Deepgram as no-result-only multilingual rescue',(
 test('QA-74 Shimpei no-result fallback also uses multilingual mode regardless of English question language',()=>{
   const {api,sheets,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
-    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'海洋生物学に興味があります',confidence:0.95}],detected_language:'ja'}]}]},
+    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'海洋生物学に興味があります',confidence:0.95}],detected_language:'ja'}]}},
     mockSessions:[shimpeiSession()]
   });
   const audio=Buffer.from('audio').toString('base64');
