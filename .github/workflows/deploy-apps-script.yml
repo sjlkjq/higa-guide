@@ -64,3 +64,18 @@ jobs:
 
       - name: Redeploy existing web app
         run: clasp create-deployment --deploymentId AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6 --description "GitHub ${GITHUB_SHA::7}"
+
+      - name: Smoke test deployed web app
+        env:
+          HEALTH_URL: https://script.google.com/macros/s/AKfycbxpsn8rY-8gLV27Y30HuSOMxUuHbDxxNfrA3CzA0vFIhjwGqcm6Zx-BDr040YaAYHj6/exec?mode=mockhealth
+        run: |
+          body="$(curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 "$HEALTH_URL")"
+          printf '%s\n' "$body"
+          BODY="$body" node - <<'NODE'
+          const data=JSON.parse(process.env.BODY);
+          if(data.ok!==true) throw new Error('Health endpoint did not return ok=true');
+          if(typeof data.drive_authorized!=='boolean') throw new Error('drive_authorized must be boolean');
+          if(!['REQUIRED','NOT_REQUIRED'].includes(String(data.authorization_status))) throw new Error('Unexpected authorization_status: '+data.authorization_status);
+          if(!/^1\.7\./.test(String(data.app_version||''))) throw new Error('Unexpected app_version: '+data.app_version);
+          console.log('Production health verified:', data);
+          NODE
