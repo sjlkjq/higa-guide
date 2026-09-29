@@ -298,11 +298,11 @@ test('QA-31 unsupported speech recognition has an explicit fallback path',()=>{
   assert.match(html,/Speech recognition is not available/);
 });
 
-test('QA-32 microphone denial is handled without crashing interview start',()=>{
+test('QA-32 microphone denial is handled without starting an unrecorded interview',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/Microphone error:/);
   assert.match(html,/return false;/);
-  assert.match(html,/Microphone permission was not granted/);
+  assert.match(html,/Microphone access is required to record the interview/);
 });
 
 test('QA-33 parent/admin test mode is visibly labelled as separate history',()=>{
@@ -532,11 +532,11 @@ test('QA-58 microphone setup lists audio input devices and stores selected devic
   assert.match(html,/deviceId=\{exact:selectedMicId\}/);
 });
 
-test('QA-59 interview cannot start until microphone test detects input',()=>{
+test('QA-59 interview start no longer depends on microphone-test verification',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/id="startBtn" disabled/);
-  assert.match(html,/if\(!micVerified\)/);
-  assert.match(html,/Run a successful microphone test before starting/);
+  assert.doesNotMatch(html,/if\(!micVerified\)/);
+  assert.match(html,/const micOk=await ensureMic\(false\)/);
   assert.match(html,/micVerified=peak>=0\.008/);
 });
 
@@ -548,19 +548,20 @@ test('QA-60 microphone diagnostic shows actual active track label and live level
   assert.match(html,/Peak level/);
 });
 
-test('QA-61 microphone diagnostic records five-second playback sample locally',()=>{
+test('QA-61 optional microphone diagnostic still records a five-second playback sample locally',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/Test microphone \(5 sec\)/);
+  assert.match(html,/Test microphone \(optional\)/);
   assert.match(html,/new MediaRecorder\(micStream/);
   assert.match(html,/setTimeout\(r,5000\)/);
   assert.match(html,/micTestPlayback\.src=micTestBlobUrl/);
 });
 
-test('QA-62 changing microphone invalidates prior microphone verification',()=>{
+test('QA-62 changing microphone invalidates prior verification but does not force another test',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/micSelect\.onchange/);
   assert.match(html,/micVerified=false/);
-  assert.match(html,/Device changed\. Run the microphone test again/);
+  assert.match(html,/Microphone test is optional; the selected microphone will be used when the interview starts/);
+  assert.match(html,/els\.startBtn\.disabled=!audioStorageReady/);
 });
 
 
@@ -988,7 +989,7 @@ test('QA-96 Mock Review shows the one-click Google Drive authorization path and 
 test('QA-97 mock runtime cannot start when recording storage authorization is not ready',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/audioStorageReady=!!\(r\.audio_storage&&r\.audio_storage\.authorized\)/);
-  assert.match(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
+  assert.match(html,/els\.startBtn\.disabled=!audioStorageReady/);
   assert.match(html,/await refreshAudioStorageReady\(\);\s*if\(!audioStorageReady\)/);
 });
 
@@ -1040,9 +1041,10 @@ test('QA-102 Ready screen gives parent a one-time authorize button but tells chi
   assert.match(html,/await refreshAudioStorageReady\(\);\s*startAudioStoragePolling\(\)/);
 });
 
-test('QA-103 a successful mic test rechecks Drive readiness and unlocks Start only when both are ready',()=>{
+test('QA-103 microphone test rechecks Drive readiness but does not gate Start Interview',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
+  assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!audioStorageReady/);
+  assert.doesNotMatch(html,/els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
 });
 
 
@@ -1071,4 +1073,34 @@ test('QA-106 speech with no browser transcript is explicitly marked no-result fo
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/const recognitionError=els\.transcript\.dataset\.error\|\|\(\(!!firstSpeechAt&&!text\)\?'no-result':'\'\)/);
   assert.match(html,/recognition_error:recognitionError/);
+});
+
+
+test('QA-107 microphone test is optional and Ready screen says so explicitly',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/Test microphone \(optional\)/);
+  assert.match(html,/Microphone test is optional\. If you skip it, microphone access will be requested when you start the interview\./);
+  assert.match(html,/You can start once recording storage is ready; microphone access will be requested automatically\./);
+});
+
+test('QA-108 Start Interview does not require micVerified',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  const start=html.indexOf('async function startInterview()');
+  const end=html.indexOf('els.startBtn.onclick=startInterview;',start);
+  const body=html.slice(start,end);
+  assert.doesNotMatch(body,/if\(!micVerified\)/);
+  assert.match(body,/const micOk=await ensureMic\(false\)/);
+  assert.match(body,/if\(!micOk\)/);
+});
+
+test('QA-109 recording storage alone controls Start button availability before interview',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/function applyAudioStorageState\(r\)[\s\S]*?els\.startBtn\.disabled=!audioStorageReady;/);
+  assert.match(html,/selectedMicId=els\.micSelect\.value\|\|'';[\s\S]*?els\.startBtn\.disabled=!audioStorageReady;/);
+});
+
+test('QA-110 skipping mic test still requires actual microphone permission when Start is pressed',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/Microphone access is required to record the interview\. Allow microphone access, then press Start Interview again\./);
+  assert.match(html,/const micOk=await ensureMic\(false\);\s*if\(!micOk\)/);
 });

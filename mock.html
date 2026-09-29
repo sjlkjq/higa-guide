@@ -53,11 +53,11 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
       <div class="mic-detail" id="micDeviceDetail">Run the microphone test before starting.</div>
       <div class="level-wrap"><div id="micLevelBar" class="level-bar"></div></div>
       <div class="mic-test-actions">
-        <button class="btn" id="micTestBtn">Test microphone (5 sec)</button>
+        <button class="btn" id="micTestBtn">Test microphone (optional)</button>
         <button class="btn" id="refreshMicsBtn">Refresh devices</button>
       </div>
       <audio id="micTestPlayback" class="mic-playback" controls></audio>
-      <div class="mic-detail" id="micTestResult">Speak normally during the test. Start Interview unlocks after input is detected.</div>
+      <div class="mic-detail" id="micTestResult">Microphone test is optional. If you skip it, microphone access will be requested when you start the interview.</div>
     </div>
     <div id="storageSetup" class="mic-setup" style="margin-top:14px">
       <div class="mic-detail" id="storageReadyText">Checking recording storage…</div>
@@ -154,7 +154,7 @@ function applyAudioStorageState(r){
       :'Recording storage is being prepared by Parent/Admin. No Google Drive authorization is required on this device.';
     els.storageReadyText.className='mic-detail bad';
   }
-  els.startBtn.disabled=!(micVerified&&audioStorageReady);
+  els.startBtn.disabled=!audioStorageReady;
 }
 async function refreshAudioStorageReady(){
   try{
@@ -175,7 +175,7 @@ function startAudioStoragePolling(){
 async function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
-  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected and recording storage is ready.';els.micTestResult.className='mic-detail';
+  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Microphone test is optional. You can start once recording storage is ready; microphone access will be requested automatically.';els.micTestResult.className='mic-detail';
   els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+' · AI Voice Generator';show('ready');
   await refreshAudioStorageReady();startAudioStoragePolling();
   refreshMicDevices(false);prefetchStaticQuestionAudio(queue[0]);
@@ -267,7 +267,7 @@ async function runMicTest(){
   const track=micStream&&micStream.getAudioTracks()[0];const label=track&&track.label||'Microphone';
   micVerified=peak>=0.008;
   await refreshAudioStorageReady();
-  els.startBtn.disabled=!(micVerified&&audioStorageReady);
+  els.startBtn.disabled=!audioStorageReady;
   els.micTestResult.textContent=micVerified
     ?(audioStorageReady?'PASS — input detected from '+label+'. Peak level '+peak.toFixed(3)+'. Play the recording below to confirm.':'Microphone PASS, but Google Drive recording storage is not authorized. Parent/Admin must authorize it in Mock Review, then reload this page.')
     :'FAIL — no usable input detected from '+label+'. Select another microphone and test again.';
@@ -275,7 +275,7 @@ async function runMicTest(){
   els.micTestBtn.disabled=false;
 }
 els.micSelect.onchange=async()=>{
-  selectedMicId=els.micSelect.value||'';localStorage.setItem('mock_mic_device_id',selectedMicId);micVerified=false;els.startBtn.disabled=true;els.micTestPlayback.style.display='none';els.micTestResult.textContent='Device changed. Run the microphone test again.';els.micTestResult.className='mic-detail warn';await closeMicStream();
+  selectedMicId=els.micSelect.value||'';localStorage.setItem('mock_mic_device_id',selectedMicId);micVerified=false;els.startBtn.disabled=!audioStorageReady;els.micTestPlayback.style.display='none';els.micTestResult.textContent='Device changed. Microphone test is optional; the selected microphone will be used when the interview starts.';els.micTestResult.className='mic-detail';await closeMicStream();
 };
 els.micTestBtn.onclick=runMicTest;
 els.refreshMicsBtn.onclick=()=>refreshMicDevices(true);
@@ -307,15 +307,19 @@ function cleanupAudio(){
 async function startInterview(){
   await refreshAudioStorageReady();
   if(!audioStorageReady){els.micTestResult.textContent=testMode?'Authorize Google Drive once using the button above. This will not be required on the children\'s devices.':'Recording storage is not ready yet. Parent/Admin must complete the one-time setup; no Drive authorization is required on this device.';els.micTestResult.className='mic-detail bad';return;}
-  if(!micVerified){els.micTestResult.textContent='Run a successful microphone test before starting.';els.micTestResult.className='mic-detail bad';return;}
   els.startBtn.disabled=true;
   const micOk=await ensureMic(false);
+  if(!micOk){
+    els.micTestResult.textContent='Microphone access is required to record the interview. Allow microphone access, then press Start Interview again.';
+    els.micTestResult.className='mic-detail bad';
+    els.startBtn.disabled=false;
+    return;
+  }
   try{
     sessionId='mock_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);sessionStarted=Date.now();index=0;sessionRows=[];
     const r=await gas('mockStartSession',[ACCESS.token,ACCESS.role||'student',{session_id:sessionId,profile,started_at:new Date().toISOString(),recognition_supported:recognitionSupported,device_id:deviceId,user_agent:navigator.userAgent}]);
     if(!r||!r.ok)throw new Error(r&&r.error||'Could not start session.');
     sessionId=r.session_id||sessionId;els.interviewWho.textContent=profileLabel(profile);show('interview');
-    if(!micOk){els.promptState.textContent='Microphone permission was not granted. You can still listen to the script.';}
     await nextQuestion();
   }catch(e){fail(e.message);}finally{els.startBtn.disabled=false;}
 }
