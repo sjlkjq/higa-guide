@@ -647,7 +647,7 @@ test('QA-68 blank Shiori browser result is rescued by Nova-3 multilingual code-s
 });
 
 test('QA-69 Deepgram fallback API errors do not lose the saved recording',()=>{
-  const {api,sheets,driveFiles}=createHarness({
+  const {api,sheets,driveFiles,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
     mockSessions:[shimpeiSession()],
     deepgramStatus:500,
