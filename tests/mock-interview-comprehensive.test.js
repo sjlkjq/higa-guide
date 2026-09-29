@@ -776,13 +776,13 @@ test('QA-78 cloud Japanese interviewer TTS is limited to Shiori Japanese questio
   assert.equal(fetchCalls.length,0);
 });
 
-test('QA-79 browser mock prefers natural Japanese cloud audio, caches it, and retains corrected browser fallback',()=>{
+test('QA-79 browser mock retains natural Japanese fallback behind static AI Voice audio',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/mockTtsQuestion/);
   assert.match(html,/playNaturalQuestion\(current\)/);
-  assert.match(html,/if\(!natural\)await speak\(spokenTextForQuestion\(current\),current\.language\)/);
+  assert.match(html,/if\(!aiVoice\)\{const natural=await playNaturalQuestion\(current\);if\(!natural\)await speak\(spokenTextForQuestion\(current\),current\.language\);\}/);
   assert.match(html,/questionTtsCache\.has\(q\.id\)/);
-  assert.match(html,/prefetchQuestionAudio\(queue\[index\+1\]\)/);
+  assert.match(html,/prefetchStaticQuestionAudio\(queue\[index\+1\]\)/);
   assert.match(html,/開智所沢中等教育学校\/g,'かいちところざわ中等教育学校'/);
   assert.match(html,/text\.replace\(\/か。\$\/,'か？'\)/);
 });
@@ -792,4 +792,36 @@ test('QA-80 parent app RPC allowlist permits TTS but still controls backend acce
   assert.match(html,/MOCK_ALLOWED_RPC=new Set\(\['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession','mockTtsQuestion'\]\)/);
   assert.match(html,/MOCK_ALLOWED_RPC\.has\(e\.data\.name\)/);
   assert.match(html,/args\[0\]=token;args\[1\]=role/);
+});
+
+
+test('QA-81 static AI Voice Generator audio is preferred for all configured mock questions',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/const QUESTION_AI_AUDIO=\{/);
+  const m=html.match(/const QUESTION_AI_AUDIO=(\{.*?\});\nconst questionAudioPreload/s);
+  assert.ok(m,'QUESTION_AI_AUDIO map not found');
+  const map=JSON.parse(m[1]);
+  assert.equal(Object.keys(map).length,44);
+  for(const id of ['HIGA-G-01','HIGA-M-06-F1','KAI-J-01','KAI-J-02','KAI-S-04','KAI-E-03-F1']){
+    assert.match(map[id],/^https:\/\/storage\.googleapis\.com\/adm--audio-playback--7d--public\/mcp-preview\/.+\.mp3$/);
+  }
+  assert.match(html,/const aiVoice=await playStaticQuestionAudio\(current\)/);
+  assert.match(html,/if\(!aiVoice\)\{const natural=await playNaturalQuestion\(current\)/);
+});
+
+test('QA-82 Shiori school-motivation display text is unchanged while its AI audio uses the approved natural wording asset',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  const m=html.match(/const QUESTION_AI_AUDIO=(\{.*?\});\nconst questionAudioPreload/s);
+  const map=JSON.parse(m[1]);
+  assert.ok(map['KAI-J-02']);
+  assert.match(html,/AI Voice Generator/);
+});
+
+test('QA-83 static question audio is prefetched and repeat playback reuses the cached Audio object',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/questionAudioPreload=new Map\(\)/);
+  assert.match(html,/prefetchStaticQuestionAudio\(queue\[0\]\)/);
+  assert.match(html,/prefetchStaticQuestionAudio\(queue\[index\+1\]\)/);
+  assert.match(html,/questionAudioPreload\.get\(q\.id\)/);
+  assert.match(html,/a\.currentTime=0/);
 });
