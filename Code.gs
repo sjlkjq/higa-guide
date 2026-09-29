@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.7.3';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -260,32 +260,34 @@ function deepgramApiKey_(){
 
 function mockSttSettings_(profile){
   const p=String(profile||'').toLowerCase();
-  if(p==='shiori'){
-    return {
-      provider:'deepgram',model:'nova-3',language:'multi',
-      keyterms:['GSC','Kaichi Tokorozawa','Kaichi','Cambridge','IGCSE','international school','attitude','evidence']
-    };
-  }
-  return {
-    provider:'deepgram',model:'nova-3',language:'en',
-    keyterms:['HiGA','Hiroshima Global Academy','Seto Inland Sea','horseshoe crab','marine biology','ecology','conservation','quadratic','parabola','Inquiry Report','Mathematics Report','Koh Tao']
-  };
+  const common=['attitude','evidence','international school'];
+  const keyterms=p==='shiori'
+    ?common.concat(['GSC','Kaichi Tokorozawa','Kaichi','Cambridge','IGCSE'])
+    :common.concat(['HiGA','Hiroshima Global Academy','Seto Inland Sea','horseshoe crab','marine biology','ecology','conservation','quadratic','parabola','Inquiry Report','Mathematics Report','Koh Tao']);
+  return {provider:'deepgram',model:'nova-3',language:'multi',keyterms};
 }
 
 function mockTranscribeDeepgram_(payload,profile){
   const browserTranscript=String(payload&&payload.transcript||'').trim();
   const settings=mockSttSettings_(profile);
+  const speechDetected=truthy_(payload&&payload.speech_detected);
   const base={
-    transcript:browserTranscript,browser_transcript:browserTranscript,provider:'browser-fallback',
-    model:'',language_mode:settings.language,detected_language:'',confidence:'',status:'',error:''
+    transcript:browserTranscript,browser_transcript:browserTranscript,provider:'browser-primary',
+    model:'',language_mode:'',detected_language:'',confidence:'',status:browserTranscript?'browser_ok':'',error:''
   };
+
+  // Safety rule: never replace a browser transcript that already exists.
+  // Deepgram is only a rescue path when the browser produced no transcript but speech was detected.
+  if(browserTranscript)return base;
+  if(!speechDetected){base.status='no_speech';return base;}
+
   const b64=String(payload&&payload.audio_base64||'').trim();
-  if(!b64){base.status='no_audio';return base;}
+  if(!b64){base.status='no_audio_for_fallback';return base;}
   const key=deepgramApiKey_();
   if(!key){base.status='deepgram_not_configured';return base;}
   try{
     const mime=String(payload.audio_mime_type||'audio/webm');
-    const query=['model='+encodeURIComponent(settings.model),'language='+encodeURIComponent(settings.language),'smart_format=true'];
+    const query=['model='+encodeURIComponent(settings.model),'language=multi','smart_format=true'];
     settings.keyterms.forEach(k=>query.push('keyterm='+encodeURIComponent(k)));
     const url='https://api.deepgram.com/v1/listen?'+query.join('&');
     const response=UrlFetchApp.fetch(url,{
@@ -305,14 +307,14 @@ function mockTranscribeDeepgram_(payload,profile){
     const alt=channel.alternatives&&channel.alternatives[0]||{};
     const transcript=String(alt.transcript||'').trim();
     return {
-      transcript:transcript||browserTranscript,
-      browser_transcript:browserTranscript,
-      provider:'deepgram',
-      model:settings.model,
-      language_mode:settings.language,
-      detected_language:String(channel.detected_language||''),
-      confidence:(alt.confidence===0||alt.confidence)?Number(alt.confidence):'',
-      status:transcript?'ok':'empty_fallback_browser',
+      transcript,
+      browser_transcript:'',
+      provider:transcript?'deepgram-fallback':'browser-primary',
+      model:transcript?settings.model:'',
+      language_mode:transcript?'multi':'',
+      detected_language:transcript?String(channel.detected_language||''):'',
+      confidence:transcript&&((alt.confidence===0||alt.confidence))?Number(alt.confidence):'',
+      status:transcript?'fallback_ok':'fallback_empty',
       error:''
     };
   }catch(err){
@@ -324,7 +326,7 @@ function mockSttConfig(token,requestedRole){
   const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
   if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
   return {ok:true,configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',
-    shimpei_language:'en',shiori_language:'multi',role:auth.role};
+    mode:'no-result-only',fallback_language:'multi',role:auth.role};
 }
 
 function mockSetDeepgramApiKey(token,requestedRole,apiKey){
@@ -533,7 +535,7 @@ function mockReviewBootstrap(token, requestedRole){
     const sessions=[...applicant.sessions,...test.sessions].sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||''))).slice(0,200);
     const allowed=new Set(sessions.map(s=>String(s.session_id)));
     const answers=[...applicant.answers,...test.answers].filter(a=>allowed.has(String(a.session_id)));
-    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION,stt_config:{configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',shimpei_language:'en',shiori_language:'multi'}};
+    return {ok:true,role:auth.role,sessions,answers,app_version:APP_VERSION,stt_config:{configured:!!deepgramApiKey_(),provider:'Deepgram',model:'nova-3',mode:'no-result-only',fallback_language:'multi'}};
   }catch(err){return {ok:false,error:String(err.message||err)};}
 }
 

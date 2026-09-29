@@ -24,7 +24,7 @@
       <button class="btn" id="saveDeepgramKey">API Keyを保存</button>
       <button class="btn" id="clearDeepgramKey">解除</button>
     </div>
-    <div class="muted" style="margin-top:7px">Shimpei: Nova-3 English / Shiori: Nova-3 multilingual code-switching (日本語＋英語混在)</div>
+    <div class="muted" style="margin-top:7px">Browser STTを優先。Transcriptが空でSpeech detectedの場合のみ、Deepgram Nova-3 multilingual（日本語・英語・混在）で再認識します。</div>
   </div>
   <div class="toolbar">
     <select class="select" id="scope"><option value="all">すべて</option><option value="applicant">本人データのみ</option><option value="test">親/Adminテストのみ</option></select>
@@ -79,7 +79,7 @@ function renderDetail(){
 }
 function renderSttStatus(){
   const c=data.stt_config||{};
-  $('sttStatus').textContent=c.configured?'Deepgram Nova-3: configured':'Deepgram: not configured — browser STT fallback';
+  $('sttStatus').textContent=c.configured?'Deepgram multilingual rescue: configured':'Deepgram rescue: not configured — browser STT only';
   $('sttStatus').className=c.configured?'good':'warn';
   if((data.role||ACCESS.role)==='admin')$('sttAdminSetup').style.display='flex';
 }

@@ -483,7 +483,7 @@ test('QA-53 Mock Review UI parses and exposes applicant/test filters',()=>{
 
 
 test('QA-54 answer audio is stored with the answer row',()=>{
-  const {api,sheets,driveFiles}=createHarness({mockSessions:[shimpeiSession()]});
+  const {api,sheets,driveFiles,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
   const audio=Buffer.from('fake-audio-bytes').toString('base64');
   const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({audio_base64:audio,audio_mime_type:'audio/webm'}));
   assert.equal(r.ok,true);
@@ -587,7 +587,7 @@ test('QA-65 static mock never sends the private token to GitHub Pages',()=>{
 });
 
 
-test('QA-66 Deepgram is optional and browser transcript remains the fallback when no API key is configured',()=>{
+test('QA-66 browser transcript remains primary and does not call Deepgram when no API key is configured',()=>{
   const {api,sheets,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
   const audio=Buffer.from('audio').toString('base64');
   const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'browser text',audio_base64:audio,audio_mime_type:'audio/webm'}));
@@ -596,43 +596,40 @@ test('QA-66 Deepgram is optional and browser transcript remains the fallback whe
   const a=objects(sheets.MockAnswers)[0];
   assert.equal(a.transcript,'browser text');
   assert.equal(a.browser_transcript,'browser text');
-  assert.equal(a.stt_provider,'browser-fallback');
-  assert.equal(a.stt_status,'deepgram_not_configured');
-  assert.equal(a.stt_language_mode,'en');
+  assert.equal(a.stt_provider,'browser-primary');
+  assert.equal(a.stt_status,'browser_ok');
+  assert.equal(a.stt_model,'');
+  assert.equal(a.stt_language_mode,'');
 });
 
-test('QA-67 Shimpei uses Nova-3 English transcription regardless of question language metadata',()=>{
+test('QA-67 configured Deepgram still does not replace a successful browser transcript',()=>{
   const {api,sheets,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
     mockSessions:[shimpeiSession()]
   });
   const audio=Buffer.from('audio').toString('base64');
-  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'browser text',audio_base64:audio,audio_mime_type:'audio/webm'}));
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'browser text',speech_detected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
   assert.equal(r.ok,true);
-  assert.equal(fetchCalls.length,1);
-  assert.match(fetchCalls[0].url,/model=nova-3/);
-  assert.match(fetchCalls[0].url,/language=en(?:&|$)/);
-  assert.match(fetchCalls[0].url,/keyterm=HiGA/);
+  assert.equal(fetchCalls.length,0);
   const a=objects(sheets.MockAnswers)[0];
-  assert.equal(a.transcript,'Deepgram transcript');
+  assert.equal(a.transcript,'browser text');
   assert.equal(a.browser_transcript,'browser text');
-  assert.equal(a.stt_provider,'deepgram');
-  assert.equal(a.stt_model,'nova-3');
-  assert.equal(a.stt_language_mode,'en');
-  assert.equal(Number(a.stt_confidence),0.93);
-  assert.equal(a.stt_status,'ok');
+  assert.equal(a.stt_provider,'browser-primary');
+  assert.equal(a.stt_status,'browser_ok');
 });
 
-test('QA-68 Shiori uses Nova-3 language=multi so one answer may mix Japanese and English',()=>{
+test('QA-68 blank Shiori browser result is rescued by Nova-3 multilingual code-switching',()=>{
   const {api,sheets,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
     mockSessions:[{...shimpeiSession(),session_id:'sh1',profile:'shiori'}],
-    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'その子の attitude が良くて evidence もあります',confidence:0.96}]}]}}
+    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'その子の attitude が良くて evidence もあります',confidence:0.96}],detected_language:'ja'}]}}
   });
   const audio=Buffer.from('audio').toString('base64');
   const r=api.mockSaveAnswer('student-token-123456','student',{
-    ...shimpeiAnswer(),session_id:'sh1',profile:'shiori',question_id:'KAI-1',transcript:'browser wrong',
-    audio_base64:audio,audio_mime_type:'audio/webm'
+    ...shimpeiAnswer(),session_id:'sh1',profile:'shiori',question_id:'KAI-1',transcript:'',
+    speech_detected:true,recognition_error:'no-result',audio_base64:audio,audio_mime_type:'audio/webm'
   });
   assert.equal(r.ok,true);
   assert.equal(fetchCalls.length,1);
@@ -642,25 +639,30 @@ test('QA-68 Shiori uses Nova-3 language=multi so one answer may mix Japanese and
   assert.match(fetchCalls[0].url,/keyterm=Cambridge/);
   const a=objects(sheets.MockAnswers)[0];
   assert.equal(a.transcript,'その子の attitude が良くて evidence もあります');
+  assert.equal(a.browser_transcript,'');
   assert.equal(a.stt_language_mode,'multi');
-  assert.equal(a.stt_provider,'deepgram');
+  assert.equal(a.stt_provider,'deepgram-fallback');
+  assert.equal(a.stt_status,'fallback_ok');
   assert.equal(Number(a.stt_confidence),0.96);
 });
 
-test('QA-69 Deepgram API errors never lose the browser fallback transcript or audio save',()=>{
-  const {api,sheets,driveFiles}=createHarness({
+test('QA-69 Deepgram fallback API errors do not lose the saved recording',()=>{
+  const {api,sheets,driveFiles,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
     mockSessions:[shimpeiSession()],
     deepgramStatus:500,
     deepgramResponse:'server error'
   });
   const audio=Buffer.from('audio').toString('base64');
-  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({transcript:'fallback words',audio_base64:audio,audio_mime_type:'audio/webm'}));
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
   assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,1);
   const a=objects(sheets.MockAnswers)[0];
-  assert.equal(a.transcript,'fallback words');
-  assert.equal(a.browser_transcript,'fallback words');
-  assert.equal(a.stt_provider,'browser-fallback');
+  assert.equal(a.transcript,'');
+  assert.equal(a.browser_transcript,'');
+  assert.equal(a.stt_provider,'browser-primary');
   assert.equal(a.stt_status,'deepgram_http_500');
   assert.match(a.stt_error,/server error/);
   assert.match(String(a.audio_file_id),/^drive_/);
@@ -696,31 +698,38 @@ test('QA-72 clearing the Deepgram API key restores browser fallback mode',()=>{
   assert.equal(scriptProps.has('DEEPGRAM_API_KEY'),false);
 });
 
-test('QA-73 Mock Review exposes Deepgram status, API-key setup, and STT diagnostics',()=>{
+test('QA-73 Mock Review labels Deepgram as no-result-only multilingual rescue',()=>{
   const html=fs.readFileSync('MockReview.html','utf8');
   assert.match(html,/Deepgram API Key/);
   assert.match(html,/mockSetDeepgramApiKey/);
-  assert.match(html,/multilingual code-switching/);
+  assert.match(html,/Browser STTを優先/);
+  assert.match(html,/Transcriptが空でSpeech detectedの場合のみ/);
+  assert.match(html,/Deepgram Nova-3 multilingual/);
   assert.match(html,/Browser STT \(diagnostic\)/);
   assert.match(html,/stt_language_mode/);
   assert.match(html,/stt_confidence/);
 });
 
-test('QA-74 Shiori multilingual STT choice depends on applicant profile, not the question language',()=>{
-  const {api,fetchCalls}=createHarness({
+test('QA-74 Shimpei no-result fallback also uses multilingual mode regardless of English question language',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
     scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
-    mockQuestions:[{id:'KAI-EN',profile:'shiori',phase:'gsc_english_oral_interview',language:'en-US',kind:'main',parent_id:'',order:1,active:true,source_type:'application_based',source_ref:'x',question_text:'Please introduce yourself.',concept:'x'}],
-    mockSessions:[{...shimpeiSession(),session_id:'sh2',profile:'shiori'}]
+    deepgramResponse:{results:{channels:[{alternatives:[{transcript:'海洋生物学に興味があります',confidence:0.95}],detected_language:'ja'}]}},
+    mockSessions:[shimpeiSession()]
   });
   const audio=Buffer.from('audio').toString('base64');
-  const r=api.mockSaveAnswer('student-token-123456','student',{
-    ...shimpeiAnswer(),session_id:'sh2',profile:'shiori',question_id:'KAI-EN',audio_base64:audio,audio_mime_type:'audio/webm'
-  });
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
   assert.equal(r.ok,true);
   assert.equal(fetchCalls.length,1);
   assert.match(fetchCalls[0].url,/language=multi(?:&|$)/);
+  assert.match(fetchCalls[0].url,/keyterm=HiGA/);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'海洋生物学に興味があります');
+  assert.equal(a.stt_provider,'deepgram-fallback');
+  assert.equal(a.stt_language_mode,'multi');
+  assert.equal(a.stt_status,'fallback_ok');
 });
-
 
 test('QA-75 Shiori Japanese interviewer uses Aura-2 Ama and pronunciation-friendly spoken text',()=>{
   const {api,fetchCalls}=createHarness({
@@ -1000,7 +1009,7 @@ test('QA-98 production health endpoint reports Drive authorization without expos
   assert.equal(data.ok,true);
   assert.equal(data.drive_authorized,false);
   assert.equal(data.authorization_status,'REQUIRED');
-  assert.equal(data.app_version,'1.7.2');
+  assert.equal(data.app_version,'1.7.3');
   assert.equal(JSON.stringify(data).includes('student-token'),false);
   assert.equal(JSON.stringify(data).includes('test-folder'),false);
 });
@@ -1103,4 +1112,54 @@ test('QA-110 skipping mic test still requires actual microphone permission when 
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/Microphone access is required to record the interview\. Allow microphone access, then press Start Interview again\./);
   assert.match(html,/const micOk=await ensureMic\(false\);\s*if\(!micOk\)/);
+});
+
+
+test('QA-111 blank transcript without detected speech does not call Deepgram',()=>{
+  const {api,sheets,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockSessions:[shimpeiSession()]
+  });
+  const audio=Buffer.from('silence').toString('base64');
+  const r=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:false,recognition_error:'no-speech',audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(r.ok,true);
+  assert.equal(fetchCalls.length,0);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'');
+  assert.equal(a.stt_status,'no_speech');
+  assert.equal(a.stt_provider,'browser-primary');
+});
+
+test('QA-112 missing Deepgram key changes nothing for successful browser transcripts',()=>{
+  const {api,sheets,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('audio').toString('base64');
+  api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'working browser result',speech_detected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(fetchCalls.length,0);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'working browser result');
+  assert.equal(a.stt_status,'browser_ok');
+});
+
+test('QA-113 missing Deepgram key is explicit only when browser STT needs rescue',()=>{
+  const {api,sheets,fetchCalls}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('audio').toString('base64');
+  api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(fetchCalls.length,0);
+  const a=objects(sheets.MockAnswers)[0];
+  assert.equal(a.transcript,'');
+  assert.equal(a.stt_status,'deepgram_not_configured');
+  assert.equal(a.stt_provider,'browser-primary');
+});
+
+test('QA-114 fallback STT change does not modify the static AI Voice question-reading path',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/const QUESTION_AI_AUDIO=\{/);
+  assert.match(html,/const aiVoice=await playStaticQuestionAudio\(current\)/);
+  assert.match(html,/if\(!aiVoice\)\{const natural=await playNaturalQuestion\(current\)/);
 });
