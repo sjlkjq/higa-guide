@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -187,8 +187,12 @@ function mockSaveAnswer(token, requestedRole, payload){
   if(String(session.profile)!==String(payload.profile))return {ok:false,error:'Session/profile mismatch.'};
   if(String(session.completed_at||'').trim())return {ok:false,error:'Mock session is already completed.'};
   const duplicate=rows_(names.answers).find(r=>String(r.session_id)===String(payload.session_id)&&String(r.question_id)===String(payload.question_id));
-  if(duplicate)return {ok:true,persisted:true,duplicate:true};
+  if(duplicate)return {ok:true,persisted:true,duplicate:true,audio_saved:!!String(duplicate.audio_file_id||'').trim(),audio_status:duplicate.audio_status||''};
   const audio=saveMockAudio_(auth.role,payload);
+  if(truthy_(payload.audio_expected) && !audio.file_id){
+    return {ok:false,error:'Audio recording could not be saved to Google Drive: '+String(audio.error||audio.status||'unknown error'),
+      audio_saved:false,audio_status:audio.status||'save_error'};
+  }
   const stt=mockTranscribeDeepgram_(payload,String(payload.profile||''));
   appendObject_(names.answers,{
     session_id:payload.session_id,profile:payload.profile,question_id:payload.question_id,parent_id:q.parent_id||'',
@@ -198,13 +202,15 @@ function mockSaveAnswer(token, requestedRole, payload){
     longest_internal_silence_ms:numberOrBlank_(payload.longest_internal_silence_ms),speech_detected:truthy_(payload.speech_detected),
     recognition_supported:truthy_(payload.recognition_supported),recognition_error:payload.recognition_error||'',
     repeat_count:Number(payload.repeat_count||0),device_id:payload.device_id||'',user_agent:payload.user_agent||'',
-    audio_file_id:audio.file_id||'',audio_mime_type:audio.mime_type||'',
+    audio_file_id:audio.file_id||'',audio_mime_type:audio.mime_type||'',audio_status:audio.status||'',
+    audio_error:audio.error||'',audio_bytes:Number(audio.bytes||0),
     browser_transcript:stt.browser_transcript||'',stt_provider:stt.provider||'',stt_model:stt.model||'',
     stt_language_mode:stt.language_mode||'',stt_detected_language:stt.detected_language||'',
     stt_confidence:stt.confidence===''?'':stt.confidence,stt_status:stt.status||'',stt_error:stt.error||''
   });
   incrementMockSessionCounters_(names.sessions,payload.session_id,String(q.kind)==='followup');
   return {ok:true,test_mode:auth.role!=='student',persisted:true,data_scope:names.scope,
+    audio_saved:!!audio.file_id,audio_status:audio.status||'',audio_bytes:Number(audio.bytes||0),
     stt:{provider:stt.provider,status:stt.status,language_mode:stt.language_mode,detected_language:stt.detected_language,confidence:stt.confidence}};
 }
 
@@ -365,23 +371,71 @@ function mockTtsQuestion(token,requestedRole,questionId){
   }
 }
 
-function saveMockAudio_(role,payload){
+function setConfigValue_(key,value){
+  const sh=sheet_(SHEETS.CONFIG),vals=sh.getDataRange().getValues(),h=vals[0].map(String);
+  const kc=h.indexOf('key'),vc=h.indexOf('value'); if(kc<0||vc<0)throw new Error('Config sheet must contain key/value columns.');
+  const ri=vals.findIndex((r,i)=>i>0&&String(r[kc])===String(key));
+  if(ri>0)sh.getRange(ri+1,vc+1).setValue(value);
+  else sh.appendRow(h.map((col,i)=>i===kc?key:i===vc?value:''));
+}
+
+function ensureMockAudioFolder_(repair){
+  const c=config_(),configuredId=String(c.mock_audio_folder_id||'').trim();
+  if(configuredId){
+    try{
+      const folder=DriveApp.getFolderById(configuredId);
+      folder.getName();
+      return {ok:true,folder,id:folder.getId(),name:folder.getName(),repaired:false};
+    }catch(err){
+      if(!repair)return {ok:false,error:'Configured audio folder is not accessible: '+String(err.message||err),configured_id:configuredId};
+    }
+  }else if(!repair){
+    return {ok:false,error:'mock_audio_folder_id is not configured.'};
+  }
   try{
-    const b64=String(payload&&payload.audio_base64||'').trim();
-    if(!b64)return {file_id:'',mime_type:''};
-    const c=config_(),folderId=String(c.mock_audio_folder_id||'').trim();
-    if(!folderId)return {file_id:'',mime_type:''};
+    const folder=DriveApp.createFolder('HiGA Mock Interview Audio');
+    setConfigValue_('mock_audio_folder_id',folder.getId());
+    return {ok:true,folder,id:folder.getId(),name:folder.getName(),repaired:true};
+  }catch(err){
+    return {ok:false,error:'Could not create audio folder in the deploying account Drive: '+String(err.message||err),configured_id:configuredId};
+  }
+}
+
+function saveMockAudio_(role,payload){
+  const b64=String(payload&&payload.audio_base64||'').trim();
+  const expected=truthy_(payload&&payload.audio_expected);
+  if(!b64)return {file_id:'',mime_type:'',status:expected?'missing_payload':'not_recorded',error:expected?'Browser recording was expected but no audio payload was received.':'',bytes:0};
+  try{
+    const storage=ensureMockAudioFolder_(true);
+    if(!storage.ok)return {file_id:'',mime_type:'',status:'storage_unavailable',error:storage.error||'Audio storage unavailable.',bytes:0};
     const mime=String(payload.audio_mime_type||'audio/webm');
     const ext=mime.includes('ogg')?'ogg':mime.includes('mp4')?'m4a':'webm';
-    const safe=s=>String(s||'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,80);
+    const safe=x=>String(x||'').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,80);
     const name=[role==='student'?'applicant':'test',safe(payload.profile),safe(payload.session_id),safe(payload.question_id)].join('__')+'.'+ext;
     const bytes=Utilities.base64Decode(b64);
     const blob=Utilities.newBlob(bytes,mime,name);
-    const file=DriveApp.getFolderById(folderId).createFile(blob);
-    return {file_id:file.getId(),mime_type:mime};
+    const file=storage.folder.createFile(blob);
+    return {file_id:file.getId(),mime_type:mime,status:'saved',error:'',bytes:bytes.length,folder_id:storage.id,repaired:!!storage.repaired};
   }catch(err){
-    return {file_id:'',mime_type:'',error:String(err.message||err)};
+    return {file_id:'',mime_type:'',status:'save_error',error:String(err.message||err),bytes:0};
   }
+}
+
+function mockAudioStorageStatus(token,requestedRole,repair){
+  try{
+    const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+    if(!['admin','reviewer'].includes(auth.role))return {ok:false,error:'Reviewer access required.'};
+    const doRepair=truthy_(repair)&&auth.role==='admin';
+    const storage=ensureMockAudioFolder_(doRepair);
+    if(!storage.ok)return {ok:true,accessible:false,writable:false,error:storage.error||'Audio storage unavailable.',configured_id:storage.configured_id||''};
+    let writable=false,writeError='';
+    try{
+      const probe=storage.folder.createFile(Utilities.newBlob('ok','text/plain','__higa_audio_storage_probe__.txt'));
+      probe.setTrashed(true);writable=true;
+    }catch(err){writeError=String(err.message||err);}
+    return {ok:true,accessible:true,writable,folder_id:storage.id,folder_name:storage.name||'HiGA Mock Interview Audio',
+      folder_url:'https://drive.google.com/drive/folders/'+storage.id,repaired:!!storage.repaired,error:writeError};
+  }catch(err){return {ok:true,accessible:false,writable:false,error:String(err.message||err)};}
 }
 
 function mockGetAudio(token,requestedRole,fileId){

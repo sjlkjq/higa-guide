@@ -37,7 +37,7 @@ const QUESTION_HEADERS=['id','category','priority','source','main_question','fol
 const EVENT_HEADERS=['timestamp','session_id','device_id','question_id','event_type','event_value','elapsed_sec','page','attempt_id','user_role','app_version','note'];
 const ACK_HEADERS=['timestamp','session_id','student_summary','promise_text','accepted','device_id','app_version'];
 const MOCKQ_HEADERS=['id','profile','phase','language','kind','parent_id','order','active','source_type','source_ref','question_text','concept','ask_rule','notes'];
-const MOCKA_HEADERS=['session_id','profile','question_id','parent_id','question_kind','language','started_at','completed_at','transcript','response_latency_ms','answer_duration_ms','longest_internal_silence_ms','speech_detected','recognition_supported','recognition_error','repeat_count','device_id','user_agent','audio_file_id','audio_mime_type','browser_transcript','stt_provider','stt_model','stt_language_mode','stt_detected_language','stt_confidence','stt_status','stt_error'];
+const MOCKA_HEADERS=['session_id','profile','question_id','parent_id','question_kind','language','started_at','completed_at','transcript','response_latency_ms','answer_duration_ms','longest_internal_silence_ms','speech_detected','recognition_supported','recognition_error','repeat_count','device_id','user_agent','audio_file_id','audio_mime_type','browser_transcript','stt_provider','stt_model','stt_language_mode','stt_detected_language','stt_confidence','stt_status','stt_error','audio_status','audio_error','audio_bytes'];
 const MOCKS_HEADERS=['session_id','profile','started_at','completed_at','elapsed_ms','questions_asked','followups_asked','answers_saved','recognition_supported','device_id','user_agent','notes'];
 
 function defaultConfig(overrides={}){
@@ -73,9 +73,22 @@ function createHarness(options={}){
   };
   const spreadsheet=new Spreadsheet(sheets);
   const driveFiles=new Map();
+  const driveFolders=new Map();
   const scriptProps=new Map(Object.entries(options.scriptProperties||{}));
   const fetchCalls=[];
-  let driveSeq=0;
+  let driveSeq=0,folderSeq=0;
+  const makeDriveFile=(blob,id='drive_'+(++driveSeq))=>{
+    driveFiles.set(id,blob);
+    return {getId:()=>id,getBlob:()=>blob,setTrashed:()=>true};
+  };
+  const makeDriveFolder=(id,name)=>({
+    getId:()=>id,getName:()=>name,
+    createFile:blob=>{
+      if(options.driveWriteFails)throw new Error(options.driveWriteError||'Drive write failed');
+      return makeDriveFile(blob);
+    }
+  });
+  driveFolders.set('test-folder',makeDriveFolder('test-folder','HiGA Mock Interview Audio'));
   const context={
     SpreadsheetApp:{getActiveSpreadsheet:()=>spreadsheet},
     Utilities:{
@@ -84,7 +97,16 @@ function createHarness(options={}){
       newBlob:(bytes,mime,name)=>({getBytes:()=>Array.from(bytes),getContentType:()=>mime,getName:()=>name})
     },
     DriveApp:{
-      getFolderById:()=>({createFile:blob=>{const id='drive_'+(++driveSeq);driveFiles.set(id,blob);return {getId:()=>id};}}),
+      getFolderById:id=>{
+        if(options.driveFolderAccessible===false&&String(id)==='test-folder')throw new Error(options.driveFolderError||'Folder not accessible');
+        if(!driveFolders.has(String(id)))throw new Error('Folder not found');
+        return driveFolders.get(String(id));
+      },
+      createFolder:name=>{
+        if(options.driveCreateFolderFails)throw new Error(options.driveCreateFolderError||'Drive create folder failed');
+        const id='folder_'+(++folderSeq),folder=makeDriveFolder(id,String(name||''));
+        driveFolders.set(id,folder);return folder;
+      },
       getFileById:id=>{if(!driveFiles.has(id))throw new Error('File not found');return {getBlob:()=>driveFiles.get(id)};}
     },
     PropertiesService:{
@@ -124,9 +146,9 @@ function createHarness(options={}){
     console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set,Buffer,encodeURIComponent
   };
   vm.createContext(context);
-  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockSttConfig,mockSetDeepgramApiKey,mockTtsQuestion,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
+  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockAudioStorageStatus,mockSttConfig,mockSetDeepgramApiKey,mockTtsQuestion,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
   vm.runInContext(src,context,{filename:'Code.gs'});
-  return {api:context.__higa,sheets,cfg,spreadsheet,context,driveFiles,scriptProps,fetchCalls};
+  return {api:context.__higa,sheets,cfg,spreadsheet,context,driveFiles,driveFolders,scriptProps,fetchCalls};
 }
 
 function validAttempt(overrides={}){
