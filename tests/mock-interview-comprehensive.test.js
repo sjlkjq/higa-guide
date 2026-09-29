@@ -1044,3 +1044,31 @@ test('QA-103 a successful mic test rechecks Drive readiness and unlocks Start on
   const html=fs.readFileSync('mock.html','utf8');
   assert.match(html,/micVerified=peak>=0\.008;\s*await refreshAudioStorageReady\(\);\s*els\.startBtn\.disabled=!\(micVerified&&audioStorageReady\)/);
 });
+
+
+test('QA-104 Answer finished waits for browser STT finalization before reading transcript',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  const flush=html.indexOf('const recognitionFlush=stopRecognitionAndFlush(1500)');
+  const audio=html.indexOf('const audioBlob=await stopAnswerRecording(false)',flush);
+  const wait=html.indexOf('await recognitionFlush',audio);
+  const read=html.indexOf("const end=Date.now();const text=(transcriptFinal+' '+transcriptInterim).trim()",wait);
+  assert.ok(flush>=0,'recognition flush must start');
+  assert.ok(audio>flush,'audio recording should stop while recognition finalizes');
+  assert.ok(wait>audio,'save must wait for STT flush');
+  assert.ok(read>wait,'transcript must be read only after STT flush completes');
+});
+
+test('QA-105 browser STT flush keeps onresult active until recognizer onend',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/function stopRecognitionAndFlush\(timeoutMs=1500\)/);
+  assert.match(html,/const prevEnd=r\.onend/);
+  assert.match(html,/r\.onend=e=>\{try\{if\(typeof prevEnd==='function'\)prevEnd\.call\(r,e\);\}catch\(_\)\{\}finish\(\);\}/);
+  assert.match(html,/try\{r\.stop\(\);\}catch\(e\)\{finish\(\);return;\}/);
+  assert.doesNotMatch(html,/stopRecognitionAndFlush[\s\S]{0,500}r\.onresult=null/);
+});
+
+test('QA-106 speech with no browser transcript is explicitly marked no-result for diagnosis',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/const recognitionError=els\.transcript\.dataset\.error\|\|\(\(!!firstSpeechAt&&!text\)\?'no-result':'\'\)/);
+  assert.match(html,/recognition_error:recognitionError/);
+});
