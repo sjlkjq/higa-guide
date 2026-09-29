@@ -1009,7 +1009,7 @@ test('QA-98 production health endpoint reports Drive authorization without expos
   assert.equal(data.ok,true);
   assert.equal(data.drive_authorized,false);
   assert.equal(data.authorization_status,'REQUIRED');
-  assert.equal(data.app_version,'1.7.3');
+  assert.equal(data.app_version,'1.7.4');
   assert.equal(JSON.stringify(data).includes('student-token'),false);
   assert.equal(JSON.stringify(data).includes('test-folder'),false);
 });
@@ -1162,4 +1162,59 @@ test('QA-114 fallback STT change does not modify the static AI Voice question-re
   assert.match(html,/const QUESTION_AI_AUDIO=\{/);
   assert.match(html,/const aiVoice=await playStaticQuestionAudio\(current\)/);
   assert.match(html,/if\(!aiVoice\)\{const natural=await playNaturalQuestion\(current\)/);
+});
+
+
+test('QA-115 admin can recover a saved blank transcript from Drive audio after Deepgram is configured',()=>{
+  const {api,sheets,scriptProps}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('saved-audio').toString('base64');
+  const save=api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  assert.equal(save.ok,true);
+  let row=objects(sheets.MockAnswers)[0];
+  assert.equal(row.transcript,'');
+  assert.equal(row.stt_status,'deepgram_not_configured');
+  scriptProps.set('DEEPGRAM_API_KEY','dg_test_key_12345678901234567890');
+  const r=api.mockRetranscribeMissing('admin-token-123456','admin','applicant',row.session_id);
+  assert.equal(r.ok,true);
+  assert.equal(r.processed,1);
+  assert.equal(r.rescued,1);
+  assert.equal(r.failed,0);
+  row=objects(sheets.MockAnswers)[0];
+  assert.equal(row.transcript,'Deepgram transcript');
+  assert.equal(row.stt_provider,'deepgram-fallback');
+  assert.equal(row.stt_model,'nova-3');
+  assert.equal(row.stt_language_mode,'multi');
+  assert.equal(row.stt_status,'fallback_ok');
+  assert.match(String(row.audio_file_id),/^drive_/);
+});
+
+test('QA-116 missing-transcript recovery refuses to run without Deepgram configuration',()=>{
+  const {api,sheets}=createHarness({mockSessions:[shimpeiSession()]});
+  const audio=Buffer.from('saved-audio').toString('base64');
+  api.mockSaveAnswer('student-token-123456','student',shimpeiAnswer({
+    transcript:'',speech_detected:true,recognition_error:'no-result',audio_expected:true,audio_base64:audio,audio_mime_type:'audio/webm'
+  }));
+  const rowBefore=objects(sheets.MockAnswers)[0];
+  const r=api.mockRetranscribeMissing('admin-token-123456','admin','applicant',rowBefore.session_id);
+  assert.equal(r.ok,false);
+  assert.match(r.error,/Deepgram API key is not configured/i);
+  const rowAfter=objects(sheets.MockAnswers)[0];
+  assert.equal(rowAfter.transcript,'');
+});
+
+test('QA-117 reviewer cannot rewrite stored transcripts',()=>{
+  const {api}=createHarness();
+  const r=api.mockRetranscribeMissing('reviewer-token-123456','reviewer','applicant','x');
+  assert.equal(r.ok,false);
+  assert.match(r.error,/Admin access required/i);
+});
+
+test('QA-118 Mock Review offers re-transcription only for saved answers with missing transcript',()=>{
+  const html=fs.readFileSync('MockReview.html','utf8');
+  assert.match(html,/missingWithAudio=answers\.filter\(a=>!String\(a\.transcript\|\|'\'\)\.trim\(\)&&String\(a\.audio_file_id\|\|'\'\)\.trim\(\)\)\.length/);
+  assert.match(html,/欠損Transcriptを録音から再生成/);
+  assert.match(html,/mockRetranscribeMissing/);
+  assert.match(html,/Deepgram設定済みの場合のみ実行/);
 });
