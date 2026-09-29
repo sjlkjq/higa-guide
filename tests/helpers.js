@@ -116,6 +116,19 @@ function createHarness(options={}){
         deleteProperty:k=>{scriptProps.delete(k);return this;}
       })
     },
+    ScriptApp:{
+      AuthMode:{FULL:'FULL'},
+      AuthorizationStatus:{REQUIRED:'REQUIRED',NOT_REQUIRED:'NOT_REQUIRED'},
+      getAuthorizationInfo:()=>({
+        getAuthorizationStatus:()=>options.driveAuthorized===false?'REQUIRED':'NOT_REQUIRED',
+        getAuthorizationUrl:()=>options.driveAuthorized===false?'https://accounts.google.com/o/oauth2/auth?mock=drive':null,
+        getAuthorizedScopes:()=>options.driveAuthorized===false?[]:['https://www.googleapis.com/auth/drive']
+      })
+    },
+    ContentService:{
+      MimeType:{JSON:'application/json'},
+      createTextOutput:text=>({text:String(text),mimeType:'text/plain',setMimeType(v){this.mimeType=v;return this;}})
+    },
     UrlFetchApp:{
       fetch:(url,opts={})=>{
         fetchCalls.push({url,opts});
