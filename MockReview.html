@@ -17,7 +17,7 @@
     <div class="sttrow"><b>録音保存</b><span id="audioStorageStatus" class="muted">確認中…</span><a class="btn" id="authorizeDrive" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">Google Driveを承認</a><button class="btn" id="repairAudioStorage" style="display:none">保存先を再確認・修復</button></div>
     <div id="audioStorageDetail" class="muted" style="margin-top:7px"></div>
   </div>
-  <div class="sttbox">
+  <div class="sttbox" id="sttConfigBox">
     <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span></div>
     <div id="sttAdminSetup" class="sttrow" style="margin-top:9px;display:none">
       <input id="deepgramKey" class="sttinput" type="password" autocomplete="off" placeholder="Deepgram API Key">
@@ -57,7 +57,7 @@ function renderDetail(){
   html+='<div class="muted" style="margin:7px 0 13px">'+esc(s.started_at||'')+' → '+esc(s.completed_at||'incomplete')+'</div>';
   const missingWithAudio=answers.filter(a=>!String(a.transcript||'').trim()&&String(a.audio_file_id||'').trim()).length;
   if((data.role||ACCESS.role)==='admin'&&missingWithAudio){
-    html+='<div style="margin:0 0 13px"><button class="btn retranscribeMissing" data-scope="'+esc(s.scope)+'" data-session="'+esc(s.session_id)+'">欠損Transcriptを録音から再生成 ('+missingWithAudio+')</button> <span class="meta">Deepgram設定済みの場合のみ実行</span></div>';
+    html+='<div style="margin:0 0 13px"><button class="btn retranscribeMissing" data-scope="'+esc(s.scope)+'" data-session="'+esc(s.session_id)+'">欠損Transcriptを録音から再生成 ('+missingWithAudio+')</button> <span class="meta">Deepgram設定済みの場合のみ実行</span>'+(data.stt_config&&data.stt_config.configured?'':' <button class="btn openDeepgramSetup" type="button">Deepgram API Keyを設定</button>')+'</div>';
   }
   html+=answers.length?answers.map((a,i)=>{
     const q=a.question||{};const speech=a.speech_detected===true||String(a.speech_detected).toLowerCase()==='true';
@@ -70,6 +70,7 @@ function renderDetail(){
       (a.recognition_error?'<div class="meta bad">Speech recognition error: '+esc(a.recognition_error)+'</div>':'')+'</div>';
   }).join(''):'<div class="empty">回答データはありません。</div>';
   $('detail').innerHTML=html;
+  document.querySelectorAll('.openDeepgramSetup').forEach(btn=>btn.onclick=()=>{const box=$('sttConfigBox');if(box){box.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>{$('deepgramKey').focus();},450);}});
   document.querySelectorAll('.retranscribeMissing').forEach(btn=>btn.onclick=async()=>{
     const original=btn.textContent;btn.disabled=true;btn.textContent='再生成中…';
     try{
