@@ -59,6 +59,10 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
       <audio id="micTestPlayback" class="mic-playback" controls></audio>
       <div class="mic-detail" id="micTestResult">Speak normally during the test. Start Interview unlocks after input is detected.</div>
     </div>
+    <div id="storageSetup" class="mic-setup" style="margin-top:14px">
+      <div class="mic-detail" id="storageReadyText">Checking recording storage…</div>
+      <a class="btn" id="authorizeDriveReady" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;margin-top:8px">Authorize Google Drive</a>
+    </div>
     <div class="row" style="margin-top:20px"><button class="btn primary" id="startBtn" disabled>Start Interview</button></div>
   </section>
 
@@ -93,8 +97,8 @@ h1{font-size:30px;line-height:1.15;margin:0 0 10px}p{color:var(--muted);line-hei
 <script>
 const _hash=new URLSearchParams(String(location.hash||'').replace(/^#/,''));const ACCESS={role:String(_hash.get('role')||'student').toLowerCase(),token:''};
 const els={};
-['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
-let boot=null,testMode=false,audioStorageReady=false,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null,questionTtsCache=new Map(),questionTtsUrls=[],pendingSavePayload=null;
+['loading','error','errorText','home','ready','readyWho','readyMeta','backHome','startBtn','micSelect','micDeviceDetail','micLevelBar','micTestBtn','refreshMicsBtn','micTestPlayback','micTestResult','storageSetup','storageReadyText','authorizeDriveReady','speechStatus','interview','interviewWho','counter','phase','promptState','mic','answerClock','transcript','repeatBtn','doneBtn','endBtn','complete','completeWho','statAnswers','statLong','statEmpty','sessionLog','againBtn'].forEach(id=>els[id]=document.getElementById(id));
+let boot=null,testMode=false,audioStorageReady=false,audioStoragePollTimer=null,profile='',queue=[],index=0,current=null,sessionId='',sessionStarted=0,questionSpokenAt=0,answerStartedAt=0,firstSpeechAt=0,lastVoiceAt=0,longestSilence=0,silenceStart=0,repeatCount=0,transcriptFinal='',transcriptInterim='',recognizer=null,recognitionSupported=false,recognitionWanted=false,micStream=null,audioCtx=null,analyser=null,meterTimer=null,clockTimer=null,sessionRows=[],deviceId='',mediaRecorder=null,audioChunks=[],selectedMicId='',micVerified=false,micTestBlobUrl='',micTestTimer=null,questionTtsCache=new Map(),questionTtsUrls=[],pendingSavePayload=null;
 const QUESTION_AI_AUDIO={"HIGA-G-01":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0f660f43-516c-4f08-b9e8-a723b4b74a1e.mp3","HIGA-G-01-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/69749a14-dfe3-4ce5-968e-98de39e201cb.mp3","HIGA-G-02":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f11974e9-049e-48e0-ac7d-3c3ca82360ce.mp3","HIGA-G-02-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/29a4940b-911a-44bf-ad77-f3b6935984e9.mp3","HIGA-G-03":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7418a65c-c35f-4b6c-9859-248805f827dd.mp3","HIGA-G-03-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2b2f3b10-a53a-40b0-a7fb-6a546cfe61fa.mp3","HIGA-G-04":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/44e495a5-2b74-406f-a332-998ac430f4ce.mp3","HIGA-G-04-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/619e8305-ad71-4b69-8993-f14a72691f58.mp3","HIGA-G-05":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/5a2ab085-348c-4a38-914d-b6980a891e2f.mp3","HIGA-G-05-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/510666ff-a5f7-46ab-84bb-bf87ab65cae3.mp3","HIGA-G-06":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2a73de1a-ab77-430a-8b29-c0d81a530740.mp3","HIGA-G-06-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7fad07de-ef0c-43d1-907d-dcbce57978d0.mp3","HIGA-G-07":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/cd5584ec-244c-4b13-9ba6-e8bb8e9c6be3.mp3","HIGA-G-07-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d501bd1a-94b9-4e53-abb3-f38e460c6216.mp3","HIGA-M-01":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4cf2074b-022b-4dde-95c7-ce78cdeee01d.mp3","HIGA-M-01-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b1b1f66d-cb54-4dfe-a326-5133cc3677c6.mp3","HIGA-M-02":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/22dabc36-6439-4212-850a-97f79044f4a0.mp3","HIGA-M-02-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7e31825a-7af2-4fa9-a8b7-a0962a2c7a95.mp3","HIGA-M-03":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4c465e30-1a16-45f1-9e7a-f9e53dada60d.mp3","HIGA-M-03-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/285654a6-b8ad-47f5-a1f3-85823ccf9c51.mp3","HIGA-M-04":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a7b525bb-5353-420d-ad8c-2bea698f2188.mp3","HIGA-M-04-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6129d459-6189-4cfc-8911-8479ca442643.mp3","HIGA-M-05":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7f47a949-b427-4458-86cd-4fd5677e67b1.mp3","HIGA-M-05-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b49eaaeb-119a-4ed2-947a-03b168cdf70d.mp3","HIGA-M-06":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/666be453-52d6-4dfd-89dd-03c8d1538eee.mp3","HIGA-M-06-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9c8abd15-5fd4-4b87-8783-f2378bd7d376.mp3","KAI-J-01":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/bc5f755f-a2c6-4014-99d1-f9a3fe4f8c71.mp3","KAI-J-01-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f2603bd0-7805-4acd-b5b0-af4ba9630b35.mp3","KAI-J-02":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9dee1b59-20da-4dde-8030-cbb19b23f819.mp3","KAI-J-02-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3a44bd13-13e7-4719-bc76-4fcbefc82128.mp3","KAI-J-03":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/849da762-2fb3-408d-9ca8-7ddaa3eedfb4.mp3","KAI-J-03-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/26ae0713-b3f4-468e-bc22-77e43dce6665.mp3","KAI-J-04":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/46125b1c-d4c0-4a3e-a918-daa391842283.mp3","KAI-J-04-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/faabfb54-9683-4f5f-8153-d9cc19359a4f.mp3","KAI-S-01":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/eeaca59c-2550-4ea8-80f3-6b4b14ccef01.mp3","KAI-S-02":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ba24fc12-c2c0-4e50-ae5d-180bdefbb8e1.mp3","KAI-S-03":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/28716e3d-b9f1-4358-afb6-afc724972dec.mp3","KAI-S-04":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/39bbdd87-b681-4834-9cb4-3647f15c6406.mp3","KAI-E-01":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d441dd39-b459-45fe-acda-08384edf8536.mp3","KAI-E-01-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c36fdcd6-9a31-48e2-9137-5ded0bfc3adb.mp3","KAI-E-02":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/dba9d055-1045-443b-ab08-044d43f85e38.mp3","KAI-E-02-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/be66f624-8285-4983-a635-6ac349fbc2fc.mp3","KAI-E-03":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7602a359-67ad-435a-89f0-8ff0d6c711ed.mp3","KAI-E-03-F1":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/786becf7-26ef-4455-9f43-249c16e03f48.mp3"};
 const questionAudioPreload=new Map();
 const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -132,11 +136,48 @@ async function init(){
     show('home');
   }catch(e){fail(e.message);}
 }
-function chooseProfile(p){
+function applyAudioStorageState(r){
+  audioStorageReady=!!(r&&r.ready);
+  const authUrl=String(r&&r.authorization_url||'');
+  els.authorizeDriveReady.style.display='none';els.authorizeDriveReady.href='#';
+  if(audioStorageReady){
+    els.storageReadyText.textContent='Recording storage ready — answers will be saved to Parent/Admin Google Drive.';
+    els.storageReadyText.className='mic-detail good';
+    if(audioStoragePollTimer){clearInterval(audioStoragePollTimer);audioStoragePollTimer=null;}
+  }else if(authUrl&&testMode){
+    els.storageReadyText.textContent='One-time Parent/Admin setup required. Authorize Google Drive here; children will not need to authorize anything.';
+    els.storageReadyText.className='mic-detail bad';
+    els.authorizeDriveReady.href=authUrl;els.authorizeDriveReady.style.display='inline-block';
+  }else{
+    els.storageReadyText.textContent=testMode
+      ?'Recording storage is not ready yet. Authorize Google Drive in Parent/Admin, then this page will recheck automatically.'
+      :'Recording storage is being prepared by Parent/Admin. No Google Drive authorization is required on this device.';
+    els.storageReadyText.className='mic-detail bad';
+  }
+  els.startBtn.disabled=!(micVerified&&audioStorageReady);
+}
+async function refreshAudioStorageReady(){
+  try{
+    const r=await gas('mockAudioStorageReady',[ACCESS.token,ACCESS.role||'student']);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Recording storage check failed.');
+    applyAudioStorageState(r);return audioStorageReady;
+  }catch(e){
+    applyAudioStorageState({ready:false});
+    els.storageReadyText.textContent='Recording storage check failed: '+e.message;
+    return false;
+  }
+}
+function startAudioStoragePolling(){
+  if(audioStoragePollTimer)clearInterval(audioStoragePollTimer);
+  if(audioStorageReady)return;
+  audioStoragePollTimer=setInterval(()=>{if(!audioStorageReady)refreshAudioStorageReady();},5000);
+}
+async function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
-  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent=audioStorageReady?'Speak normally during the test. Start Interview unlocks after input is detected.':'Recording storage is not authorized. Parent/Admin must authorize Google Drive in Mock Review first.';els.micTestResult.className='mic-detail '+(audioStorageReady?'':'bad');
+  micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected and recording storage is ready.';els.micTestResult.className='mic-detail';
   els.readyWho.textContent=profileLabel(p);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+' · AI Voice Generator';show('ready');
+  await refreshAudioStorageReady();startAudioStoragePolling();
   refreshMicDevices(false);prefetchStaticQuestionAudio(queue[0]);
 }
 els.backHome.onclick=()=>show('home');
@@ -225,6 +266,7 @@ async function runMicTest(){
   if(chunks.length){const blob=new Blob(chunks,{type:recorder&&recorder.mimeType||'audio/webm'});micTestBlobUrl=URL.createObjectURL(blob);els.micTestPlayback.src=micTestBlobUrl;els.micTestPlayback.style.display='block';}
   const track=micStream&&micStream.getAudioTracks()[0];const label=track&&track.label||'Microphone';
   micVerified=peak>=0.008;
+  await refreshAudioStorageReady();
   els.startBtn.disabled=!(micVerified&&audioStorageReady);
   els.micTestResult.textContent=micVerified
     ?(audioStorageReady?'PASS — input detected from '+label+'. Peak level '+peak.toFixed(3)+'. Play the recording below to confirm.':'Microphone PASS, but Google Drive recording storage is not authorized. Parent/Admin must authorize it in Mock Review, then reload this page.')
@@ -257,13 +299,14 @@ function startMeter(){
 }
 function stopMeter(){if(meterTimer){clearInterval(meterTimer);meterTimer=null;}if(silenceStart){longestSilence=Math.max(longestSilence,performance.now()-silenceStart);silenceStart=0;}}
 function cleanupAudio(){
-  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}questionTtsUrls.forEach(u=>{try{URL.revokeObjectURL(u);}catch(e){}});questionTtsUrls=[];questionTtsCache.clear();try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
+  stopRecognition();stopMeter();clearInterval(clockTimer);clockTimer=null;clearInterval(micTestTimer);micTestTimer=null;if(audioStoragePollTimer){clearInterval(audioStoragePollTimer);audioStoragePollTimer=null;}if(micTestBlobUrl){try{URL.revokeObjectURL(micTestBlobUrl);}catch(e){}micTestBlobUrl='';}questionTtsUrls.forEach(u=>{try{URL.revokeObjectURL(u);}catch(e){}});questionTtsUrls=[];questionTtsCache.clear();try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();}catch(e){}mediaRecorder=null;audioChunks=[];
   try{speechSynthesis.cancel();}catch(e){}
   if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
   if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}analyser=null;
 }
 async function startInterview(){
-  if(!audioStorageReady){els.micTestResult.textContent='Google Drive recording storage is not authorized. Parent/Admin must authorize it in Mock Review, then reload this page.';els.micTestResult.className='mic-detail bad';return;}
+  await refreshAudioStorageReady();
+  if(!audioStorageReady){els.micTestResult.textContent=testMode?'Authorize Google Drive once using the button above. This will not be required on the children\'s devices.':'Recording storage is not ready yet. Parent/Admin must complete the one-time setup; no Drive authorization is required on this device.';els.micTestResult.className='mic-detail bad';return;}
   if(!micVerified){els.micTestResult.textContent='Run a successful microphone test before starting.';els.micTestResult.className='mic-detail bad';return;}
   els.startBtn.disabled=true;
   const micOk=await ensureMic(false);
