@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.7.4';
+const APP_VERSION = '1.7.5';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -410,6 +410,64 @@ function mockRetranscribeMissing(token,requestedRole,scope,sessionId){
     }catch(err){failed++;failures.push({row:i+1,status:'exception',error:String(err.message||err).slice(0,300)});}
   }
   return {ok:true,processed,rescued,failed,failures};
+}
+
+function mockAutoRetranscribeMissing(token,requestedRole,maxRows){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  if(auth.role!=='admin')return {ok:false,error:'Admin access required.'};
+  const key=deepgramApiKey_();
+  if(!key)return {ok:true,skipped:true,reason:'deepgram_not_configured',processed:0,rescued:0,failed:0};
+  const authz=deepgramAuthorization_();
+  if(!authz.authorized)return {ok:true,skipped:true,reason:'deepgram_authorization_required',processed:0,rescued:0,failed:0,authorization_required:true,authorization_url:authz.authorization_url||''};
+  const limit=Math.max(1,Math.min(50,Number(maxRows||20)));
+  const sh=sheet_(SHEETS.MOCKA),vals=sh.getDataRange().getValues();
+  if(vals.length<2)return {ok:true,processed:0,rescued:0,failed:0,skipped_failed:0,remaining:false};
+  const h=vals[0].map(String),idx=name=>h.indexOf(name);
+  const tc=idx('transcript'),fc=idx('audio_file_id'),pc=idx('profile'),mc=idx('audio_mime_type'),sc=idx('stt_status'),ec=idx('stt_error');
+  if([tc,fc,pc,sc,ec].some(i=>i<0))return {ok:false,error:'Answer sheet is missing required STT columns.'};
+  let processed=0,rescued=0,failed=0,skippedFailed=0,remaining=false;
+  const failures=[];
+  for(let i=1;i<vals.length;i++){
+    const row=vals[i];
+    if(String(row[tc]||'').trim())continue;
+    const fileId=String(row[fc]||'').trim(); if(!fileId)continue;
+    const priorStatus=String(row[sc]||'').trim();
+    if(priorStatus==='fallback_empty'||priorStatus.startsWith('auto_failed_')){skippedFailed++;continue;}
+    if(processed>=limit){remaining=true;continue;}
+    processed++;
+    try{
+      const blob=DriveApp.getFileById(fileId).getBlob();
+      const payload={
+        transcript:'',speech_detected:true,
+        audio_base64:Utilities.base64Encode(blob.getBytes()),
+        audio_mime_type:String((mc>=0?row[mc]:'')||blob.getContentType()||'audio/webm')
+      };
+      const stt=mockTranscribeDeepgram_(payload,String(row[pc]||''));
+      const transcript=String(stt.transcript||'').trim();
+      const status=transcript?(stt.status||'fallback_ok'):('auto_failed_'+String(stt.status||'empty').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,80));
+      const error=transcript?(stt.error||''):((stt.error||'')||('Automatic recovery returned '+String(stt.status||'empty'))).slice(0,500);
+      const updates={
+        transcript,
+        browser_transcript:stt.browser_transcript||'',
+        stt_provider:stt.provider||'',
+        stt_model:stt.model||'',
+        stt_language_mode:stt.language_mode||'',
+        stt_detected_language:stt.detected_language||'',
+        stt_confidence:stt.confidence===''?'':stt.confidence,
+        stt_status:status,
+        stt_error:error
+      };
+      Object.keys(updates).forEach(col=>{const ci=idx(col);if(ci>=0)sh.getRange(i+1,ci+1).setValue(updates[col]);});
+      if(transcript)rescued++;
+      else{failed++;failures.push({row:i+1,status,error});}
+    }catch(err){
+      const error=String(err.message||err).slice(0,500);
+      sh.getRange(i+1,sc+1).setValue('auto_failed_exception');
+      sh.getRange(i+1,ec+1).setValue(error);
+      failed++;failures.push({row:i+1,status:'auto_failed_exception',error});
+    }
+  }
+  return {ok:true,processed,rescued,failed,skipped_failed:skippedFailed,remaining,failures};
 }
 
 function mockSttConfig(token,requestedRole){
