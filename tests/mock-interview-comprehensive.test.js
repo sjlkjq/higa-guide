@@ -277,7 +277,8 @@ test('QA-27 malformed blank timing fields are not coerced to zero in persisted t
 test('QA-28 runtime contains no LLM-generated interviewer path',()=>{
   const html=fs.readFileSync('mock.html','utf8');
   assert.doesNotMatch(html,/api\.openai\.com|chat\/completions|responses\/v1|anthropic|gemini/i);
-  assert.match(html,/speak\(current\.question_text,current\.language\)/);
+  assert.match(html,/playNaturalQuestion\(current\)/);
+  assert.match(html,/speak\(spokenTextForQuestion\(current\),current\.language\)/);
 });
 
 test('QA-29 live transcript is hidden during the mock',()=>{
@@ -285,9 +286,9 @@ test('QA-29 live transcript is hidden during the mock',()=>{
   assert.match(html,/\.transcript\{display:none\}/);
 });
 
-test('QA-30 TTS and speech recognition both use each configured question language',()=>{
+test('QA-30 TTS keeps question-language fallback and speech recognition uses the configured response language',()=>{
   const html=fs.readFileSync('mock.html','utf8');
-  assert.match(html,/speak\(current\.question_text,current\.language\)/);
+  assert.match(html,/speak\(spokenTextForQuestion\(current\),current\.language\)/);
   assert.match(html,/startRecognition\(current\.language\)/);
 });
 
