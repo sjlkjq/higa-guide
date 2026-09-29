@@ -14,6 +14,10 @@
 <div class="wrap">
   <div class="top"><div><h1>模擬面接レビュー</h1><div class="muted">Applicant history と Parent/Admin test history は分離されています。</div></div><button class="btn" onclick="window.close()">閉じる</button></div>
   <div class="sttbox">
+    <div class="sttrow"><b>録音保存</b><span id="audioStorageStatus" class="muted">確認中…</span><button class="btn" id="repairAudioStorage" style="display:none">保存先を再確認・修復</button></div>
+    <div id="audioStorageDetail" class="muted" style="margin-top:7px"></div>
+  </div>
+  <div class="sttbox">
     <div class="sttrow"><b>音声認識</b><span id="sttStatus" class="muted">確認中…</span></div>
     <div id="sttAdminSetup" class="sttrow" style="margin-top:9px;display:none">
       <input id="deepgramKey" class="sttinput" type="password" autocomplete="off" placeholder="Deepgram API Key">
@@ -58,7 +62,7 @@ function renderDetail(){
       '<div class="meta">STT: '+esc(a.stt_provider||'legacy')+(a.stt_model?' · '+esc(a.stt_model):'')+(a.stt_language_mode?' · mode '+esc(a.stt_language_mode):'')+(a.stt_detected_language?' · detected '+esc(a.stt_detected_language):'')+(a.stt_confidence!==''&&a.stt_confidence!==undefined?' · confidence '+esc(Number(a.stt_confidence).toFixed(2)):'')+(a.stt_status?' · '+esc(a.stt_status):'')+'</div>'+
       '<div class="transcript">'+(a.transcript?esc(a.transcript):'<span class="bad">Transcriptなし</span>')+'</div>'+
       (a.browser_transcript&&String(a.browser_transcript)!==String(a.transcript)?'<div class="browserstt"><b>Browser STT (diagnostic)</b><br>'+esc(a.browser_transcript)+'</div>':'')+
-      (a.audio_file_id?'<div style="margin-top:8px"><button class="btn playAudio" data-file="'+esc(a.audio_file_id)+'">▶ 回答音声を再生</button></div>':'<div class="meta warn">録音なし</div>')+
+      (a.audio_file_id?'<div style="margin-top:8px"><button class="btn playAudio" data-file="'+esc(a.audio_file_id)+'">▶ 回答音声を再生</button> <span class="meta good">録音保存済み'+(a.audio_bytes?' · '+esc(a.audio_bytes)+' bytes':'')+'</span></div>':'<div class="meta '+(a.audio_error?'bad':'warn')+'">録音なし'+(a.audio_status?' · '+esc(a.audio_status):'')+(a.audio_error?' · '+esc(a.audio_error):'')+'</div>')+
       (a.recognition_error?'<div class="meta bad">Speech recognition error: '+esc(a.recognition_error)+'</div>':'')+'</div>';
   }).join(''):'<div class="empty">回答データはありません。</div>';
   $('detail').innerHTML=html;
@@ -79,6 +83,22 @@ function renderSttStatus(){
   $('sttStatus').className=c.configured?'good':'warn';
   if((data.role||ACCESS.role)==='admin')$('sttAdminSetup').style.display='flex';
 }
+async function loadAudioStorageStatus(repair=false){
+  const status=$('audioStorageStatus'),detail=$('audioStorageDetail'),btn=$('repairAudioStorage');
+  if((data.role||ACCESS.role)==='admin')btn.style.display='inline-block';
+  status.textContent=repair?'修復中…':'確認中…';status.className='muted';detail.textContent='';
+  try{
+    const r=await gas('mockAudioStorageStatus',[ACCESS.token,ACCESS.role||'admin',repair]);
+    if(!r||!r.ok)throw new Error(r&&r.error||'Audio storage check failed');
+    if(r.writable){
+      status.textContent='Google Drive 保存可能';status.className='good';
+      detail.innerHTML='保存先: '+esc(r.folder_name||'HiGA Mock Interview Audio')+(r.repaired?'（この実行で再作成）':'')+(r.folder_url?' · <a href="'+esc(r.folder_url)+'" target="_blank" rel="noopener">Driveを開く</a>':'');
+    }else{
+      status.textContent='保存不可';status.className='bad';
+      detail.textContent=r.error||'Google Driveに書き込めません。';
+    }
+  }catch(e){status.textContent='確認失敗';status.className='bad';detail.textContent=e.message;}
+}
 async function saveDeepgramKey(clear=false){
   const key=clear?'':String($('deepgramKey').value||'').trim();
   if(!clear&&!key){$('sttStatus').textContent='API Keyを入力してください。';$('sttStatus').className='bad';return;}
@@ -93,10 +113,14 @@ async function saveDeepgramKey(clear=false){
 }
 async function load(){
   $('sessions').innerHTML='<div class="empty">Loading…</div>';
-  try{const r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');data=r;selected='';renderSttStatus();renderSessions();renderDetail();}
+  try{
+    const r=await gas('mockReviewBootstrap',[ACCESS.token,ACCESS.role||'admin']);if(!r||!r.ok)throw new Error(r&&r.error||'Load failed');
+    data=r;selected='';renderSttStatus();renderSessions();renderDetail();
+    await loadAudioStorageStatus((data.role||ACCESS.role)==='admin');
+  }
   catch(e){$('sessions').innerHTML='<div class="empty bad">'+esc(e.message)+'</div>';}
 }
-$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);load();
+$('scope').onchange=renderSessions;$('profile').onchange=renderSessions;$('reload').onclick=load;$('saveDeepgramKey').onclick=()=>saveDeepgramKey(false);$('clearDeepgramKey').onclick=()=>saveDeepgramKey(true);$('repairAudioStorage').onclick=()=>loadAudioStorageStatus(true);load();
 </script>
 </body>
 </html>
