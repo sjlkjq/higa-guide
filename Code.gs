@@ -352,8 +352,19 @@ function mockRetranscribeMissing(token,requestedRole,scope,sessionId){
         audio_mime_type:String(row[mc]||blob.getContentType()||'audio/webm')
       };
       const stt=mockTranscribeDeepgram_(payload,String(row[pc]||''));
-      ['transcript','browser_transcript','stt_provider','stt_model','stt_language_mode','stt_detected_language','stt_confidence','stt_status','stt_error'].forEach(col=>{
-        const ci=idx(col);if(ci>=0)sh.getRange(i+1,ci+1).setValue(stt[col]??'');
+      const updates={
+        transcript:stt.transcript||'',
+        browser_transcript:stt.browser_transcript||'',
+        stt_provider:stt.provider||'',
+        stt_model:stt.model||'',
+        stt_language_mode:stt.language_mode||'',
+        stt_detected_language:stt.detected_language||'',
+        stt_confidence:stt.confidence===''?'':stt.confidence,
+        stt_status:stt.status||'',
+        stt_error:stt.error||''
+      };
+      Object.keys(updates).forEach(col=>{
+        const ci=idx(col);if(ci>=0)sh.getRange(i+1,ci+1).setValue(updates[col]);
       });
       if(String(stt.transcript||'').trim())rescued++;else{failed++;failures.push({row:i+1,status:stt.status||'empty',error:stt.error||''});}
     }catch(err){failed++;failures.push({row:i+1,status:'exception',error:String(err.message||err).slice(0,300)});}
