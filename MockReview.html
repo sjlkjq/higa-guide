@@ -55,6 +55,10 @@ function renderDetail(){
   const answers=data.answers.filter(a=>String(a.session_id)===String(selected)).sort((a,b)=>String(a.started_at||'').localeCompare(String(b.started_at||'')));
   let html='<div><span class="tag '+esc(s.scope)+'">'+(s.scope==='applicant'?'APPLICANT':'TEST')+'</span> <b>'+esc(labelProfile(s.profile))+'</b></div>';
   html+='<div class="muted" style="margin:7px 0 13px">'+esc(s.started_at||'')+' → '+esc(s.completed_at||'incomplete')+'</div>';
+  const missingWithAudio=answers.filter(a=>!String(a.transcript||'').trim()&&String(a.audio_file_id||'').trim()).length;
+  if((data.role||ACCESS.role)==='admin'&&missingWithAudio){
+    html+='<div style="margin:0 0 13px"><button class="btn retranscribeMissing" data-scope="'+esc(s.scope)+'" data-session="'+esc(s.session_id)+'">欠損Transcriptを録音から再生成 ('+missingWithAudio+')</button> <span class="meta">Deepgram設定済みの場合のみ実行</span></div>';
+  }
   html+=answers.length?answers.map((a,i)=>{
     const q=a.question||{};const speech=a.speech_detected===true||String(a.speech_detected).toLowerCase()==='true';
     return '<div class="q"><div class="qtitle">'+(i+1)+'. '+esc(q.question_text||a.question_id)+'</div>'+
@@ -66,6 +70,17 @@ function renderDetail(){
       (a.recognition_error?'<div class="meta bad">Speech recognition error: '+esc(a.recognition_error)+'</div>':'')+'</div>';
   }).join(''):'<div class="empty">回答データはありません。</div>';
   $('detail').innerHTML=html;
+  document.querySelectorAll('.retranscribeMissing').forEach(btn=>btn.onclick=async()=>{
+    const original=btn.textContent;btn.disabled=true;btn.textContent='再生成中…';
+    try{
+      const r=await gas('mockRetranscribeMissing',[ACCESS.token,ACCESS.role||'admin',btn.dataset.scope,btn.dataset.session]);
+      if(!r||!r.ok)throw new Error(r&&r.error||'Re-transcription failed');
+      btn.textContent='完了: '+r.rescued+'/'+r.processed+'件';
+      await load();
+    }catch(e){
+      btn.disabled=false;btn.textContent='再生成失敗: '+e.message;
+    }
+  });
   document.querySelectorAll('.playAudio').forEach(btn=>btn.onclick=async()=>{
     const original=btn.textContent;btn.disabled=true;btn.textContent='Loading…';
     try{
