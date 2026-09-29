@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -317,6 +317,52 @@ function mockSetDeepgramApiKey(token,requestedRole,apiKey){
   const props=PropertiesService.getScriptProperties();
   if(key)props.setProperty('DEEPGRAM_API_KEY',key);else props.deleteProperty('DEEPGRAM_API_KEY');
   return {ok:true,configured:!!key};
+}
+
+function mockTtsSpokenText_(q){
+  let text=String(q&&q.question_text||'').trim();
+  text=text.replace(/^\s*\(\d+\)\s*/,'');
+  text=text.replace(/開智所沢中等教育学校/g,'かいちところざわ中等教育学校');
+  text=text.replace(/開智所沢/g,'かいちところざわ');
+  text=text.replace(/GSC/g,'ジーエスシー');
+  text=text.replace(/^なぜ(?![、,])/,'なぜ、');
+  text=text.replace(/か。$/,'か？');
+  return text;
+}
+
+function mockTtsQuestion(token,requestedRole,questionId){
+  const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+  const q=findBy_(SHEETS.MOCKQ,'id',questionId);
+  if(!q || !truthy_(q.active))return {ok:false,error:'Mock question not found.'};
+  const profile=String(q.profile||'').toLowerCase();
+  const language=String(q.language||'').toLowerCase();
+  const spokenText=mockTtsSpokenText_(q);
+  if(profile!=='shiori' || !language.startsWith('ja')){
+    return {ok:true,supported:false,configured:!!deepgramApiKey_(),spoken_text:spokenText};
+  }
+  const key=deepgramApiKey_();
+  if(!key)return {ok:true,supported:true,configured:false,spoken_text:spokenText,voice:'aura-2-ama-ja'};
+  try{
+    const url='https://api.deepgram.com/v1/speak?model=aura-2-ama-ja&encoding=mp3';
+    const response=UrlFetchApp.fetch(url,{
+      method:'post',
+      headers:{Authorization:'Token '+key},
+      contentType:'application/json',
+      payload:JSON.stringify({text:spokenText}),
+      muteHttpExceptions:true
+    });
+    const code=Number(response.getResponseCode());
+    if(code<200||code>=300){
+      return {ok:true,supported:true,configured:true,spoken_text:spokenText,voice:'aura-2-ama-ja',
+        error:'Deepgram TTS HTTP '+code+': '+String(response.getContentText()||'').slice(0,300)};
+    }
+    const blob=response.getBlob();
+    return {ok:true,supported:true,configured:true,spoken_text:spokenText,voice:'aura-2-ama-ja',
+      mime_type:blob.getContentType()||'audio/mpeg',audio_base64:Utilities.base64Encode(blob.getBytes())};
+  }catch(err){
+    return {ok:true,supported:true,configured:true,spoken_text:spokenText,voice:'aura-2-ama-ja',
+      error:String(err.message||err).slice(0,300)};
+  }
 }
 
 function saveMockAudio_(role,payload){
