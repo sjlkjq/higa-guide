@@ -1,5 +1,5 @@
 const SHEETS = {CONFIG:'Config',STRATEGY:'Strategy',QUESTIONS:'Questions',STATE:'State',ATTEMPTS:'Attempts',EVENTS:'EventLog',ACK:'Acknowledgements',MOCKQ:'MockQuestions',MOCKA:'MockAnswers',MOCKS:'MockSessions',MOCKTA:'MockTestAnswers',MOCKTS:'MockTestSessions'};
-const APP_VERSION = '1.7.1';
+const APP_VERSION = '1.7.2';
 
 function doGet(e){
   const params=(e && e.parameter)||{};
@@ -453,6 +453,25 @@ function saveMockAudio_(role,payload){
   }catch(err){
     return {file_id:'',mime_type:'',status:'save_error',error:String(err.message||err),bytes:0};
   }
+}
+
+function mockAudioStorageReady(token,requestedRole){
+  try{
+    const auth=authorize_(token,requestedRole); if(!auth.ok)return auth;
+    const authz=mockDriveAuthorization_();
+    if(!authz.authorized){
+      return {ok:true,ready:false,authorization_required:true,
+        authorization_url:auth.role==='admin'?(authz.authorization_url||''):'',
+        status:authz.status||'REQUIRED'};
+    }
+    const storage=ensureMockAudioFolder_(true);
+    if(!storage.ok){
+      return {ok:true,ready:false,authorization_required:!!storage.authorization_required,
+        authorization_url:auth.role==='admin'?(storage.authorization_url||''):'',
+        status:storage.authorization_required?'REQUIRED':'STORAGE_UNAVAILABLE'};
+    }
+    return {ok:true,ready:true,status:'READY'};
+  }catch(err){return {ok:true,ready:false,status:'ERROR',error:String(err.message||err)};}
 }
 
 function mockAudioStorageStatus(token,requestedRole,repair){
