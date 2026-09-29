@@ -129,7 +129,7 @@ function chooseProfile(p){
   profile=p;queue=(boot.questions||[]).filter(q=>q.profile===p).sort((a,b)=>a.order-b.order);
   if(!queue.length)return fail('No approved questions are configured for this applicant.');
   micVerified=false;els.startBtn.disabled=true;els.micTestResult.textContent='Speak normally during the test. Start Interview unlocks after input is detected.';els.micTestResult.className='mic-detail';
-  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(p==='shiori'?' · Japanese voice: Aura-2 Ama':(v?' · Voice: '+v.name:''));show('ready');
+  els.readyWho.textContent=profileLabel(p);const v=selectVoice(queue[0]&&queue[0].language);els.readyMeta.textContent=(testMode?'Parent/Admin test · saved separately':queue.length+' approved prompts')+(p==='shiori'?' · Japanese voice: Aura-2 Ama (browser fallback if unavailable)':(v?' · Voice: '+v.name:''));show('ready');
   refreshMicDevices(false);prefetchQuestionAudio(queue[0]);
 }
 els.backHome.onclick=()=>show('home');
