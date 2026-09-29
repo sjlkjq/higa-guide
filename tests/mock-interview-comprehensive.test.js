@@ -718,3 +718,77 @@ test('QA-74 Shiori multilingual STT choice depends on applicant profile, not the
   assert.equal(fetchCalls.length,1);
   assert.match(fetchCalls[0].url,/language=multi(?:&|$)/);
 });
+
+
+test('QA-75 Shiori Japanese interviewer uses Aura-2 Ama and pronunciation-friendly spoken text',()=>{
+  const {api,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockQuestions:[{id:'KAI-J-02',profile:'shiori',phase:'japanese_oral_interview',language:'ja-JP',kind:'main',parent_id:'',order:20,active:true,source_type:'application_based',source_ref:'x',question_text:'なぜ開智所沢中等教育学校を志望しましたか。',concept:'why'}]
+  });
+  const r=api.mockTtsQuestion('student-token-123456','student','KAI-J-02');
+  assert.equal(r.ok,true);
+  assert.equal(r.supported,true);
+  assert.equal(r.configured,true);
+  assert.equal(r.voice,'aura-2-ama-ja');
+  assert.equal(r.spoken_text,'なぜ、かいちところざわ中等教育学校を志望しましたか？');
+  assert.equal(Buffer.from(r.audio_base64,'base64').toString(),'fake-mp3-audio');
+  assert.equal(fetchCalls.length,1);
+  assert.match(fetchCalls[0].url,/\/v1\/speak\?model=aura-2-ama-ja&encoding=mp3/);
+  assert.equal(JSON.parse(fetchCalls[0].opts.payload).text,'なぜ、かいちところざわ中等教育学校を志望しましたか？');
+});
+
+test('QA-76 Japanese spoken-text normalization removes written item numbers and reads GSC naturally',()=>{
+  const {api,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockQuestions:[{id:'KAI-J-GSC',profile:'shiori',phase:'japanese_oral_interview',language:'ja-JP',kind:'main',parent_id:'',order:1,active:true,source_type:'application_based',source_ref:'x',question_text:'(1) GSCのどんなところが自分に合っていると思いますか。',concept:'gsc'}]
+  });
+  const r=api.mockTtsQuestion('student-token-123456','student','KAI-J-GSC');
+  assert.equal(r.spoken_text,'ジーエスシーのどんなところが自分に合っていると思いますか？');
+  assert.equal(JSON.parse(fetchCalls[0].opts.payload).text,'ジーエスシーのどんなところが自分に合っていると思いますか？');
+});
+
+test('QA-77 missing Deepgram key falls back cleanly while still returning corrected Japanese spoken text',()=>{
+  const {api,fetchCalls}=createHarness({
+    mockQuestions:[{id:'KAI-J-02',profile:'shiori',phase:'japanese_oral_interview',language:'ja-JP',kind:'main',parent_id:'',order:20,active:true,source_type:'application_based',source_ref:'x',question_text:'なぜ開智所沢中等教育学校を志望しましたか。',concept:'why'}]
+  });
+  const r=api.mockTtsQuestion('student-token-123456','student','KAI-J-02');
+  assert.equal(r.ok,true);
+  assert.equal(r.supported,true);
+  assert.equal(r.configured,false);
+  assert.equal(r.audio_base64,undefined);
+  assert.equal(r.spoken_text,'なぜ、かいちところざわ中等教育学校を志望しましたか？');
+  assert.equal(fetchCalls.length,0);
+});
+
+test('QA-78 cloud Japanese interviewer TTS is limited to Shiori Japanese questions',()=>{
+  const {api,fetchCalls}=createHarness({
+    scriptProperties:{DEEPGRAM_API_KEY:'dg_test_key_12345678901234567890'},
+    mockQuestions:[
+      {id:'HIGA-JA',profile:'shimpei',phase:'general',language:'ja-JP',kind:'main',parent_id:'',order:1,active:true,source_type:'application_based',source_ref:'x',question_text:'日本語ですか。',concept:'x'},
+      {id:'KAI-EN',profile:'shiori',phase:'gsc_english_oral_interview',language:'en-US',kind:'main',parent_id:'',order:2,active:true,source_type:'application_based',source_ref:'x',question_text:'Why this school?',concept:'x'}
+    ]
+  });
+  const a=api.mockTtsQuestion('student-token-123456','student','HIGA-JA');
+  const b=api.mockTtsQuestion('student-token-123456','student','KAI-EN');
+  assert.equal(a.supported,false);
+  assert.equal(b.supported,false);
+  assert.equal(fetchCalls.length,0);
+});
+
+test('QA-79 browser mock prefers natural Japanese cloud audio, caches it, and retains corrected browser fallback',()=>{
+  const html=fs.readFileSync('mock.html','utf8');
+  assert.match(html,/mockTtsQuestion/);
+  assert.match(html,/playNaturalQuestion\(current\)/);
+  assert.match(html,/if\(!natural\)await speak\(spokenTextForQuestion\(current\),current\.language\)/);
+  assert.match(html,/questionTtsCache\.has\(q\.id\)/);
+  assert.match(html,/prefetchQuestionAudio\(queue\[index\+1\]\)/);
+  assert.match(html,/開智所沢中等教育学校\/g,'かいちところざわ中等教育学校'/);
+  assert.match(html,/text\.replace\(\/か。\$\/,'か？'\)/);
+});
+
+test('QA-80 parent app RPC allowlist permits TTS but still controls backend access',()=>{
+  const html=fs.readFileSync('index.html','utf8');
+  assert.match(html,/MOCK_ALLOWED_RPC=new Set\(\['mockBootstrap','mockStartSession','mockSaveAnswer','mockFinishSession','mockTtsQuestion'\]\)/);
+  assert.match(html,/MOCK_ALLOWED_RPC\.has\(e\.data\.name\)/);
+  assert.match(html,/args\[0\]=token;args\[1\]=role/);
+});
