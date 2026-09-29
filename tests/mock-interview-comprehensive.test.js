@@ -999,7 +999,7 @@ test('QA-98 production health endpoint reports Drive authorization without expos
   assert.equal(data.ok,true);
   assert.equal(data.drive_authorized,false);
   assert.equal(data.authorization_status,'REQUIRED');
-  assert.equal(data.app_version,'1.7.1');
+  assert.equal(data.app_version,'1.7.2');
   assert.equal(JSON.stringify(data).includes('student-token'),false);
   assert.equal(JSON.stringify(data).includes('test-folder'),false);
 });
