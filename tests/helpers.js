@@ -97,6 +97,17 @@ function createHarness(options={}){
     UrlFetchApp:{
       fetch:(url,opts={})=>{
         fetchCalls.push({url,opts});
+        if(String(url).includes('/v1/speak')){
+          const status=options.deepgramTtsStatus||200;
+          const err=options.deepgramTtsError||'tts error';
+          const bytes=Array.from(Buffer.from(options.deepgramTtsBytes||'fake-mp3-audio'));
+          const mime=options.deepgramTtsMime||'audio/mpeg';
+          return {
+            getResponseCode:()=>status,
+            getContentText:()=>status>=200&&status<300?'':err,
+            getBlob:()=>({getBytes:()=>bytes,getContentType:()=>mime})
+          };
+        }
         const response=options.deepgramResponse||{
           metadata:{},
           results:{channels:[{alternatives:[{transcript:'Deepgram transcript',confidence:0.93}],detected_language:options.deepgramDetectedLanguage||''}]}
@@ -113,7 +124,7 @@ function createHarness(options={}){
     console,Date,Math,JSON,String,Number,Boolean,Object,Array,RegExp,Error,Map,Set,Buffer,encodeURIComponent
   };
   vm.createContext(context);
-  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockSttConfig,mockSetDeepgramApiKey,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
+  const src=fs.readFileSync('Code.gs','utf8')+'\n;globalThis.__higa={doGet,bootstrap,saveAcknowledgement,logEvent,completeAttempt,saveReview,saveLiveReview,mockBootstrap,mockStartSession,mockSaveAnswer,mockFinishSession,mockReviewBootstrap,mockGetAudio,mockSttConfig,mockSetDeepgramApiKey,mockTtsQuestion,authorize_,publicConfig_,truthy_,lineCount_,statusFromScores_,config_,rows_};';
   vm.runInContext(src,context,{filename:'Code.gs'});
   return {api:context.__higa,sheets,cfg,spreadsheet,context,driveFiles,scriptProps,fetchCalls};
 }
